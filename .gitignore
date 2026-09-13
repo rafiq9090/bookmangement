@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Environment variables & secrets
+.env
+.env.local
+
+# Databases
+*.sqlite3
+db.sqlite3
+
+# Media & Static collection
+media/
+staticfiles/
+
+# IDEs
+.vscode/
+.idea/
+
+# Testing & Celery
+.pytest_cache/
+celerybeat-schedule
+celerybeat.pid
+
+# Scratch & Logs
+*.log

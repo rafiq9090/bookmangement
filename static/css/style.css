@@ -1,0 +1,19 @@
+/* Vintage & Old Book Marketplace Styling */
+:root {
+    --primary-vintage: #6f4e37;
+    --parchment: #fcf5e5;
+}
+
+body {
+    background-color: var(--parchment);
+    color: #2b2b2b;
+}
+
+.book-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
