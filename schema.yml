@@ -1,0 +1,2367 @@
+openapi: 3.0.3
+info:
+  title: Old Book Sales Marketplace API
+  version: 1.0.0
+  description: Multi-vendor used & rare book commerce backend with escrow, courier
+    splitting, and TTL reservations.
+paths:
+  /api/v1/accounts/addresses/:
+    get:
+      operationId: v1_accounts_addresses_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAddressList'
+          description: ''
+    post:
+      operationId: v1_accounts_addresses_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Address'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+  /api/v1/accounts/addresses/{id}/:
+    get:
+      operationId: v1_accounts_addresses_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Address.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    put:
+      operationId: v1_accounts_addresses_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Address.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Address'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    patch:
+      operationId: v1_accounts_addresses_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Address.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAddress'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAddress'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAddress'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    delete:
+      operationId: v1_accounts_addresses_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Address.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/accounts/login/:
+    post:
+      operationId: v1_accounts_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/v1/accounts/me/:
+    get:
+      operationId: v1_accounts_me_retrieve
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    put:
+      operationId: v1_accounts_me_update
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    patch:
+      operationId: v1_accounts_me_partial_update
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+  /api/v1/accounts/register/:
+    post:
+      operationId: v1_accounts_register_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegister'
+          description: ''
+  /api/v1/accounts/seller/apply/:
+    post:
+      operationId: v1_accounts_seller_apply_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SellerProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SellerProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SellerProfile'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerProfile'
+          description: ''
+  /api/v1/accounts/token/refresh/:
+    post:
+      operationId: v1_accounts_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/books/:
+    get:
+      operationId: v1_books_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookList'
+          description: ''
+  /api/v1/books/{slug}/:
+    get:
+      operationId: v1_books_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+  /api/v1/books/categories/:
+    get:
+      operationId: v1_books_categories_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+  /api/v1/books/lookup-isbn/:
+    post:
+      operationId: v1_books_lookup_isbn_create
+      description: |-
+        Enables sellers to type an ISBN (10 or 13 digits) to auto-fill book title,
+        cover, and metadata using OpenLibrary before posting a listing.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Book'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Book'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+  /api/v1/listings/:
+    get:
+      operationId: v1_listings_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookListingReadList'
+          description: ''
+    post:
+      operationId: v1_listings_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookListingWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookListingWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookListingWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookListingWrite'
+          description: ''
+  /api/v1/listings/{listing_id}/images/:
+    post:
+      operationId: v1_listings_images_create
+      parameters:
+      - in: path
+        name: listing_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ListingImage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ListingImage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingImage'
+          description: ''
+  /api/v1/listings/{id}/:
+    get:
+      operationId: v1_listings_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookListingRead'
+          description: ''
+    put:
+      operationId: v1_listings_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookListingWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookListingWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookListingWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookListingWrite'
+          description: ''
+    patch:
+      operationId: v1_listings_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBookListingWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBookListingWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBookListingWrite'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookListingWrite'
+          description: ''
+    delete:
+      operationId: v1_listings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/listings/my/:
+    get:
+      operationId: v1_listings_my_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookListingReadList'
+          description: ''
+  /api/v1/messaging/conversations/:
+    get:
+      operationId: v1_messaging_conversations_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConversationList'
+          description: ''
+    post:
+      operationId: v1_messaging_conversations_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Conversation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Conversation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Conversation'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+          description: ''
+  /api/v1/messaging/conversations/{conversation_id}/reply/:
+    post:
+      operationId: v1_messaging_conversations_reply_create
+      parameters:
+      - in: path
+        name: conversation_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InquiryMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InquiryMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InquiryMessage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InquiryMessage'
+          description: ''
+  /api/v1/orders/:
+    get:
+      operationId: v1_orders_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderList'
+          description: ''
+  /api/v1/orders/{id}/:
+    get:
+      operationId: v1_orders_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/cart/:
+    get:
+      operationId: v1_orders_cart_retrieve
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+    post:
+      operationId: v1_orders_cart_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+          description: ''
+    delete:
+      operationId: v1_orders_cart_destroy
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orders/checkout/:
+    post:
+      operationId: v1_orders_checkout_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/seller/shipments/:
+    get:
+      operationId: v1_orders_seller_shipments_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderShipmentList'
+          description: ''
+  /api/v1/payments/balance/:
+    get:
+      operationId: v1_payments_balance_retrieve
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerBalanceResponse'
+          description: ''
+  /api/v1/payments/initiate/{order_id}/:
+    post:
+      operationId: v1_payments_initiate_create
+      parameters:
+      - in: path
+        name: order_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentInitiationResponse'
+          description: ''
+  /api/v1/payments/ledger/:
+    get:
+      operationId: v1_payments_ledger_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSellerLedgerList'
+          description: ''
+  /api/v1/payments/payout/request/:
+    post:
+      operationId: v1_payments_payout_request_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayoutBatch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PayoutBatch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PayoutBatch'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayoutBatch'
+          description: ''
+  /api/v1/payments/sslcommerz/ipn/:
+    post:
+      operationId: v1_payments_sslcommerz_ipn_create
+      description: Public webhook receiver invoked by payment gateways upon successful
+        user authorization.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/sslcommerz/success/:
+    post:
+      operationId: v1_payments_sslcommerz_success_create
+      description: Public webhook receiver invoked by payment gateways upon successful
+        user authorization.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/shipping/dispatch/{shipment_id}/:
+    post:
+      operationId: v1_shipping_dispatch_create
+      parameters:
+      - in: path
+        name: shipment_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DispatchShipmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DispatchShipmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DispatchShipmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DispatchShipmentResponse'
+          description: ''
+  /api/v1/shipping/webhook/:
+    post:
+      operationId: v1_shipping_webhook_create
+      description: Public webhook receiver for delivery updates from couriers like
+        Steadfast/RedX.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourierWebhookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CourierWebhookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CourierWebhookRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourierWebhookResponse'
+          description: ''
+components:
+  schemas:
+    Address:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        recipient_name:
+          type: string
+          maxLength: 100
+        phone_number:
+          type: string
+          maxLength: 20
+        street_address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 100
+        state_division:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 50
+        is_default:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - city
+      - created_at
+      - id
+      - phone_number
+      - postal_code
+      - recipient_name
+      - state_division
+      - street_address
+    Author:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 220
+          pattern: ^[-a-zA-Z0-9_]+$
+        biography:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - id
+      - name
+      - slug
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        slug:
+          type: string
+          maxLength: 280
+          pattern: ^[-a-zA-Z0-9_]+$
+        isbn_10:
+          type: string
+          maxLength: 10
+        isbn_13:
+          type: string
+          maxLength: 13
+        authors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Author'
+          readOnly: true
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+        publisher:
+          type: string
+          maxLength: 150
+        publication_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        language:
+          type: string
+          maxLength: 50
+        cover_image:
+          type: string
+          format: uri
+          nullable: true
+        description:
+          type: string
+        available_listings_count:
+          type: integer
+          readOnly: true
+          default: 0
+      required:
+      - authors
+      - available_listings_count
+      - categories
+      - id
+      - isbn_13
+      - slug
+      - title
+    BookListingRead:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        book:
+          allOf:
+          - $ref: '#/components/schemas/Book'
+          readOnly: true
+        seller_name:
+          type: string
+          readOnly: true
+        seller_rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          readOnly: true
+        condition:
+          $ref: '#/components/schemas/ConditionEnum'
+        condition_notes:
+          type: string
+          description: 'Specific wear details: markings, tears, yellowed pages, bindings.'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          description: Listing price in platform currency.
+        original_mrp:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          nullable: true
+          description: Original printed cover price (for comparison).
+        edition_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Year this specific physical copy was printed.
+        is_hardcover:
+          type: boolean
+        has_dust_jacket:
+          type: boolean
+        is_signed_by_author:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/BookListingReadStatusEnum'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListingImage'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - book
+      - created_at
+      - id
+      - images
+      - price
+      - seller_name
+      - seller_rating
+    BookListingReadStatusEnum:
+      enum:
+      - DRAFT
+      - ACTIVE
+      - RESERVED
+      - SOLD
+      - ARCHIVED
+      type: string
+      description: |-
+        * `DRAFT` - Draft
+        * `ACTIVE` - Active / Available
+        * `RESERVED` - Reserved (Checkout in progress)
+        * `SOLD` - Sold
+        * `ARCHIVED` - Archived / Deactivated
+    BookListingWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        book:
+          type: integer
+          description: The canonical book record.
+        condition:
+          $ref: '#/components/schemas/ConditionEnum'
+        condition_notes:
+          type: string
+          description: 'Specific wear details: markings, tears, yellowed pages, bindings.'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          description: Listing price in platform currency.
+        original_mrp:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          nullable: true
+          description: Original printed cover price (for comparison).
+        edition_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Year this specific physical copy was printed.
+        is_hardcover:
+          type: boolean
+        has_dust_jacket:
+          type: boolean
+        is_signed_by_author:
+          type: boolean
+      required:
+      - book
+      - id
+      - price
+    Cart:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+          readOnly: true
+        total_price:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - items
+      - total_price
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        listing:
+          allOf:
+          - $ref: '#/components/schemas/BookListingRead'
+          readOnly: true
+        listing_id:
+          type: integer
+          writeOnly: true
+        added_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - added_at
+      - id
+      - listing
+      - listing_id
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+      required:
+      - id
+      - name
+      - slug
+    CheckoutRequest:
+      type: object
+      properties:
+        recipient_name:
+          type: string
+          maxLength: 100
+        phone_number:
+          type: string
+          maxLength: 20
+        street_address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 100
+        state_division:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          default: Bangladesh
+          maxLength: 50
+      required:
+      - city
+      - phone_number
+      - postal_code
+      - recipient_name
+      - state_division
+      - street_address
+    ConditionEnum:
+      enum:
+      - LIKE_NEW
+      - VERY_GOOD
+      - GOOD
+      - ACCEPTABLE
+      - COLLECTIBLE
+      type: string
+      description: |-
+        * `LIKE_NEW` - Like New (Minimal signs of wear)
+        * `VERY_GOOD` - Very Good (Clean pages, light spine creasing)
+        * `GOOD` - Good (Average used wear, possible notes/highlights)
+        * `ACCEPTABLE` - Acceptable (Readable copy, noticeable wear or damage)
+        * `COLLECTIBLE` - Collectible / Vintage (Rare edition, signed)
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        listing:
+          type: integer
+        book_title:
+          type: string
+          readOnly: true
+        listing_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          readOnly: true
+        buyer_email:
+          type: string
+          format: email
+          readOnly: true
+        seller_store:
+          type: string
+          readOnly: true
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/InquiryMessage'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - book_title
+      - buyer_email
+      - created_at
+      - id
+      - listing
+      - listing_price
+      - messages
+      - seller_store
+      - updated_at
+    CourierWebhookRequest:
+      type: object
+      properties:
+        tracking_number:
+          type: string
+        status:
+          type: string
+        hub_name:
+          type: string
+      required:
+      - status
+      - tracking_number
+    CourierWebhookResponse:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    DispatchShipmentRequest:
+      type: object
+      properties:
+        courier_name:
+          type: string
+          default: Steadfast
+        tracking_number:
+          type: string
+      required:
+      - tracking_number
+    DispatchShipmentResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        tracking_number:
+          type: string
+      required:
+      - status
+      - tracking_number
+    EntryTypeEnum:
+      enum:
+      - SALE_CREDIT
+      - PLATFORM_FEE
+      - PAYOUT_DEBIT
+      - REFUND_DEBIT
+      type: string
+      description: |-
+        * `SALE_CREDIT` - Sale Revenue
+        * `PLATFORM_FEE` - Platform Commission
+        * `PAYOUT_DEBIT` - Bank/MFS Withdrawal
+        * `REFUND_DEBIT` - Order Refund
+    GatewayEnum:
+      enum:
+      - SSLCOMMERZ
+      - STRIPE
+      - BKASH
+      type: string
+      description: |-
+        * `SSLCOMMERZ` - SSLCommerz
+        * `STRIPE` - Stripe
+        * `BKASH` - bKash Direct
+    InquiryMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sender_email:
+          type: string
+          format: email
+          readOnly: true
+        text:
+          type: string
+        photo_evidence:
+          type: string
+          format: uri
+          nullable: true
+        is_read:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_read
+      - sender_email
+      - text
+    KycStatusEnum:
+      enum:
+      - UNVERIFIED
+      - PENDING
+      - VERIFIED
+      - REJECTED
+      type: string
+      description: |-
+        * `UNVERIFIED` - Unverified
+        * `PENDING` - Pending Review
+        * `VERIFIED` - Verified
+        * `REJECTED` - Rejected
+    ListingImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image:
+          type: string
+          format: uri
+        webp_image:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        caption:
+          type: string
+          maxLength: 100
+        is_primary:
+          type: boolean
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - image
+      - uploaded_at
+      - webp_image
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        shipping_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        shipping_address_snapshot:
+          description: Immutable snapshot of shipping details at the moment of purchase.
+        shipments:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderShipment'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - shipments
+      - total_amount
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        book_title:
+          type: string
+          readOnly: true
+        condition:
+          type: string
+          readOnly: true
+        price_at_purchase:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+      required:
+      - book_title
+      - condition
+      - id
+      - price_at_purchase
+    OrderShipment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        seller_store:
+          type: string
+          readOnly: true
+        courier_name:
+          type: string
+          maxLength: 50
+        tracking_number:
+          type: string
+          maxLength: 100
+        shipping_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/OrderShipmentStatusEnum'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          readOnly: true
+        dispatched_at:
+          type: string
+          format: date-time
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - id
+      - items
+      - seller_store
+      - subtotal
+    OrderShipmentStatusEnum:
+      enum:
+      - WAITING
+      - PICKED_UP
+      - IN_TRANSIT
+      - DELIVERED
+      - RETURNED
+      type: string
+      description: |-
+        * `WAITING` - Waiting for Seller Dispatch
+        * `PICKED_UP` - Picked Up by Courier
+        * `IN_TRANSIT` - In Transit
+        * `DELIVERED` - Delivered
+        * `RETURNED` - Returned / Disputed
+    OrderStatusEnum:
+      enum:
+      - PENDING
+      - PAID
+      - PROCESSING
+      - COMPLETED
+      - CANCELLED
+      type: string
+      description: |-
+        * `PENDING` - Pending Payment
+        * `PAID` - Paid & Escrow Held
+        * `PROCESSING` - In Progress
+        * `COMPLETED` - All Shipments Delivered
+        * `CANCELLED` - Cancelled
+    PaginatedAddressList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+    PaginatedBookList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Book'
+    PaginatedBookListingReadList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookListingRead'
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedConversationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conversation'
+    PaginatedOrderList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+    PaginatedOrderShipmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderShipment'
+    PaginatedSellerLedgerList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SellerLedger'
+    PatchedAddress:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        recipient_name:
+          type: string
+          maxLength: 100
+        phone_number:
+          type: string
+          maxLength: 20
+        street_address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 100
+        state_division:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 50
+        is_default:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedBookListingWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        book:
+          type: integer
+          description: The canonical book record.
+        condition:
+          $ref: '#/components/schemas/ConditionEnum'
+        condition_notes:
+          type: string
+          description: 'Specific wear details: markings, tears, yellowed pages, bindings.'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          description: Listing price in platform currency.
+        original_mrp:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          nullable: true
+          description: Original printed cover price (for comparison).
+        edition_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Year this specific physical copy was printed.
+        is_hardcover:
+          type: boolean
+        has_dust_jacket:
+          type: boolean
+        is_signed_by_author:
+          type: boolean
+    PatchedUserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone_number:
+          type: string
+          maxLength: 20
+        is_seller:
+          type: boolean
+          readOnly: true
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        order:
+          type: string
+          format: uuid
+        gateway:
+          $ref: '#/components/schemas/GatewayEnum'
+        transaction_id:
+          type: string
+          maxLength: 100
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - id
+      - order
+      - transaction_id
+    PaymentInitiationResponse:
+      type: object
+      properties:
+        payment_url:
+          type: string
+          format: uri
+      required:
+      - payment_url
+    PaymentStatusEnum:
+      enum:
+      - INITIATED
+      - SUCCESS
+      - FAILED
+      - REFUNDED
+      type: string
+      description: |-
+        * `INITIATED` - Initiated
+        * `SUCCESS` - Payment Successful
+        * `FAILED` - Payment Failed
+        * `REFUNDED` - Refunded
+    PaymentWebhookRequest:
+      type: object
+      properties:
+        tran_id:
+          type: string
+        val_id:
+          type: string
+        bank_tran_id:
+          type: string
+      required:
+      - tran_id
+    PayoutBatch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        payout_method:
+          type: string
+          maxLength: 20
+        account_details:
+          type: string
+          maxLength: 120
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PayoutBatchStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        processed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - account_details
+      - amount
+      - created_at
+      - id
+      - payout_method
+      - processed_at
+      - status
+    PayoutBatchStatusEnum:
+      enum:
+      - REQUESTED
+      - PROCESSING
+      - COMPLETED
+      - REJECTED
+      type: string
+      description: |-
+        * `REQUESTED` - Requested
+        * `PROCESSING` - Processing
+        * `COMPLETED` - Completed
+        * `REJECTED` - Rejected
+    PayoutMethodEnum:
+      enum:
+      - BKASH
+      - NAGAD
+      - BANK
+      type: string
+      description: |-
+        * `BKASH` - bKash
+        * `NAGAD` - Nagad
+        * `BANK` - Bank Transfer
+    SellerBalanceResponse:
+      type: object
+      properties:
+        available_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - available_balance
+    SellerLedger:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        entry_type:
+          $ref: '#/components/schemas/EntryTypeEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        reference_id:
+          type: string
+          maxLength: 120
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - entry_type
+      - id
+      - reference_id
+    SellerProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user_email:
+          type: string
+          format: email
+          readOnly: true
+        store_name:
+          type: string
+          maxLength: 120
+        bio:
+          type: string
+        kyc_status:
+          allOf:
+          - $ref: '#/components/schemas/KycStatusEnum'
+          readOnly: true
+        national_id_number:
+          type: string
+          maxLength: 50
+        payout_method:
+          $ref: '#/components/schemas/PayoutMethodEnum'
+        payout_account_details:
+          type: string
+          maxLength: 120
+        rating_avg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          readOnly: true
+        rating_count:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - kyc_status
+      - rating_avg
+      - rating_count
+      - store_name
+      - user_email
+    TokenObtainPair:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - email
+      - password
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone_number:
+          type: string
+          maxLength: 20
+        is_seller:
+          type: boolean
+          readOnly: true
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - is_seller
+    UserRegister:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone_number:
+          type: string
+          maxLength: 20
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - email
+      - id
+      - password
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
