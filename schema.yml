@@ -2356,6 +2356,9 @@ components:
           type: string
           writeOnly: true
           minLength: 8
+        is_seller:
+          type: boolean
+          default: false
       required:
       - email
       - id

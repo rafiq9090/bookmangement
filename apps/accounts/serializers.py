@@ -4,10 +4,11 @@ from .models import Address, CustomUser, SellerProfile
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
+    is_seller = serializers.BooleanField(default=False, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ("id", "email", "first_name", "last_name", "phone_number", "password")
+        fields = ("id", "email", "first_name", "last_name", "phone_number", "password", "is_seller")
 
     def create(self, validated_data: dict) -> CustomUser:
         return CustomUser.objects.create_user(**validated_data)
