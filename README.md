@@ -4,7 +4,7 @@ A multi-vendor used and vintage book commerce platform built with **Django 5.1**
 
 ---
 
-## 🚀 Milestone Progress
+##  Milestone Progress
 
 - [x] **Phase 1 (~30%): Foundation & Core Architecture**
   - Project configuration & settings split (`base`, `local`, `production`)
