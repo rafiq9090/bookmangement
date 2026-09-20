@@ -3,8 +3,26 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from config.views import (
+    add_to_cart_view,
+    book_detail_view,
+    cart_view,
+    checkout_view,
+    home_view,
+    order_detail_view,
+    remove_from_cart_view,
+    store_view,
+)
 
 urlpatterns = [
+    path("", home_view, name="home"),
+    path("store/", store_view, name="store"),
+    path("books/<slug:slug>/", book_detail_view, name="book_detail"),
+    path("cart/", cart_view, name="cart"),
+    path("cart/add/<int:listing_id>/", add_to_cart_view, name="add_to_cart"),
+    path("cart/remove/<int:item_id>/", remove_from_cart_view, name="remove_from_cart"),
+    path("checkout/", checkout_view, name="checkout"),
+    path("orders/<uuid:id>/", order_detail_view, name="order_detail"),
     path("admin/", admin.site.urls),
     
     # OpenAPI Documentation

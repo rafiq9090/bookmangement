@@ -2,8 +2,11 @@ from datetime import timedelta
 import os
 from pathlib import Path
 import sys
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE_DIR / ".env")
+
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-insecure-dev-key-xyz-12345")
 DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1")

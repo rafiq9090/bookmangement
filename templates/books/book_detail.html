@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - eB Online Bookshop{% endblock %}
+
+{% block content %}
+<!-- BEGIN: Breadcrumb Navigation -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
+    <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
+        <a href="{% url 'home' %}" class="hover:text-gray-700 transition-colors">Home</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <a href="{% url 'store' %}" class="hover:text-gray-700 transition-colors">Store</a>
+        {% if book.categories.first %}
+            <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+            <a href="{% url 'store' %}?category={{ book.categories.first.slug }}" class="hover:text-gray-700 transition-colors">
+                {{ book.categories.first.name }}
+            </a>
+        {% endif %}
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <span class="text-gray-800 font-semibold truncate max-w-xs sm:max-w-md">{{ book.title }}</span>
+    </nav>
+</section>
+<!-- END: Breadcrumb Navigation -->
+
+<!-- BEGIN: Book Detail Showcase -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-8 box-border">
+    <div class="bg-white rounded-3xl p-6 sm:p-10 lg:p-12 border border-gray-100 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+        
+        <!-- Left Column: Book Artwork Presentation -->
+        <div class="lg:col-span-5 flex flex-col items-center">
+            <!-- Book Artwork Card -->
+            <div class="w-full max-w-sm h-96 bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl overflow-hidden p-6 relative flex items-center justify-center shadow-inner group">
+                <!-- 3D Book Graphic Representation (Matching Home Design) -->
+                <div class="w-52 h-72 bg-white rounded-lg shadow-2xl flex flex-col items-center justify-between p-5 border border-gray-100 text-center relative overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
+                    <span class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                        {{ book.categories.first.name|default:"BESTSELLER" }}
+                    </span>
+                    <div class="w-24 h-24 rounded-full border-4 border-dashed border-[#FF5A1F]/30 flex items-center justify-center">
+                        <i class="fa-solid fa-book-open text-3xl text-[#FF5A1F]"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-800 line-clamp-2">{{ book.title }}</h4>
+                        <p class="text-[9px] text-gray-400 mt-0.5">By {{ book.authors.first.name|default:"Vanessa Howell" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trust Pillars -->
+            <div class="grid grid-cols-3 gap-3 w-full max-w-sm mt-6 text-center">
+                <div class="bg-gray-50/80 rounded-xl p-3 border border-gray-100">
+                    <i class="fa-solid fa-truck-fast text-[#43A047] text-base mb-1"></i>
+                    <p class="text-[11px] font-bold text-gray-800">Fast Shipping</p>
+                    <p class="text-[9px] text-gray-400">All Bangladesh</p>
+                </div>
+                <div class="bg-gray-50/80 rounded-xl p-3 border border-gray-100">
+                    <i class="fa-solid fa-shield-halved text-[#FF5A1F] text-base mb-1"></i>
+                    <p class="text-[11px] font-bold text-gray-800">Verified Quality</p>
+                    <p class="text-[9px] text-gray-400">Inspected Pages</p>
+                </div>
+                <div class="bg-gray-50/80 rounded-xl p-3 border border-gray-100">
+                    <i class="fa-solid fa-rotate-left text-blue-500 text-base mb-1"></i>
+                    <p class="text-[11px] font-bold text-gray-800">Easy Return</p>
+                    <p class="text-[9px] text-gray-400">7 Days Guarantee</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Details & Purchase Actions -->
+        <div class="lg:col-span-7 space-y-6">
+            <!-- Category Badge -->
+            {% if book.categories.first %}
+                <span class="inline-block px-3 py-1 rounded-full bg-orange-50 text-[#FF5A1F] border border-orange-200 text-xs font-semibold">
+                    {{ book.categories.first.name }}
+                </span>
+            {% endif %}
+
+            <!-- Headline & Author -->
+            <div class="space-y-2">
+                <h1 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight leading-tight">
+                    {{ book.title }}
+                </h1>
+                <p class="text-sm text-gray-500">
+                    By <span class="text-gray-800 font-semibold">{{ book.authors.first.name|default:"Vanessa Howell" }}</span>
+                    {% if book.publication_year %}
+                        • Published in <span class="text-gray-700 font-medium">{{ book.publication_year }}</span>
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Ratings -->
+            <div class="flex items-center space-x-2 pt-1">
+                <div class="flex items-center space-x-1 text-amber-400 text-sm">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-800">5.0</span>
+                <span class="text-xs text-gray-400">• (128 Reviews)</span>
+                <span class="text-xs text-[#43A047] font-semibold flex items-center gap-1 ml-2">
+                    <i class="fa-solid fa-circle-check text-[11px]"></i> In Stock
+                </span>
+            </div>
+
+            <!-- Price & Discount -->
+            <div class="flex items-baseline space-x-3 pt-2 pb-2 border-y border-gray-100">
+                <span class="text-3xl sm:text-4xl font-extrabold text-green-600 font-heading">
+                    ${{ listing.price|default:"3.36" }}
+                </span>
+                {% if listing.original_mrp %}
+                    <span class="text-base sm:text-lg text-rose-400 line-through">
+                        ${{ listing.original_mrp }}
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold text-xs border border-rose-200">
+                        Save 50%
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Short Overview -->
+            <p class="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                {{ book.description|default:"Starting off in an eighteenth century London, this book invites readers to an exciting journey. The lifelong fight of main protagonist's crime solving and thrilling mysteries." }}
+            </p>
+
+            <!-- Specification Pills Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <p class="text-[10px] text-gray-400 uppercase font-medium">ISBN-13</p>
+                    <p class="text-xs font-bold text-gray-800 font-mono mt-0.5">{{ book.isbn_13 }}</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <p class="text-[10px] text-gray-400 uppercase font-medium">Publisher</p>
+                    <p class="text-xs font-bold text-gray-800 mt-0.5 truncate">{{ book.publisher|default:"eDox Press" }}</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <p class="text-[10px] text-gray-400 uppercase font-medium">Language</p>
+                    <p class="text-xs font-bold text-gray-800 mt-0.5">{{ book.language|default:"English" }}</p>
+                </div>
+            </div>
+
+            <!-- Purchase Controls -->
+            <div class="pt-4 space-y-4">
+                <!-- Quantity & Buttons -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <!-- Quantity Stepper -->
+                    <div class="flex items-center justify-between border border-gray-200 rounded-full px-4 py-2.5 w-32 bg-gray-50">
+                        <button type="button" class="text-gray-500 hover:text-gray-900 font-bold text-sm focus:outline-none">-</button>
+                        <span class="font-bold text-sm text-gray-800">1</span>
+                        <button type="button" class="text-gray-500 hover:text-gray-900 font-bold text-sm focus:outline-none">+</button>
+                    </div>
+
+                    <!-- Add to Cart -->
+                    <a
+                        href="{% if listing %}{% url 'add_to_cart' listing.id %}{% else %}#{% endif %}"
+                        class="flex-1 py-3 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-semibold text-sm rounded-full shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+                    >
+                        <i class="fa-solid fa-cart-shopping text-sm"></i>
+                        <span>Add to Cart</span>
+                    </a>
+
+                    <!-- Purchase Now -->
+                    <a
+                        href="{% if listing %}{% url 'add_to_cart' listing.id %}{% else %}#{% endif %}"
+                        class="flex-1 py-3 px-6 bg-[#43A047] hover:bg-green-700 text-white font-semibold text-sm rounded-full shadow-md shadow-green-600/20 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+                    >
+                        <i class="fa-solid fa-bolt text-sm"></i>
+                        <span>Purchase Now</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+<!-- END: Book Detail Showcase -->
+
+<!-- BEGIN: Tabbed Info Section -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 box-border">
+    <div class="bg-white rounded-3xl p-6 sm:p-10 border border-gray-100 shadow-sm space-y-6">
+        <!-- Tabs Header -->
+        <div class="flex items-center space-x-8 border-b border-gray-100 pb-4 text-sm font-bold">
+            <button class="text-[#FF5A1F] border-b-2 border-[#FF5A1F] pb-4 -mb-4">Description & Story</button>
+            <button class="text-gray-400 hover:text-gray-700 pb-4 transition-colors">Product Specifications</button>
+            <button class="text-gray-400 hover:text-gray-700 pb-4 transition-colors">Customer Reviews (128)</button>
+        </div>
+
+        <!-- Tab Content Body -->
+        <div class="space-y-4 text-xs sm:text-sm text-gray-600 leading-relaxed max-w-4xl">
+            <p>
+                Starting off in an eighteenth century London, this book invites readers to an exciting journey. The lifelong fight of the main protagonist's crime solving and pursuit of justice against the city's most elusive villains.
+            </p>
+            <p>
+                Whether you are exploring this edition for academic reference, literary leisure, or expanding your personal library, this title provides gripping storytelling, enriched context, and unforgettable narrative turns.
+            </p>
+        </div>
+    </div>
+</section>
+<!-- END: Tabbed Info Section -->
+
+<!-- BEGIN: Related Books Section -->
+{% if related_books %}
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-12 box-border">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="font-heading font-extrabold text-2xl sm:text-3xl text-gray-900 tracking-tight">
+            You May Also Like
+        </h2>
+        <a href="{% url 'store' %}" class="text-xs font-semibold text-[#FF5A1F] hover:text-orange-600 flex items-center gap-1.5 transition-colors">
+            <span>View Catalog</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+    </div>
+
+    <!-- 4 Columns Grid (Matching Popular Collections) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for rel in related_books %}
+            <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
+                <!-- Book Artwork Container -->
+                <a href="{% url 'book_detail' rel.book.slug %}" class="w-full h-64 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
+                    <div class="w-36 h-52 bg-white rounded shadow-md flex flex-col items-center justify-between p-3 border border-gray-100 text-center relative overflow-hidden">
+                        <span class="text-[9px] font-bold tracking-widest text-gray-400 uppercase">
+                            {{ rel.book.categories.first.name|default:"BOOK" }}
+                        </span>
+                        <div class="w-16 h-16 rounded-full border-2 border-dashed border-[#FF5A1F]/40 flex items-center justify-center">
+                            <i class="fa-solid fa-book-open text-xl text-[#FF5A1F]"></i>
+                        </div>
+                        <span class="text-[8px] font-semibold text-gray-600 line-clamp-2">
+                            {{ rel.book.title }}
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Rating Stars -->
+                <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+
+                <!-- Title & Author -->
+                <a href="{% url 'book_detail' rel.book.slug %}" class="font-bold text-sm text-gray-900 text-center mb-0.5 line-clamp-1 group-hover:text-[#FF5A1F] transition-colors">
+                    {{ rel.book.title }}
+                </a>
+                <p class="text-[11px] text-gray-400 mb-2 font-mono">
+                    ISBN-{{ rel.book.isbn_10|default:rel.book.isbn_13 }}
+                </p>
+
+                <!-- Price -->
+                <div class="flex items-center space-x-2 text-xs font-bold mb-3 mt-auto">
+                    {% if rel.original_mrp %}
+                        <span class="text-rose-400 line-through text-[11px]">${{ rel.original_mrp }}</span>
+                    {% endif %}
+                    <span class="text-green-600 font-extrabold text-sm">${{ rel.price }}</span>
+                </div>
+
+                <!-- Action Button -->
+                <a
+                    href="{% url 'book_detail' rel.book.slug %}"
+                    class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all"
+                >
+                    <span>Purchase</span>
+                    <i class="fa-solid fa-cart-shopping text-[11px]"></i>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+<!-- END: Related Books Section -->
+
+<!-- Reusable 50% Sale Ribbon Banner from Components -->
+{% include "components/sale_ribbon.html" %}
+
+{% endblock %}

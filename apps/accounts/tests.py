@@ -7,20 +7,20 @@ class AccountsTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = CustomUser.objects.create_user(
-            email="buyer@example.com",
-            password="StrongPassword123!",
-            first_name="Jane",
-            last_name="Doe",
+            email="buyer@book.com",
+            password="Rafiq@123",
+            first_name="Rafiqul",
+            last_name="Islam",
         )
 
     def test_user_registration(self):
         response = self.client.post(
             "/api/v1/accounts/register/",
             {
-                "email": "newuser@example.com",
-                "password": "Password12345!",
-                "first_name": "John",
-                "last_name": "Smith",
+                "email": "[EMAIL_ADDRESS]",
+                "password": "[PASSWORD]",
+                "first_name": "Zubair",
+                "last_name": "Hossain",
             },
             format="json",
         )
