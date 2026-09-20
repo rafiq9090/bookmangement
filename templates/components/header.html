@@ -1,58 +1,112 @@
 <!-- BEGIN: MainHeader -->
-<header class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between box-border"
+<header class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 box-border"
     data-purpose="site-header">
-    <!-- Left Logo & Gift Banner -->
-    <div class="flex items-center space-x-4">
-        <a class="flex items-center space-x-1" href="{% url 'home' %}">
-            <span
-                class="bg-[#FF5A1F] text-white font-heading font-extrabold text-2xl w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-orange-500/30">eB</span>
-        </a>
-        <div
-            class="hidden sm:flex items-center space-x-2 bg-amber-50/80 border border-amber-100 rounded-full px-3.5 py-1 text-xs font-semibold text-gray-700">
-            <i class="fa-solid fa-gift text-amber-500"></i>
-            <span class="">Festival Gift Overs</span>
-        </div>
-    </div>
-    <!-- Center Navigation Links -->
-    <nav class="hidden md:flex items-center space-x-8 text-[15px] font-medium text-gray-600"
-        data-purpose="primary-navigation">
-        <a class="text-[#FF5A1F] font-semibold transition-colors" href="{% url 'home' %}">Home</a>
-        <div class="relative group cursor-pointer flex items-center space-x-1 hover:text-gray-900 transition-colors py-2">
-            <span>Categories</span>
-            <i class="fa-solid fa-chevron-down text-xs text-gray-400 group-hover:translate-y-0.5 transition-transform"></i>
-            <!-- Dropdown Menu -->
-            <div class="absolute top-full left-0 hidden group-hover:block bg-white border border-gray-100 rounded-2xl shadow-xl py-3 px-4 min-w-[200px] z-50 space-y-2">
-                <a href="{% url 'store' %}?category=fiction" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Fiction</a>
-                <a href="{% url 'store' %}?category=non-fiction" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Non Fiction</a>
-                <a href="{% url 'store' %}?category=history" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">History</a>
-                <a href="{% url 'store' %}?category=thriller" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Thriller</a>
-                <a href="{% url 'store' %}?category=poetry" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Poetry</a>
-                <div class="pt-2 border-t border-gray-100">
-                    <a href="{% url 'store' %}" class="block text-[11px] font-bold text-[#FF5A1F] hover:underline">All Categories →</a>
-                </div>
+    <div class="flex items-center justify-between gap-4">
+        <!-- Left Logo & Gift Banner -->
+        <div class="flex items-center space-x-3 sm:space-x-4 flex-shrink-0">
+            <a class="flex items-center space-x-1" href="{% url 'home' %}" title="eB Bookshop Home">
+                <span
+                    class="bg-[#FF5A1F] text-white font-heading font-extrabold text-2xl w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-orange-500/30">eB</span>
+            </a>
+            <div
+                class="hidden sm:flex items-center space-x-2 bg-amber-50/80 border border-amber-100 rounded-full px-3.5 py-1 text-xs font-semibold text-gray-700">
+                <i class="fa-solid fa-gift text-amber-500"></i>
+                <span>Festival Gift Offers</span>
             </div>
         </div>
-        <a class="hover:text-gray-900 transition-colors" href="{% url 'store' %}">Store</a>
-        <a class="hover:text-gray-900 transition-colors" href="{% url 'store' %}?sort=featured">Featured</a>
-        <a class="hover:text-gray-900 transition-colors" href="{% url 'cart' %}">Cart</a>
-    </nav>
-    <!-- Right Action Items -->
-    <div class="flex items-center space-x-5">
-        <a href="{% url 'store' %}" aria-label="Search" class="text-gray-600 hover:text-gray-900 transition-colors text-base" title="Search Books">
-            <i class="fa-solid fa-magnifying-glass"></i>
-        </a>
-        <a href="{% url 'cart' %}" aria-label="Cart" class="text-gray-600 hover:text-gray-900 transition-colors text-base relative" title="View Cart">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span
-                class="absolute -top-1.5 -right-2 bg-[#FF5A1F] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                {{ cart_count|default:"0" }}
-            </span>
-        </a>
-        <a class="flex items-center space-x-2 border border-gray-200 rounded-full px-4 py-1.5 text-sm font-semibold text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-all"
-            href="{% url 'store' %}">
-            <i class="fa-solid fa-store text-xs text-[#FF5A1F]"></i>
-            <span>Shop Now</span>
-        </a>
+
+        <!-- Center Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-6 lg:space-x-8 text-[15px] font-medium text-gray-600 flex-shrink-0"
+            data-purpose="primary-navigation">
+            <a class="text-[#FF5A1F] font-semibold transition-colors" href="{% url 'home' %}">Home</a>
+            <div class="relative group cursor-pointer flex items-center space-x-1 hover:text-gray-900 transition-colors py-2">
+                <span>Categories</span>
+                <i class="fa-solid fa-chevron-down text-xs text-gray-400 group-hover:translate-y-0.5 transition-transform"></i>
+                <!-- Dropdown Menu -->
+                <div class="absolute top-full left-0 hidden group-hover:block bg-white border border-gray-100 rounded-2xl shadow-xl py-3 px-4 min-w-[200px] z-50 space-y-2">
+                    <a href="{% url 'store' %}?category=fiction" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Fiction</a>
+                    <a href="{% url 'store' %}?category=non-fiction" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Non Fiction</a>
+                    <a href="{% url 'store' %}?category=history" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">History</a>
+                    <a href="{% url 'store' %}?category=thriller" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Thriller</a>
+                    <a href="{% url 'store' %}?category=poetry" class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Poetry</a>
+                    <div class="pt-2 border-t border-gray-100">
+                        <a href="{% url 'store' %}" class="block text-[11px] font-bold text-[#FF5A1F] hover:underline">All Categories →</a>
+                    </div>
+                </div>
+            </div>
+            <a class="hover:text-gray-900 transition-colors" href="{% url 'store' %}">Store</a>
+            <a class="hover:text-gray-900 transition-colors" href="{% url 'store' %}?sort=featured">Featured</a>
+            <a class="hover:text-gray-900 transition-colors" href="{% url 'cart' %}">Cart</a>
+        </nav>
+
+        <!-- Right Action Items -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+            <!-- Live Search Bar (Desktop / Tablet) -->
+            <form method="GET" action="{% url 'store' %}" class="hidden sm:flex items-center relative">
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ query|default:'' }}"
+                    placeholder="Search books, authors, ISBN..."
+                    class="w-36 md:w-48 lg:w-64 pl-9 pr-8 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:w-60 md:focus:w-64 lg:focus:w-80 focus:border-[#FF5A1F] focus:bg-white focus:ring-2 focus:ring-orange-400/20 transition-all duration-300 shadow-sm"
+                >
+                <button type="submit" aria-label="Search" class="absolute left-3 text-gray-400 hover:text-[#FF5A1F] transition-colors">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </button>
+                {% if query %}
+                    <a href="{% url 'store' %}" class="absolute right-2.5 text-gray-400 hover:text-gray-600" title="Clear Search">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </a>
+                {% endif %}
+            </form>
+
+            <!-- Mobile Search Toggle Button -->
+            <button
+                type="button"
+                onclick="const b = document.getElementById('mobile-header-search'); b.classList.toggle('hidden'); if(!b.classList.contains('hidden')) b.querySelector('input').focus();"
+                aria-label="Search"
+                class="sm:hidden text-gray-600 hover:text-gray-900 transition-colors text-base p-1.5 rounded-full hover:bg-gray-100"
+                title="Search Books"
+            >
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+
+            <!-- Shopping Cart Bag -->
+            <a href="{% url 'cart' %}" aria-label="Cart" class="text-gray-600 hover:text-gray-900 transition-colors text-base relative p-1.5" title="View Cart">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span
+                    class="absolute 0 top-0 -right-1 bg-[#FF5A1F] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-sm">
+                    {{ cart_count|default:"0" }}
+                </span>
+            </a>
+
+            <!-- Shop Now CTA Button -->
+            <a class="flex items-center space-x-2 border border-gray-200 rounded-full px-4 py-1.5 text-sm font-semibold text-gray-700 hover:border-[#FF5A1F] hover:text-[#FF5A1F] hover:bg-orange-50/50 transition-all"
+                href="{% url 'store' %}">
+                <i class="fa-solid fa-store text-xs text-[#FF5A1F]"></i>
+                <span class="hidden xs:inline">Shop Now</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Collapsible Mobile Search Bar -->
+    <div id="mobile-header-search" class="hidden sm:hidden pt-3 pb-1">
+        <form method="GET" action="{% url 'store' %}" class="flex items-center relative w-full">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-gray-400 text-xs"></i>
+            <input
+                type="text"
+                name="q"
+                value="{{ query|default:'' }}"
+                placeholder="Search books, authors, ISBN..."
+                class="w-full pl-9 pr-20 py-2.5 bg-gray-50 border border-gray-200 rounded-full text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#FF5A1F] focus:bg-white shadow-inner"
+            >
+            <button
+                type="submit"
+                class="absolute right-1.5 px-3.5 py-1.5 bg-[#FF5A1F] hover:bg-orange-600 text-white rounded-full text-[11px] font-bold transition-colors shadow-sm"
+            >
+                Search
+            </button>
+        </form>
     </div>
 </header>
 <!-- END: MainHeader -->
