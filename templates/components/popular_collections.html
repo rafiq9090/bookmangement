@@ -3,264 +3,144 @@
     data-purpose="popular-collections-section">
     <!-- Header and Filter Tabs -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Popular
-            Collections</h2>
-        <div class="flex items-center space-x-4 sm:space-x-6 text-sm font-medium text-gray-500">
-            <button class="text-green-600 font-bold border-b-2 border-green-600 pb-1">All</button>
-            <button class="hover:text-gray-800 transition-colors pb-1">Fiction</button>
-            <button class="hover:text-gray-800 transition-colors pb-1">History</button>
-            <button class="hover:text-gray-800 transition-colors pb-1">Thriller</button>
-            <button class="hover:text-gray-800 transition-colors pb-1">Non Fiction</button>
+        <div>
+            <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Popular
+                Collections</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Handpicked editions available for direct purchase</p>
+        </div>
+        <div class="flex items-center space-x-3 sm:space-x-5 text-sm font-medium text-gray-500 overflow-x-auto pb-1">
+            <a href="{% url 'store' %}"
+                class="text-green-600 font-bold border-b-2 border-green-600 pb-1 flex-shrink-0">All</a>
+            {% for cat in categories|slice:":5" %}
+            <a href="{% url 'store' %}?category={{ cat.slug }}"
+                class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">{{ cat.name }}</a>
+            {% empty %}
+            <a href="{% url 'store' %}?category=fiction"
+                class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">Fiction</a>
+            <a href="{% url 'store' %}?category=history"
+                class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">History</a>
+            <a href="{% url 'store' %}?category=thriller"
+                class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">Thriller</a>
+            <a href="{% url 'store' %}?category=non-fiction"
+                class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">Non Fiction</a>
+            {% endfor %}
+            <a href="{% url 'store' %}"
+                class="text-[#FF5A1F] hover:text-orange-600 font-semibold pb-1 flex-shrink-0">View All →</a>
         </div>
     </div>
+
     <!-- Book Grid 4 Columns x 2 Rows -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Book Card 1 -->
+        {% for listing in listings %}
+        {% cycle 'from-slate-100 to-slate-200' 'from-blue-50 to-indigo-100' 'from-green-50 to-emerald-100' 'from-red-50
+        to-amber-100' 'from-gray-100 to-slate-200' 'from-rose-50 to-pink-100' 'from-blue-50 to-slate-200' 'from-gray-100
+        to-amber-50' as bg_gradient silent %}
+        {% cycle 'bg-white text-gray-800 border-gray-100' 'bg-[#3b82f6] text-white border-blue-400' 'bg-[#74b886]
+        text-white border-emerald-500' 'bg-[#e2e8f0] text-gray-800 border-gray-300' 'bg-[#1e293b] text-white
+        border-slate-700' 'bg-[#e2a89f] text-gray-900 border-pink-300' 'bg-[#475569] text-white border-slate-500'
+        'bg-[#0f172a] text-white border-slate-800' as book_style silent %}
+        {% cycle 'fa-wand-magic-sparkles' 'fa-snowflake' 'fa-dragon' 'fa-dove' 'fa-moon' 'fa-rocket' 'fa-tree-city'
+        'fa-lightbulb' as icon_class silent %}
+
         <div
             class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-            <div
-                class="w-full h-64 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
+            <!-- Book Artwork Cover linking to Book Detail -->
+            <a href="{% url 'book_detail' listing.book.slug %}"
+                class="w-full h-64 bg-gradient-to-b {{ bg_gradient }} rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner group-hover:scale-[1.02] transition-transform">
                 <div
-                    class="w-36 h-52 bg-white rounded shadow-md flex flex-col items-center justify-between p-3 border border-gray-100">
-                    <span class="text-[9px] font-bold tracking-widest text-gray-400">LEARN</span>
-                    <div
-                        class="w-20 h-20 rounded-full border-4 border-dashed border-rose-400 flex items-center justify-center">
-                        <div class="w-12 h-12 rounded-full bg-teal-400 opacity-80"></div>
+                    class="w-36 h-52 {{ book_style }} rounded shadow-md flex flex-col items-center justify-between p-3 border text-center">
+                    <span class="text-[9px] font-bold tracking-widest uppercase opacity-80 truncate w-full">
+                        {{ listing.book.categories.first.name|default:"SPECIAL" }}
+                    </span>
+                    <div class="my-auto flex flex-col items-center justify-center">
+                        <i class="fa-solid {{ icon_class }} text-3xl opacity-80 mb-2"></i>
+                        <span class="text-[8px] font-bold leading-tight line-clamp-2 px-1">
+                            {{ listing.book.title }}
+                        </span>
                     </div>
-                    <span class="text-[8px] font-semibold text-gray-500">Abstract Design</span>
+                    <span class="text-[8px] font-medium opacity-80 truncate w-full">
+                        By {{ listing.book.authors.first.name|default:"Vanessa Howell" }}
+                    </span>
                 </div>
-            </div>
+            </a>
+
             <!-- Stars -->
             <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
             </div>
-            <h3 class="font-bold text-sm text-gray-900 text-center mb-0.5">Learn Abstract Design</h3>
-            <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
+
+            <!-- Book Title linking to Book Detail -->
+            <a href="{% url 'book_detail' listing.book.slug %}"
+                class="font-bold text-sm text-gray-900 text-center mb-0.5 hover:text-[#FF5A1F] transition-colors line-clamp-1 w-full"
+                title="{{ listing.book.title }}">
+                {{ listing.book.title }}
+            </a>
+
+            <p class="text-[11px] text-gray-400 mb-2 font-mono">
+                ISBN-{{ listing.book.isbn_10|default:listing.book.isbn_13|default:"1002365478" }}
+            </p>
+
+            <!-- Price -->
             <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                <span class="text-rose-400 line-through text-[11px]">$3.36</span>
-                <span class="text-green-600 font-extrabold text-sm">$3.36</span>
+                <span class="text-rose-400 line-through text-[11px]">{{ listing.price|add:"3.50" }}</span>
+                <span class="text-green-600 font-extrabold text-sm font-mono">${{ listing.price }}</span>
             </div>
-            <button
-                class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all">
-                <span class="">Purchase</span>
+
+            <!-- Purchase Button linking to Add to Cart -->
+            <a href="{% url 'add_to_cart' listing.id %}"
+                class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 group-hover:bg-green-50/50 flex items-center justify-center space-x-2 transition-all">
+                <span>Purchase</span>
                 <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-            </button>
+            </a>
         </div>
-        <!-- Book Card 2 -->
+        {% empty %}
+        <!-- Fallback Static Demo Cards linking to Store -->
+        {% for idx in "12345678" %}
         <div
             class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-            <div
-                class="w-full h-64 bg-gradient-to-b from-blue-50 to-indigo-100 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
+            <a href="{% url 'store' %}"
+                class="w-full h-64 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
                 <div
-                    class="w-36 h-52 bg-[#3b82f6] rounded shadow-md flex flex-col items-center justify-between p-3 border border-blue-400 text-white">
-                    <span class="text-[10px] font-bold tracking-widest uppercase">The Winter</span>
-                    <i class="fa-regular fa-snowflake text-4xl text-blue-200"></i>
-                    <span class="text-[8px] font-medium opacity-80">By Vanessa Howell</span>
+                    class="w-36 h-52 bg-white rounded shadow-md flex flex-col items-center justify-between p-3 border border-gray-100 text-center">
+                    <span class="text-[9px] font-bold tracking-widest text-gray-400">BESTSELLER</span>
+                    <i class="fa-solid fa-book-open text-3xl text-teal-500 my-auto"></i>
+                    <span class="text-[8px] font-semibold text-gray-500">Popular Edition</span>
                 </div>
-            </div>
+            </a>
             <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
             </div>
-            <h3 class="font-bold text-sm text-gray-900 text-center mb-0.5">The Winter Stories</h3>
+            <a href="{% url 'store' %}"
+                class="font-bold text-sm text-gray-900 text-center mb-0.5 hover:text-[#FF5A1F]">Learn Abstract
+                Design</a>
             <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
             <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                <span class="text-rose-400 line-through text-[11px]">$3.36</span>
+                <span class="text-rose-400 line-through text-[11px]">$6.72</span>
                 <span class="text-green-600 font-extrabold text-sm">$3.36</span>
             </div>
-            <button
+            <a href="{% url 'store' %}"
                 class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all">
-                <span class="">Purchase</span>
+                <span>Purchase</span>
                 <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-            </button>
+            </a>
         </div>
-        <!-- Book Card 3 -->
-        <div
-            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-            <div
-                class="w-full h-64 bg-gradient-to-b from-green-50 to-emerald-100 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
-                <div
-                    class="w-36 h-52 bg-[#74b886] rounded shadow-md flex flex-col items-center justify-between p-3 border border-emerald-500 text-white">
-                    <span class="text-[10px] font-bold tracking-wider">LITTLE GREEN TALES</span>
-                    <i class="fa-solid fa-dragon text-4xl text-emerald-900/40"></i>
-                    <span class="text-[8px] font-medium opacity-90">Forest of the Crocodile</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i>
-            </div>
-            <h3 class="font-bold text-sm text-gray-900 text-center mb-0.5">Learn Abstract Design</h3>
-            <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
-            <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                <span class="text-rose-400 line-through text-[11px]">$3.36</span>
-                <span class="text-green-600 font-extrabold text-sm">$3.36</span>
-            </div>
-            <button
-                class="w-full py-2 px-3 bg-[#43A047] rounded-lg text-xs font-semibold text-white flex items-center justify-center space-x-2 shadow-sm shadow-green-600/30">
-                <span class="">Purchase</span>
-                <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-            </button>
-        </div>
-        <!-- Book Card 4 -->
-        <div
-            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-            <div
-                class="w-full h-64 bg-gradient-to-b from-red-50 to-amber-100 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
-                <div
-                    class="w-36 h-52 bg-[#e2e8f0] rounded shadow-md flex flex-col items-center justify-between p-3 border border-gray-300 text-gray-800">
-                    <span class="text-[11px] font-serif font-bold text-rose-600 italic">The Birds</span>
-                    <i class="fa-solid fa-dove text-3xl text-amber-600"></i>
-                    <span class="text-[8px] text-gray-500">Day in the forest</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i>
-            </div>
-            <h3 class="font-bold text-sm text-gray-900 text-center mb-0.5">Learn Abstract Design</h3>
-            <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
-            <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                <span class="text-rose-400 line-through text-[11px]">$3.36</span>
-                <span class="text-green-600 font-extrabold text-sm">$3.36</span>
-            </div>
-            <button
-                class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all">
-                <span class="">Purchase</span>
-                <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-            </button>
-        </div>
-        <!-- Book Card 5 -->
-        <div
-            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-            <div
-                class="w-full h-64 bg-gradient-to-b from-gray-100 to-slate-200 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
-                <div
-                    class="w-36 h-52 bg-[#1e293b] rounded shadow-md flex flex-col items-center justify-between p-3 border border-slate-700 text-white">
-                    <span class="text-[11px] font-bold text-center tracking-wide">Black Night</span>
-                    <i class="fa-regular fa-moon text-3xl text-slate-400"></i>
-                    <span class="text-[8px] text-slate-400">Dark Fiction</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i>
-            </div>
-            <h3 class="font-bold text-sm text-gray-900 text-center mb-0.5">Learn Abstract Design</h3>
-            <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
-            <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                <span class="text-rose-400 line-through text-[11px]">$3.36</span>
-                <span class="text-green-600 font-extrabold text-sm">$3.36</span>
-            </div>
-            <button
-                class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all">
-                <span class="">Purchase</span>
-                <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-            </button>
-        </div>
-        <!-- Book Card 6 -->
-        <div
-            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-            <div
-                class="w-full h-64 bg-gradient-to-b from-rose-50 to-pink-100 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
-                <div
-                    class="w-36 h-52 bg-[#e2a89f] rounded shadow-md flex flex-col items-center justify-between p-3 border border-pink-300 text-gray-900">
-                    <span class="text-[9px] font-bold text-center uppercase tracking-wider">The Big Book of
-                        Science</span>
-                    <i class="fa-solid fa-rocket text-3xl text-rose-700"></i>
-                    <span class="text-[8px] text-gray-700">Cosmos Exploration</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i>
-            </div>
-            <h3 class="font-bold text-sm text-gray-900 text-center mb-0.5">Learn Abstract Design</h3>
-            <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
-            <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                <span class="text-rose-400 line-through text-[11px]">$3.36</span>
-                <span class="text-green-600 font-extrabold text-sm">$3.36</span>
-            </div>
-            <button
-                class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all">
-                <span class="">Purchase</span>
-                <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-            </button>
-        </div>
-        <!-- Book Card 7 -->
-        <div
-            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-            <div
-                class="w-full h-64 bg-gradient-to-b from-blue-50 to-slate-200 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
-                <div
-                    class="w-36 h-52 bg-[#475569] rounded shadow-md flex flex-col items-center justify-between p-3 border border-slate-500 text-white">
-                    <span class="text-[9px] font-bold text-center uppercase tracking-wider">Murdering Last
-                        Year</span>
-                    <i class="fa-solid fa-tree-city text-3xl text-slate-300"></i>
-                    <span class="text-[8px] text-slate-300">Crime Mystery</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i>
-            </div>
-            <h3 class="font-bold text-sm text-gray-900 text-center mb-0.5">Learn Abstract Design</h3>
-            <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
-            <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                <span class="text-rose-400 line-through text-[11px]">$3.36</span>
-                <span class="text-green-600 font-extrabold text-sm">$3.36</span>
-            </div>
-            <button
-                class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all">
-                <span class="">Purchase</span>
-                <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-            </button>
-        </div>
-        <!-- Book Card 8 -->
-        <div
-            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-            <div
-                class="w-full h-64 bg-gradient-to-b from-gray-100 to-amber-50 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
-                <div
-                    class="w-36 h-52 bg-[#0f172a] rounded shadow-md flex flex-col items-center justify-between p-3 border border-slate-800 text-white">
-                    <span class="text-[9px] font-bold text-center tracking-wide">EVERY THING YOU NEVER</span>
-                    <i class="fa-solid fa-lightbulb text-3xl text-amber-300"></i>
-                    <span class="text-[8px] text-slate-400">Psychology</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
-                    class="fa-solid fa-star"></i>
-            </div>
-            <h3 class="font-bold text-sm text-gray-900 text-center mb-0.5">Learn Abstract Design</h3>
-            <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
-            <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                <span class="text-rose-400 line-through text-[11px]">$3.36</span>
-                <span class="text-green-600 font-extrabold text-sm">$3.36</span>
-            </div>
-            <button
-                class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all">
-                <span class="">Purchase</span>
-                <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-            </button>
-        </div>
+        {% endfor %}
+        {% endfor %}
     </div>
-    <!-- Centered Load More Button -->
+
+    <!-- Centered Load More / Explore Store Button -->
     <div class="flex justify-center mt-12">
-        <button
-            class="bg-[#43A047] hover:bg-[#388E3C] text-white font-medium text-sm px-7 py-3 rounded-full flex items-center space-x-2 shadow-md shadow-green-600/20 transition-all">
+        <a href="{% url 'store' %}"
+            class="bg-[#43A047] hover:bg-[#388E3C] text-white font-medium text-sm px-8 py-3.5 rounded-full flex items-center space-x-2.5 shadow-md shadow-green-600/20 hover:shadow-lg transition-all transform hover:-translate-y-0.5">
             <i class="fa-solid fa-arrows-rotate text-xs"></i>
-            <span class="">Load More</span>
-        </button>
+            <span>Explore All in Store</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+        </a>
     </div>
 </section>
 <!-- END: PopularCollectionsSection -->

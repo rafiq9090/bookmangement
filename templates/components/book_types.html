@@ -3,25 +3,27 @@
     data-purpose="book-types-section">
     <!-- Section Header with Arrows -->
     <div class="flex items-center justify-between mb-8">
-        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Browse By Book
-            Types</h2>
+        <div>
+            <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Browse By Book Types</h2>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Discover titles organized by your favorite genres</p>
+        </div>
         <div class="flex items-center space-x-3">
-            <button aria-label="Previous"
+            <a href="{% url 'store' %}" aria-label="Store"
                 class="w-10 h-10 rounded-full border border-orange-200 text-[#FF5A1F] hover:bg-orange-50 flex items-center justify-center transition-colors">
                 <i class="fa-solid fa-arrow-left text-sm"></i>
-            </button>
-            <button aria-label="Next"
+            </a>
+            <a href="{% url 'store' %}" aria-label="Store"
                 class="w-10 h-10 rounded-full bg-[#FF5A1F] text-white hover:bg-orange-600 flex items-center justify-center transition-colors shadow-md shadow-orange-500/20">
                 <i class="fa-solid fa-arrow-right text-sm"></i>
-            </button>
+            </a>
         </div>
     </div>
     <!-- Categories Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
         <!-- Item 1: Non Fiction -->
-        <div
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex items-center space-x-4 cursor-pointer">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900">
+        <a href="{% url 'store' %}?category=non-fiction"
+            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -32,15 +34,15 @@
                 </svg>
             </div>
             <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug">Non Fiction</h4>
-                <p class="text-xs sm:text-sm text-gray-400">302 Items</p>
+                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">Non Fiction</h4>
+                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
             </div>
-        </div>
+        </a>
 
         <!-- Item 2: Fiction -->
-        <div
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex items-center space-x-4 cursor-pointer">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900">
+        <a href="{% url 'store' %}?category=fiction"
+            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
                     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
@@ -51,15 +53,15 @@
                 </svg>
             </div>
             <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug">Fiction</h4>
-                <p class="text-xs sm:text-sm text-gray-400">296 Items</p>
+                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">Fiction</h4>
+                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
             </div>
-        </div>
+        </a>
 
         <!-- Item 3: History -->
-        <div
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex items-center space-x-4 cursor-pointer">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900">
+        <a href="{% url 'store' %}?category=history"
+            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
                     <circle cx="10" cy="8" r="5"></circle>
@@ -72,15 +74,15 @@
                 </svg>
             </div>
             <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug">History</h4>
-                <p class="text-xs sm:text-sm text-gray-400">258 Items</p>
+                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">History</h4>
+                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
             </div>
-        </div>
+        </a>
 
         <!-- Item 4: Thriller -->
-        <div
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex items-center space-x-4 cursor-pointer">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900">
+        <a href="{% url 'store' %}?category=thriller"
+            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
                     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
@@ -90,15 +92,15 @@
                 </svg>
             </div>
             <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug">Thriller</h4>
-                <p class="text-xs sm:text-sm text-gray-400">169 Items</p>
+                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">Thriller</h4>
+                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
             </div>
-        </div>
+        </a>
 
         <!-- Item 5: Poetry -->
-        <div
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex items-center space-x-4 cursor-pointer">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900">
+        <a href="{% url 'store' %}?category=poetry"
+            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
                     <path d="m18 2 4 4-10 10H8v-4L18 2z"></path>
@@ -108,10 +110,10 @@
                 </svg>
             </div>
             <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug">Poetry</h4>
-                <p class="text-xs sm:text-sm text-gray-400">302 Items</p>
+                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">Poetry</h4>
+                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
             </div>
-        </div>
+        </a>
     </div>
 </section>
 <!-- END: BookTypesSection -->

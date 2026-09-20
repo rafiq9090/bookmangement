@@ -26,14 +26,16 @@
                 Books <span class="text-[#FF5A1F]">50% off</span> now!<br>Don't miss such a deal!
             </h3>
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
-                <button
-                    class="bg-[#FF5A1F] hover:bg-orange-600 text-white font-medium text-xs sm:text-sm px-6 py-2.5 rounded-full shadow-md shadow-orange-500/20 transition-all">
-                    Purchase Now
-                </button>
-                <button
-                    class="bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-medium text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all">
-                    Get Coupon
-                </button>
+                <a href="{% url 'store' %}"
+                    class="bg-[#FF5A1F] hover:bg-orange-600 text-white font-medium text-xs sm:text-sm px-6 py-2.5 rounded-full shadow-md shadow-orange-500/20 transition-all inline-flex items-center gap-2">
+                    <span>Purchase Now</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+                <a href="{% url 'cart' %}"
+                    class="bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-medium text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all inline-flex items-center gap-2">
+                    <i class="fa-solid fa-ticket text-xs text-[#FF5A1F]"></i>
+                    <span>Apply Coupon</span>
+                </a>
             </div>
         </div>
         <!-- Right Stack & 3D Mouse Graphic -->

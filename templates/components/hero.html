@@ -13,14 +13,16 @@
                 service.
             </p>
             <div class="flex flex-wrap items-center gap-4 pt-2">
-                <button
-                    class="bg-[#43A047] hover:bg-[#388E3C] text-white font-medium text-sm px-6 py-3 rounded-md shadow-md shadow-green-600/20 transition-all transform hover:-translate-y-0.5">
-                    Purchase Now
-                </button>
-                <button
-                    class="border border-gray-300 hover:border-gray-400 text-gray-700 bg-white/70 font-medium text-sm px-6 py-3 rounded-md transition-all">
-                    Explore Bookshop
-                </button>
+                <a href="{% url 'store' %}"
+                    class="bg-[#43A047] hover:bg-[#388E3C] text-white font-medium text-sm px-6 py-3 rounded-md shadow-md shadow-green-600/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2">
+                    <span>Purchase Now</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+                <a href="{% url 'store' %}"
+                    class="border border-gray-300 hover:border-gray-400 text-gray-700 bg-white/70 font-medium text-sm px-6 py-3 rounded-md transition-all inline-flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-xs text-[#FF5A1F]"></i>
+                    <span>Explore Bookshop</span>
+                </a>
             </div>
         </div>
         <!-- Right Hero Visuals with Bookshelf -->
@@ -30,8 +32,9 @@
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
             </div>
             <!-- Floating Price Badge -->
-            <div
-                class="absolute -top-4 left-6 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl px-4 py-2 shadow-xl shadow-gray-200/50 flex items-center space-x-3 z-20">
+            <a href="{% url 'store' %}?category=fiction"
+                class="absolute -top-4 left-6 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl px-4 py-2 shadow-xl shadow-gray-200/50 flex items-center space-x-3 z-20 hover:scale-105 transition-transform"
+                title="Browse Fiction Books">
                 <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 text-sm">
                     <i class="fa-solid fa-book-bookmark"></i>
                 </div>
@@ -39,7 +42,7 @@
                     <p class="text-[10px] font-bold text-[#FF5A1F] leading-tight">$53.00</p>
                     <p class="text-xs font-bold text-gray-800">2 Fiction Books</p>
                 </div>
-            </div>
+            </a>
             <!-- Social Proof Badge -->
             <div
                 class="absolute -top-2 right-4 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl px-4 py-2 shadow-xl shadow-gray-200/50 z-20 flex flex-col items-start">
