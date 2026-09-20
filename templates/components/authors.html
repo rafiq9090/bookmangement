@@ -1,19 +1,18 @@
 <!-- BEGIN: AuthorsSection -->
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center box-border"
     data-purpose="authors-section">
-    <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight mb-3">Meet our
-        Aouthor</h2>
+    <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight mb-3">Meet our Authors</h2>
     <p class="text-gray-500 text-xs sm:text-sm max-w-2xl mx-auto mb-12 leading-relaxed">
         Education is the most powerful weapon which you can use to change the world. Leadership is not about a
-        title or a designation. It's about impact, influence inspiration. Impact involves getting results
+        title or a designation. It's about impact, influence, and inspiration.
     </p>
     <!-- Carousel Container with Arrows -->
     <div class="relative flex items-center justify-center">
         <!-- Left Arrow -->
-        <button aria-label="Previous Author"
-            class="hidden md:flex absolute -left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-50 items-center justify-center text-gray-600 shadow-sm z-10">
+        <a href="{% url 'store' %}" aria-label="Previous Author"
+            class="hidden md:flex absolute -left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-50 items-center justify-center text-gray-600 shadow-sm z-10 transition-colors">
             <i class="fa-solid fa-arrow-left text-xs"></i>
-        </button>
+        </a>
         <!-- Authors Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
             <!-- Author Card 1 -->
@@ -86,15 +85,12 @@
                             class="fa-solid fa-arrow-right"></i></a>
                 </div>
             </div>
-                            class="fa-solid fa-comment-dots"></i></button>
-                </div>
-            </div>
         </div>
         <!-- Right Arrow -->
-        <button aria-label="Next Author"
-            class="hidden md:flex absolute -right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#43A047] text-white items-center justify-center shadow-md shadow-green-600/20 z-10">
+        <a href="{% url 'store' %}" aria-label="Next Author"
+            class="hidden md:flex absolute -right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#43A047] text-white items-center justify-center shadow-md shadow-green-600/20 z-10 hover:bg-green-700 transition-colors">
             <i class="fa-solid fa-arrow-right text-xs"></i>
-        </button>
+        </a>
     </div>
 </section>
 <!-- END: AuthorsSection -->
