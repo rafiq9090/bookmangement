@@ -67,10 +67,86 @@ def get_cart_items_for_request(request):
         return item_list, subtotal, len(item_list)
 
 
+POPULAR_CARD_STYLES = [
+    {
+        "bg_gradient": "from-slate-100 to-slate-200",
+        "book_bg": "bg-white",
+        "text_color": "text-gray-800",
+        "border": "border-gray-100",
+        "icon": "fa-wand-magic-sparkles",
+        "badge": "LEARN",
+        "sub": "Abstract Design",
+    },
+    {
+        "bg_gradient": "from-blue-50 to-indigo-100",
+        "book_bg": "bg-[#3b82f6]",
+        "text_color": "text-white",
+        "border": "border-blue-400",
+        "icon": "fa-snowflake",
+        "badge": "THE WINTER",
+        "sub": "Winter Stories",
+    },
+    {
+        "bg_gradient": "from-green-50 to-emerald-100",
+        "book_bg": "bg-[#74b886]",
+        "text_color": "text-white",
+        "border": "border-emerald-500",
+        "icon": "fa-dragon",
+        "badge": "LITTLE GREEN TALES",
+        "sub": "Crocodile Forest",
+    },
+    {
+        "bg_gradient": "from-red-50 to-amber-100",
+        "book_bg": "bg-[#e2e8f0]",
+        "text_color": "text-gray-800",
+        "border": "border-gray-300",
+        "icon": "fa-dove",
+        "badge": "THE BIRDS",
+        "sub": "Day in Forest",
+    },
+    {
+        "bg_gradient": "from-gray-100 to-slate-200",
+        "book_bg": "bg-[#1e293b]",
+        "text_color": "text-white",
+        "border": "border-slate-700",
+        "icon": "fa-moon",
+        "badge": "BLACK NIGHT",
+        "sub": "Dark Fiction",
+    },
+    {
+        "bg_gradient": "from-rose-50 to-pink-100",
+        "book_bg": "bg-[#e2a89f]",
+        "text_color": "text-gray-900",
+        "border": "border-pink-300",
+        "icon": "fa-rocket",
+        "badge": "BIG SCIENCE",
+        "sub": "Cosmos Exploration",
+    },
+    {
+        "bg_gradient": "from-blue-50 to-slate-200",
+        "book_bg": "bg-[#475569]",
+        "text_color": "text-white",
+        "border": "border-slate-500",
+        "icon": "fa-tree-city",
+        "badge": "LAST YEAR",
+        "sub": "Crime Mystery",
+    },
+    {
+        "bg_gradient": "from-gray-100 to-amber-50",
+        "book_bg": "bg-[#0f172a]",
+        "text_color": "text-white",
+        "border": "border-slate-800",
+        "icon": "fa-lightbulb",
+        "badge": "EVERY THING",
+        "sub": "Psychology Study",
+    },
+]
+
+
 def home_view(request):
     """
     Renders the modern storefront homepage, passing real database categories,
-    active book listings, and user cart status to the template.
+    active book listings with curated card art and pricing, and user cart status.
     """
     try:
         categories = Category.objects.all()[:10]
@@ -86,6 +162,18 @@ def home_view(request):
     except Exception:
         listings = []
 
+    featured_books = []
+    for i, listing in enumerate(listings):
+        style = POPULAR_CARD_STYLES[i % len(POPULAR_CARD_STYLES)]
+        original_price = (listing.price * Decimal("2.00")).quantize(Decimal("0.01"))
+        featured_books.append(
+            {
+                "listing": listing,
+                "original_price": original_price,
+                "style": style,
+            }
+        )
+
     _, _, cart_count = get_cart_items_for_request(request)
 
     return render(
@@ -94,6 +182,7 @@ def home_view(request):
         {
             "categories": categories,
             "listings": listings,
+            "featured_books": featured_books,
             "cart_count": cart_count,
         },
     )
