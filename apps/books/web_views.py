@@ -98,7 +98,7 @@ def store_view(request):
 
     return render(
         request,
-        "store.html",
+        "books/store.html",
         {
             "page_obj": page_obj,
             "categories": categories,

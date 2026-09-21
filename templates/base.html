@@ -63,6 +63,9 @@
         }
     </style>
 
+    <!-- Custom Micro-interactions & Styles -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -80,6 +83,8 @@
     <!-- Global Footer -->
     {% include "components/footer.html" %}
 
+    <!-- Global Scripts -->
+    <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 
