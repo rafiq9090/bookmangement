@@ -11,9 +11,11 @@
     {% if messages %}
     <div class="max-w-4xl mx-auto space-y-2 mb-6">
         {% for message in messages %}
-        <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2.5 shadow-sm
+        <div
+            class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-2.5 shadow-sm
             {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
-            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% else %}fa-circle-check text-green-500{% endif %} text-sm"></i>
+            <i
+                class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% else %}fa-circle-check text-green-500{% endif %} text-sm"></i>
             <span>{{ message }}</span>
         </div>
         {% endfor %}
@@ -21,20 +23,33 @@
     {% endif %}
 
     <!-- Profile Header Card -->
-    <div class="bg-gradient-to-r from-orange-50/80 via-white to-green-50/70 rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+    <div
+        class="bg-gradient-to-r from-orange-50/80 via-white to-orange-50/40 rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
             <!-- User Avatar -->
             <div class="relative group">
-                <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#FF5A1F] to-amber-500 text-white font-heading font-black text-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 overflow-hidden border-2 border-white">
+                <div id="profileAvatarDisplay"
+                    class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#FF5A1F] to-amber-500 text-white font-heading font-black text-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 overflow-hidden border-2 border-white">
                     {% if profile_user.avatar %}
-                    <img src="{{ profile_user.avatar.url }}" alt="{{ profile_user.first_name }}" class="w-full h-full object-cover">
+                    <img id="profileAvatarImg" src="{{ profile_user.avatar.url }}" alt="{{ profile_user.first_name }}"
+                        class="w-full h-full object-cover">
                     {% else %}
-                    <span>{{ profile_user.first_name|default:profile_user.email|slice:":1"|upper }}</span>
+                    <span id="profileAvatarInitial">{{ profile_user.first_name|default:profile_user.email|slice:":1"|upper }}</span>
                     {% endif %}
                 </div>
-                <button type="button" onclick="switchTab('info')" class="absolute -bottom-1 -right-1 w-7 h-7 bg-white text-gray-700 rounded-lg shadow border border-gray-200 flex items-center justify-center hover:text-[#FF5A1F] transition-colors" title="Edit avatar">
+                <!-- Camera Button directly triggers file chooser -->
+                <button type="button" onclick="document.getElementById('directAvatarInput').click()"
+                    class="absolute -bottom-1 -right-1 w-7 h-7 bg-white text-gray-700 rounded-lg shadow border border-gray-200 flex items-center justify-center hover:text-[#FF5A1F] hover:border-[#FF5A1F] transition-all cursor-pointer"
+                    title="Upload Profile Picture">
                     <i class="fa-solid fa-camera text-[10px]"></i>
                 </button>
+
+                <!-- Hidden Direct Upload Form (Saves to database immediately on file select) -->
+                <form id="directAvatarForm" method="POST" action="{% url 'profile' %}" enctype="multipart/form-data" class="hidden">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="update_avatar">
+                    <input type="file" id="directAvatarInput" name="avatar" accept="image/*" onchange="previewAndSubmitAvatar(this)">
+                </form>
             </div>
 
             <!-- Identity Info -->
@@ -44,14 +59,16 @@
                         {{ profile_user.first_name|default:"" }} {{ profile_user.last_name|default:"" }}
                         {% if not profile_user.first_name and not profile_user.last_name %}{{ profile_user.email }}{% endif %}
                     </h1>
-                    
+
                     {% if profile_user.is_seller %}
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-[#43A047]">
+                    <span
+                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-100 text-[#FF5A1F]">
                         <i class="fa-solid fa-circle-check text-[10px]"></i>
                         <span>Verified Seller</span>
                     </span>
                     {% else %}
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-100 text-[#FF5A1F]">
+                    <span
+                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-100 text-[#FF5A1F]">
                         <i class="fa-solid fa-user-check text-[10px]"></i>
                         <span>Verified Buyer</span>
                     </span>
@@ -63,7 +80,8 @@
                     {% if profile_user.phone_number %}
                     <span class="flex items-center gap-1.5"><i class="fa-solid fa-phone text-gray-400"></i> {{ profile_user.phone_number }}</span>
                     {% endif %}
-                    <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-gray-400"></i> Joined {{ profile_user.created_at|date:"M Y" }}</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-gray-400"></i> Joined
+                        {{ profile_user.created_at|date:"M Y" }}</span>
                 </div>
             </div>
         </div>
@@ -71,17 +89,22 @@
         <!-- Quick Action Buttons -->
         <div class="flex items-center gap-3 w-full sm:w-auto justify-center">
             {% if profile_user.is_seller %}
-            <a href="{% url 'seller_listings' %}" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#FF5A1F] text-white text-xs font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600 transition-all">
-                <i class="fa-solid fa-store"></i>
-                <span>Seller Dashboard</span>
+            <a href="{% url 'seller_dashboard' %}"
+                class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#FF5A1F] text-white text-xs font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all group"
+                title="Switch to Seller Dashboard">
+                <i class="fa-solid fa-repeat text-xs group-hover:rotate-180 transition-transform"></i>
+                <span>Switch to Seller Account</span>
             </a>
             {% else %}
-            <a href="{% url 'seller_apply' %}" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#43A047] text-white text-xs font-bold shadow-md shadow-green-600/25 hover:bg-green-700 transition-all">
+            <a href="{% url 'seller_apply' %}"
+                class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#FF5A1F] text-white text-xs font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600 transition-all">
                 <i class="fa-solid fa-bolt"></i>
                 <span>Become a Seller</span>
             </a>
             {% endif %}
-            <a href="{% url 'logout' %}" class="px-3.5 py-2.5 rounded-2xl border border-gray-200 text-gray-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 text-xs font-bold transition-all" title="Sign Out">
+            <a href="{% url 'logout' %}"
+                class="px-3.5 py-2.5 rounded-2xl border border-gray-200 text-gray-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 text-xs font-bold transition-all"
+                title="Sign Out">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
             </a>
         </div>
@@ -89,9 +112,9 @@
 
     <!-- Main Content Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- Navigation Subtabs Sidebar (3 Cols) -->
-        <div class="lg:col-span-3 bg-white rounded-3xl border border-gray-100 p-4 shadow-sm space-y-1">
+
+        <!-- Navigation Subtabs Sidebar (Desktop only, hidden on mobile view) -->
+        <div class="hidden lg:flex lg:col-span-3 bg-white rounded-3xl border border-gray-100 p-4 shadow-sm flex-col space-y-1">
             <button type="button" onclick="switchTab('info')" id="tabNavInfo"
                 class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all {% if active_tab == 'info' %}bg-orange-50 text-[#FF5A1F]{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
                 <span class="flex items-center gap-3">
@@ -129,43 +152,70 @@
             </button>
 
             <div class="pt-3 mt-3 border-t border-gray-100">
-                <a href="{% url 'seller_apply' %}" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold text-[#43A047] hover:bg-green-50 transition-all">
+                {% if profile_user.is_seller %}
+                <a href="{% url 'seller_dashboard' %}"
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold text-[#FF5A1F] bg-orange-50/70 hover:bg-orange-100/90 border border-orange-200/80 transition-all group"
+                    title="Switch to Seller Dashboard">
+                    <span class="flex items-center gap-3">
+                        <i class="fa-solid fa-repeat text-sm w-4 group-hover:rotate-180 transition-transform"></i>
+                        <span>Switch to Seller Account</span>
+                    </span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+                {% else %}
+                <a href="{% url 'seller_apply' %}"
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold text-[#43A047] hover:bg-green-50 transition-all">
                     <span class="flex items-center gap-3">
                         <i class="fa-solid fa-store text-sm w-4"></i>
-                        <span>{% if profile_user.is_seller %}Seller Hub Settings{% else %}Become a Seller{% endif %}</span>
+                        <span>Become a Seller</span>
                     </span>
                     <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                 </a>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Tab Content Area (9 Cols) -->
-        <div class="lg:col-span-9 bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm">
-            
+        <!-- Tab Content Area (Full width on mobile, 9 Cols on Desktop) -->
+        <div class="w-full lg:col-span-9 bg-white rounded-3xl border border-gray-100 p-4 sm:p-8 shadow-sm">
+
             <!-- ================= TAB 1: PERSONAL INFORMATION ================= -->
             <div id="tabContentInfo" class="{% if active_tab != 'info' %}hidden{% endif %}">
-                <div class="border-b border-gray-100 pb-5 mb-6 flex items-center justify-between">
-                    <div>
-                        <h2 class="font-heading font-black text-xl text-gray-900">Personal Information</h2>
-                        <p class="text-xs text-gray-500 mt-1">Manage your account profile details and contact information.</p>
+                <div
+                    class="border-b border-gray-100 pb-4 sm:pb-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3">
+                            <h2 class="font-heading font-black text-lg sm:text-xl text-gray-900 leading-tight">Personal Information</h2>
+                            <!-- Pen / Edit Toggle Button -->
+                            <button type="button" id="editProfileToggleBtn" onclick="toggleEditProfile()"
+                                class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-orange-50 text-gray-700 hover:text-[#FF5A1F] hover:border-[#FF5A1F] text-xs font-bold shadow-sm transition-all cursor-pointer whitespace-nowrap"
+                                title="Edit Personal Information">
+                                <i id="editProfileIcon" class="fa-solid fa-pen text-[11px] text-[#FF5A1F]"></i>
+                                <span id="editProfileBtnText">Edit Profile</span>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Manage your account profile details and contact
+                            information.</p>
                     </div>
-                    <span class="text-xs font-semibold text-gray-400">UID: {{ profile_user.id|stringformat:"04d" }}</span>
+                    <span class="text-xs font-semibold text-gray-400 hidden sm:inline-block">UID: {{ profile_user.id|stringformat:"04d" }}</span>
                 </div>
 
-                <form method="POST" action="{% url 'profile' %}" enctype="multipart/form-data" class="space-y-6">
+                <form id="personalInfoForm" method="POST" action="{% url 'profile' %}" enctype="multipart/form-data"
+                    class="space-y-6">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="update_info">
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-2">First Name</label>
-                            <input type="text" name="first_name" value="{{ profile_user.first_name }}"
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20 focus:bg-white transition-all">
+                            <input type="text" id="profileFirstName" name="first_name"
+                                value="{{ profile_user.first_name }}" readonly
+                                class="profile-input w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-800 focus:outline-none transition-all cursor-default">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-2">Last Name</label>
-                            <input type="text" name="last_name" value="{{ profile_user.last_name }}"
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20 focus:bg-white transition-all">
+                            <input type="text" id="profileLastName" name="last_name"
+                                value="{{ profile_user.last_name }}" readonly
+                                class="profile-input w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-800 focus:outline-none transition-all cursor-default">
                         </div>
                     </div>
 
@@ -177,20 +227,22 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-2">Phone Number</label>
-                            <input type="text" name="phone_number" value="{{ profile_user.phone_number }}" placeholder="+880 1712 345678"
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20 focus:bg-white transition-all">
+                            <input type="text" id="profilePhoneNumber" name="phone_number"
+                                value="{{ profile_user.phone_number }}" placeholder="+880 1712 345678" readonly
+                                class="profile-input w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-800 focus:outline-none transition-all cursor-default">
                         </div>
                     </div>
 
-                    <div>
+                    <div id="avatarUploadContainer" class="hidden">
                         <label class="block text-xs font-bold text-gray-700 mb-2">Profile Avatar Photo</label>
-                        <input type="file" name="avatar" accept="image/*"
+                        <input type="file" id="profileAvatar" name="avatar" accept="image/*" disabled
                             class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs text-gray-600 file:mr-4 file:py-1.5 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#FF5A1F] file:text-white hover:file:bg-orange-600">
                     </div>
 
-                    <div class="pt-4 flex justify-end">
+                    <!-- Bottom Action Container: Hidden by default until Edit (Pen) is clicked -->
+                    <div id="saveProfileBtnContainer" class="pt-4 flex items-center justify-end hidden">
                         <button type="submit"
-                            class="px-6 py-3 bg-[#FF5A1F] hover:bg-orange-600 text-white rounded-2xl text-xs font-bold shadow-md shadow-orange-500/30 transition-all flex items-center gap-2">
+                            class="px-6 py-3 bg-[#FF5A1F] hover:bg-orange-600 text-white rounded-2xl text-xs font-bold shadow-md shadow-orange-500/30 transition-all flex items-center gap-2 cursor-pointer">
                             <i class="fa-solid fa-floppy-disk"></i>
                             <span>Save Profile Changes</span>
                         </button>
@@ -200,10 +252,12 @@
 
             <!-- ================= TAB 2: SAVED ADDRESSES ================= -->
             <div id="tabContentAddresses" class="{% if active_tab != 'addresses' %}hidden{% endif %}">
-                <div class="border-b border-gray-100 pb-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div
+                    class="border-b border-gray-100 pb-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 class="font-heading font-black text-xl text-gray-900">Delivery Addresses</h2>
-                        <p class="text-xs text-gray-500 mt-1">Manage where your books are shipped by our partner couriers.</p>
+                        <p class="text-xs text-gray-500 mt-1">Manage where your books are shipped by our partner
+                            couriers.</p>
                     </div>
                     <button type="button" onclick="toggleAddressForm()"
                         class="px-4 py-2.5 bg-[#43A047] hover:bg-green-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-green-600/20 transition-all flex items-center gap-2 self-start">
@@ -236,7 +290,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Street Address, House & Flat</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Street Address, House &
+                                Flat</label>
                             <input type="text" name="street_address" required placeholder="House 12, Road 4, Sector 7"
                                 class="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 focus:outline-none focus:border-[#43A047]">
                         </div>
@@ -261,12 +316,16 @@
 
                         <div class="flex items-center justify-between pt-2">
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" name="is_default" class="w-4 h-4 rounded text-[#43A047] focus:ring-[#43A047]">
+                                <input type="checkbox" name="is_default"
+                                    class="w-4 h-4 rounded text-[#43A047] focus:ring-[#43A047]">
                                 <span class="text-xs font-bold text-gray-700">Set as default shipping address</span>
                             </label>
                             <div class="flex items-center space-x-2">
-                                <button type="button" onclick="toggleAddressForm()" class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-500 hover:text-gray-800">Cancel</button>
-                                <button type="submit" class="px-5 py-2 bg-[#43A047] text-white rounded-xl text-xs font-bold hover:bg-green-700 shadow-sm">Save Address</button>
+                                <button type="button" onclick="toggleAddressForm()"
+                                    class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-500 hover:text-gray-800">Cancel</button>
+                                <button type="submit"
+                                    class="px-5 py-2 bg-[#43A047] text-white rounded-xl text-xs font-bold hover:bg-green-700 shadow-sm">Save
+                                    Address</button>
                             </div>
                         </div>
                     </form>
@@ -275,13 +334,15 @@
                 <!-- Existing Addresses Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {% for addr in addresses %}
-                    <div class="p-5 rounded-2xl border {% if addr.is_default %}border-green-300 bg-green-50/20 shadow-sm{% else %}border-gray-200 bg-white{% endif %} relative flex flex-col justify-between">
+                    <div
+                        class="p-5 rounded-2xl border {% if addr.is_default %}border-green-300 bg-green-50/20 shadow-sm{% else %}border-gray-200 bg-white{% endif %} relative flex flex-col justify-between">
                         <div>
                             <div class="flex items-start justify-between mb-2">
                                 <div class="flex items-center space-x-2">
                                     <h4 class="font-bold text-xs text-gray-900">{{ addr.recipient_name }}</h4>
                                     {% if addr.is_default %}
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-[#43A047]">Default</span>
+                                    <span
+                                        class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-[#43A047]">Default</span>
                                     {% endif %}
                                 </div>
                                 <span class="text-xs text-gray-500">{{ addr.phone_number }}</span>
@@ -292,13 +353,16 @@
 
                         <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
                             {% if not addr.is_default %}
-                            <a href="{% url 'address_action' id=addr.id action='set_default' %}" class="font-bold text-[#FF5A1F] hover:underline">
+                            <a href="{% url 'address_action' id=addr.id action='set_default' %}"
+                                class="font-bold text-[#FF5A1F] hover:underline">
                                 Set as Default
                             </a>
                             {% else %}
                             <span class="text-gray-400 font-medium">Primary Destination</span>
                             {% endif %}
-                            <a href="{% url 'address_action' id=addr.id action='delete' %}" onclick="return confirm('Remove this address?')" class="text-red-500 hover:text-red-700 font-semibold">
+                            <a href="{% url 'address_action' id=addr.id action='delete' %}"
+                                onclick="return confirm('Remove this address?')"
+                                class="text-red-500 hover:text-red-700 font-semibold">
                                 <i class="fa-regular fa-trash-can"></i>
                             </a>
                         </div>
@@ -306,7 +370,8 @@
                     {% empty %}
                     <div class="col-span-2 text-center py-10 text-gray-400">
                         <i class="fa-solid fa-map-location-dot text-3xl mb-2 text-gray-300"></i>
-                        <p class="text-xs font-semibold">No saved addresses found. Add one above for instant checkout.</p>
+                        <p class="text-xs font-semibold">No saved addresses found. Add one above for instant checkout.
+                        </p>
                     </div>
                     {% endfor %}
                 </div>
@@ -314,12 +379,14 @@
 
             <!-- ================= TAB 3: ORDER HISTORY ================= -->
             <div id="tabContentOrders" class="{% if active_tab != 'orders' %}hidden{% endif %}">
-                <div class="border-b border-gray-100 pb-5 mb-6 flex items-center justify-between">
+                <div class="border-b border-gray-100 pb-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h2 class="font-heading font-black text-xl text-gray-900">Your Orders</h2>
-                        <p class="text-xs text-gray-500 mt-1">Review purchase history, courier status, and package items.</p>
+                        <p class="text-xs text-gray-500 mt-1">Review purchase history, courier status, and package
+                            items.</p>
                     </div>
-                    <a href="{% url 'parcel_tracking' %}" class="text-xs font-bold text-[#FF5A1F] hover:underline flex items-center gap-1.5">
+                    <a href="{% url 'parcel_tracking' %}"
+                        class="text-xs font-bold text-[#FF5A1F] hover:underline flex items-center gap-1.5 self-start sm:self-auto">
                         <i class="fa-solid fa-location-dot text-xs"></i>
                         <span>Live Parcel Tracking →</span>
                     </a>
@@ -327,42 +394,48 @@
 
                 <div class="space-y-4">
                     {% for ord in orders %}
-                    <div class="p-5 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all bg-white shadow-sm space-y-4">
-                        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-100">
-                            <div>
+                    <div
+                        class="p-4 sm:p-5 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all bg-white shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-gray-100">
+                            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                                 <span class="text-xs font-bold text-gray-900">Order #{{ ord.id|stringformat:"s"|slice:":8"|upper }}</span>
-                                <span class="text-[11px] text-gray-400 ml-2">{{ ord.created_at|date:"M d, Y • h:i A" }}</span>
+                                <span class="text-[11px] text-gray-400 whitespace-nowrap">{{ ord.created_at|date:"M d, Y • h:i A" }}</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold 
+                            <div class="flex items-center justify-between sm:justify-end gap-2.5">
+                                <span
+                                    class="px-2.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap
                                     {% if ord.status == 'PAID' %}bg-green-100 text-[#43A047]{% else %}bg-amber-100 text-amber-700{% endif %}">
                                     {{ ord.get_status_display }}
                                 </span>
-                                <span class="font-black text-xs text-gray-900">${{ ord.total_amount }}</span>
+                                <span class="font-black text-sm text-gray-900">${{ ord.total_amount }}</span>
                             </div>
                         </div>
 
                         <!-- Shipments inside this order -->
                         {% for shipment in ord.shipments.all %}
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50 p-3 rounded-xl text-xs">
-                            <div class="space-y-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-gray-800">Consignment: {{ shipment.tracking_number }}</span>
-                                    <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">{{ shipment.get_status_display }}</span>
+                        <div
+                            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50 p-3 sm:p-3.5 rounded-xl text-xs">
+                            <div class="space-y-1.5">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-bold text-gray-800 break-all">Consignment: <span class="font-mono text-gray-700">{{ shipment.tracking_number }}</span></span>
+                                    <span
+                                        class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap inline-flex items-center">{{ shipment.get_status_display }}</span>
                                 </div>
-                                <p class="text-[11px] text-gray-500">Carrier: {{ shipment.courier_name|default:"Steadfast Courier" }}</p>
+                                <p class="text-[11px] text-gray-500">Carrier: <span class="font-medium text-gray-700">{{ shipment.courier_name|default:"Steadfast Courier" }}</span></p>
                             </div>
                             <a href="{% url 'parcel_tracking_detail' tracking_number=shipment.tracking_number %}"
-                                class="px-3.5 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-700 hover:text-[#FF5A1F] hover:border-[#FF5A1F] font-bold text-[11px] shadow-sm transition-all self-start sm:self-auto flex items-center gap-1.5">
+                                class="w-full sm:w-auto px-3.5 py-2 sm:py-1.5 rounded-xl bg-white border border-gray-200 text-gray-700 hover:text-[#FF5A1F] hover:border-[#FF5A1F] font-bold text-xs sm:text-[11px] shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
                                 <i class="fa-solid fa-truck-fast text-[#43A047]"></i>
                                 <span>Track Shipment</span>
                             </a>
                         </div>
                         {% endfor %}
 
-                        <div class="pt-2 flex justify-end">
-                            <a href="{% url 'order_detail' id=ord.id %}" class="text-xs font-bold text-[#FF5A1F] hover:underline">
-                                View Order Breakdown & Receipt →
+                        <div class="pt-1 sm:pt-2 flex justify-end">
+                            <a href="{% url 'order_detail' id=ord.id %}"
+                                class="text-xs font-bold text-[#FF5A1F] hover:underline flex items-center gap-1">
+                                <span>View Order Breakdown & Receipt</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
                             </a>
                         </div>
                     </div>
@@ -370,8 +443,10 @@
                     <div class="text-center py-12 text-gray-400">
                         <i class="fa-solid fa-box-open text-4xl mb-3 text-gray-300"></i>
                         <h4 class="font-bold text-sm text-gray-700">No Orders Placed Yet</h4>
-                        <p class="text-xs text-gray-500 mt-1 mb-4">Discover rare gems, fiction bestsellers, and university textbooks.</p>
-                        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF5A1F] text-white rounded-xl text-xs font-bold shadow-md shadow-orange-500/20">
+                        <p class="text-xs text-gray-500 mt-1 mb-4">Discover rare gems, fiction bestsellers, and
+                            university textbooks.</p>
+                        <a href="{% url 'store' %}"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF5A1F] text-white rounded-xl text-xs font-bold shadow-md shadow-orange-500/20">
                             <i class="fa-solid fa-bag-shopping"></i>
                             <span>Explore Store</span>
                         </a>
@@ -384,7 +459,8 @@
             <div id="tabContentSecurity" class="{% if active_tab != 'security' %}hidden{% endif %}">
                 <div class="border-b border-gray-100 pb-5 mb-6">
                     <h2 class="font-heading font-black text-xl text-gray-900">Password & Security</h2>
-                    <p class="text-xs text-gray-500 mt-1">Update your password and review account protection settings.</p>
+                    <p class="text-xs text-gray-500 mt-1">Update your password and review account protection settings.
+                    </p>
                 </div>
 
                 <form method="POST" action="{% url 'profile' %}" class="max-w-md space-y-4">
@@ -405,7 +481,8 @@
 
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1.5">Confirm New Password</label>
-                        <input type="password" name="confirm_new_password" required minlength="6" placeholder="Repeat new password"
+                        <input type="password" name="confirm_new_password" required minlength="6"
+                            placeholder="Repeat new password"
                             class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20 focus:bg-white transition-all">
                     </div>
 
@@ -423,27 +500,150 @@
 </main>
 
 <script>
-function switchTab(tabId) {
-    const tabs = ['info', 'addresses', 'orders', 'security'];
-    tabs.forEach(t => {
-        const content = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
-        const nav = document.getElementById('tabNav' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (t === tabId) {
-            content.classList.remove('hidden');
-            nav.classList.add('bg-orange-50', 'text-[#FF5A1F]');
-            nav.classList.remove('text-gray-600');
-        } else {
-            content.classList.add('hidden');
-            nav.classList.remove('bg-orange-50', 'text-[#FF5A1F]');
-            nav.classList.add('text-gray-600');
-        }
-    });
-    history.replaceState(null, '', '/profile/?tab=' + tabId);
-}
+    function switchTab(tabId) {
+        const tabs = ['info', 'addresses', 'orders', 'security'];
+        tabs.forEach(t => {
+            const content = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
+            const nav = document.getElementById('tabNav' + t.charAt(0).toUpperCase() + t.slice(1));
+            if (t === tabId) {
+                content.classList.remove('hidden');
+                nav.classList.add('bg-orange-50', 'text-[#FF5A1F]');
+                nav.classList.remove('text-gray-600');
+            } else {
+                content.classList.add('hidden');
+                nav.classList.remove('bg-orange-50', 'text-[#FF5A1F]');
+                nav.classList.add('text-gray-600');
+            }
+        });
+        history.replaceState(null, '', '/profile/?tab=' + tabId);
+    }
 
-function toggleAddressForm() {
-    const card = document.getElementById('newAddressFormCard');
-    card.classList.toggle('hidden');
-}
+    function toggleAddressForm() {
+        const card = document.getElementById('newAddressFormCard');
+        card.classList.toggle('hidden');
+    }
+
+    // Personal Information Edit / View Mode Toggle
+    let isEditingProfile = false;
+    const originalProfileData = {
+        firstName: "{{ profile_user.first_name|default:''|escapejs }}",
+        lastName: "{{ profile_user.last_name|default:''|escapejs }}",
+        phoneNumber: "{{ profile_user.phone_number|default:''|escapejs }}"
+    };
+
+    function toggleEditProfile() {
+        if (isEditingProfile) {
+            cancelEditProfile();
+        } else {
+            enableEditProfile();
+        }
+    }
+
+    function enableEditProfile() {
+        isEditingProfile = true;
+
+        // Enable inputs
+        const inputs = document.querySelectorAll('.profile-input');
+        inputs.forEach(input => {
+            input.removeAttribute('readonly');
+            input.classList.remove('bg-gray-50', 'cursor-default');
+            input.classList.add('bg-white', 'border-[#FF5A1F]', 'ring-2', 'ring-[#FF5A1F]/20');
+        });
+
+        // Reveal avatar file upload
+        const avatarContainer = document.getElementById('avatarUploadContainer');
+        const avatarInput = document.getElementById('profileAvatar');
+        if (avatarContainer && avatarInput) {
+            avatarContainer.classList.remove('hidden');
+            avatarInput.removeAttribute('disabled');
+        }
+
+        // Show Save Profile Changes button
+        const saveContainer = document.getElementById('saveProfileBtnContainer');
+        if (saveContainer) {
+            saveContainer.classList.remove('hidden');
+        }
+
+        // Toggle Header Button to Cancel State
+        const toggleBtn = document.getElementById('editProfileToggleBtn');
+        const icon = document.getElementById('editProfileIcon');
+        const text = document.getElementById('editProfileBtnText');
+        if (toggleBtn && icon && text) {
+            icon.className = 'fa-solid fa-xmark text-[11px] text-rose-500';
+            text.innerText = 'Cancel';
+            toggleBtn.classList.add('border-rose-200', 'hover:bg-rose-50', 'text-rose-600', 'hover:border-rose-300');
+            toggleBtn.classList.remove('hover:border-[#FF5A1F]', 'hover:bg-orange-50', 'text-gray-700');
+        }
+
+        const firstInput = document.getElementById('profileFirstName');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    }
+
+    function cancelEditProfile() {
+        isEditingProfile = false;
+
+        // Reset form values to original
+        const firstInput = document.getElementById('profileFirstName');
+        const lastInput = document.getElementById('profileLastName');
+        const phoneInput = document.getElementById('profilePhoneNumber');
+
+        if (firstInput) firstInput.value = originalProfileData.firstName;
+        if (lastInput) lastInput.value = originalProfileData.lastName;
+        if (phoneInput) phoneInput.value = originalProfileData.phoneNumber;
+
+        // Make inputs readonly again
+        const inputs = document.querySelectorAll('.profile-input');
+        inputs.forEach(input => {
+            input.setAttribute('readonly', 'readonly');
+            input.classList.add('bg-gray-50', 'cursor-default');
+            input.classList.remove('bg-white', 'border-[#FF5A1F]', 'ring-2', 'ring-[#FF5A1F]/20');
+        });
+
+        // Hide and reset avatar upload
+        const avatarContainer = document.getElementById('avatarUploadContainer');
+        const avatarInput = document.getElementById('profileAvatar');
+        if (avatarContainer && avatarInput) {
+            avatarContainer.classList.add('hidden');
+            avatarInput.setAttribute('disabled', 'disabled');
+            avatarInput.value = '';
+        }
+
+        // Hide Save Profile Changes button
+        const saveContainer = document.getElementById('saveProfileBtnContainer');
+        if (saveContainer) {
+            saveContainer.classList.add('hidden');
+        }
+
+        // Toggle Header Button back to Edit / Pen icon
+        const toggleBtn = document.getElementById('editProfileToggleBtn');
+        const icon = document.getElementById('editProfileIcon');
+        const text = document.getElementById('editProfileBtnText');
+        if (toggleBtn && icon && text) {
+            icon.className = 'fa-solid fa-pen text-[11px] text-[#FF5A1F]';
+            text.innerText = 'Edit Profile';
+            toggleBtn.classList.remove('border-rose-200', 'hover:bg-rose-50', 'text-rose-600', 'hover:border-rose-300');
+            toggleBtn.classList.add('hover:border-[#FF5A1F]', 'hover:bg-orange-50', 'text-gray-700');
+        }
+    }
+
+    function previewAndSubmitAvatar(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const display = document.getElementById('profileAvatarDisplay');
+                if (display) {
+                    display.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover animate-pulse">`;
+                }
+                const form = document.getElementById('directAvatarForm');
+                if (form) {
+                    form.submit();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 </script>
 {% endblock %}

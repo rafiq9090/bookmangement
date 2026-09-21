@@ -36,7 +36,14 @@ class CartView(APIView):
             return Response({"error": "Cannot add your own listing to cart."}, status=status.HTTP_400_BAD_REQUEST)
 
         cart, _ = Cart.objects.get_or_create(user=request.user)
-        item, created = CartItem.objects.get_or_create(cart=cart, listing=listing)
+        existing_item = CartItem.objects.filter(listing=listing).first()
+        if existing_item:
+            if existing_item.cart_id != cart.id:
+                existing_item.cart = cart
+                existing_item.save(update_fields=["cart"])
+            item = existing_item
+        else:
+            item = CartItem.objects.create(cart=cart, listing=listing)
 
         return Response(CartItemSerializer(item).data, status=status.HTTP_201_CREATED)
 

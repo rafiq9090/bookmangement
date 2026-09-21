@@ -1,107 +1,83 @@
 <!-- BEGIN: AuthorsSection -->
-<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center box-border"
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 text-center box-border"
     data-purpose="authors-section">
-    <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight mb-3">Meet our Authors</h2>
-    <p class="text-gray-500 text-xs sm:text-sm max-w-2xl mx-auto mb-12 leading-relaxed">
-        Education is the most powerful weapon which you can use to change the world. Leadership is not about a
-        title or a designation. It's about impact, influence, and inspiration.
-    </p>
-    <!-- Carousel Container with Arrows -->
-    <div class="relative flex items-center justify-center">
-        <!-- Left Arrow -->
-        <a href="{% url 'store' %}" aria-label="Previous Author"
-            class="hidden md:flex absolute -left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-50 items-center justify-center text-gray-600 shadow-sm z-10 transition-colors">
-            <i class="fa-solid fa-arrow-left text-xs"></i>
+    <!-- Header with eyebrow pill and View All link -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 text-left gap-4">
+        <div>
+            <h2 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight">
+                Meet Our <span class="text-[#FF5A1F]">Authors</span>
+            </h2>
+            <p class="text-gray-500 text-xs sm:text-sm max-w-xl mt-1 leading-relaxed">
+                Discover exceptional writers, researchers, and thought leaders whose works populate our marketplace.
+            </p>
+        </div>
+
+        <a href="{% url 'authors_list' %}"
+            class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#FF5A1F] hover:text-orange-600 transition-colors self-start sm:self-auto group">
+            <span>View All Authors</span>
+
+            <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-0.5 transition-transform"></i>
         </a>
-        <!-- Authors Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
-            <!-- Author Card 1 -->
-            <div class="flex flex-col items-center">
-                <a href="{% url 'store' %}?q=Ronald"
-                    class="w-64 h-80 rounded-2xl overflow-hidden shadow-lg relative group bg-gray-900 block hover:scale-[1.02] transition-transform"
-                    title="View Ronald Richards's Books">
-                    <img alt="Ronald Richards"
-                        class="w-full h-full object-cover grayscale contrast-125 group-hover:scale-105 transition-transform duration-300"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-G7CCsBojEGrVOgYrhahQgF9o-CE2okiHIl4L7c7LI_ZknVR9d42hvQmNwOoanXxty6Q2sLm3_UKfVxi2Q2D8AGowurPoORjePLDWTjuNDRC_K-sLAL82idmMIe3GTXxdzA6geYPlCSlPzaoJRcPBG-zyH7pjqI7c9z_WoOiJL-KIw6_NIIRrhZ_3YUfQMjxPl80O4YQhgVvJ-F1rlHUqP8EnjP8agI9uTHRp1mxFyV18OqHWXAA">
+    </div>
+
+    <!-- Strictly 2 Rows Grid: 2 cols on mobile (4 items), 3 cols on tablet (6 items), 4 cols on desktop (8 items) -->
+    <div
+        class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8 w-full justify-center">
+        {% for author in top_authors %}
+        <div
+            class="flex-col items-center w-full {% if forloop.counter > 6 %}hidden lg:flex{% elif forloop.counter > 4 %}hidden sm:flex{% else %}flex{% endif %}">
+            <a href="{% url 'store' %}?q={{ author.name|urlencode }}"
+                class="w-full h-48 sm:h-64 md:h-72 rounded-2xl overflow-hidden shadow-sm relative group bg-gray-900 block hover:scale-[1.02] transition-transform"
+                title="View {{ author.name }}'s Books">
+                {% if author.photo %}
+                <img alt="{{ author.name }}"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    src="{{ author.photo.url }}">
+                {% else %}
+                <div
+                    class="w-full h-full bg-gradient-to-br from-stone-800 via-stone-900 to-black flex flex-col items-center justify-center p-3 sm:p-6 text-center group-hover:scale-105 transition-transform duration-300">
                     <div
-                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-5 text-center">
-                        <h4 class="text-white font-bold text-base group-hover:text-[#FF5A1F] transition-colors">Ronald
-                            Richards</h4>
-                        <p class="text-gray-300 text-xs">236 Books Published • View All →</p>
+                        class="w-14 h-14 sm:w-18 sm:h-18 lg:w-20 lg:h-20 rounded-full bg-[#FF5A1F]/20 border-2 border-[#FF5A1F] flex items-center justify-center text-white text-xl sm:text-2xl font-bold font-heading mb-2">
+                        {{ author.name|slice:":1"|upper }}
                     </div>
-                </a>
-                <!-- Social Mini Buttons -->
-                <div class="flex items-center space-x-2 mt-4">
-                    <a href="{% url 'store' %}?q=Ronald" aria-label="Books"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Books"><i class="fa-solid fa-book"></i></a>
-                    <a href="{% url 'store' %}" aria-label="Profile"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Profile"><i class="fa-solid fa-user"></i></a>
-                    <a href="{% url 'store' %}?q=Ronald" aria-label="Explore"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Catalog"><i class="fa-solid fa-arrow-right"></i></a>
+                    <span class="text-[10px] text-orange-400 font-semibold tracking-wider uppercase">Author</span>
                 </div>
-            </div>
-            <!-- Author Card 2 -->
-            <div class="flex flex-col items-center">
-                <a href="{% url 'store' %}?q=Vanessa"
-                    class="w-64 h-80 rounded-2xl overflow-hidden shadow-lg relative group bg-gray-900 block hover:scale-[1.02] transition-transform"
-                    title="View Vanessa Howell's Books">
-                    <img alt="Vanessa Howell"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxsZavaEiLjqTUlZNCAc8nkG57k96RDf_BM8ypvreJ3KCg9B3mWcmUwSaqccclOIgA96ZkY1nDost_EaeFLuRKYQDem1my0qdQvopLPsIBgb4sy78wjXUhB9y8JgHfHcUgAztSpLqZ3BqRCzZxIEuzpI5lEC5MbihDPDwGuUOEGMBBWfZ9a9omaSXue4EJBY5IJb8szIYMEAsjUmtxMXphCqqWvuF22u2mVv2uIfOTyBIVEAHMvC8">
-                    <div
-                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-5 text-center">
-                        <h4 class="text-white font-bold text-base group-hover:text-[#FF5A1F] transition-colors">Vanessa
-                            Howell</h4>
-                        <p class="text-gray-300 text-xs">182 Books Published • View All →</p>
-                    </div>
-                </a>
-                <div class="flex items-center space-x-2 mt-4">
-                    <a href="{% url 'store' %}?q=Vanessa" aria-label="Books"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Books"><i class="fa-solid fa-book"></i></a>
-                    <a href="{% url 'store' %}" aria-label="Profile"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Profile"><i class="fa-solid fa-user"></i></a>
-                    <a href="{% url 'store' %}?q=Vanessa" aria-label="Explore"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Catalog"><i class="fa-solid fa-arrow-right"></i></a>
+                {% endif %}
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent flex flex-col justify-end p-3 sm:p-4 text-center">
+                    <h4
+                        class="text-white font-bold text-xs sm:text-sm group-hover:text-[#FF5A1F] transition-colors truncate">
+                        {{ author.name }}
+                    </h4>
+                    <p class="text-gray-300 text-[10px] sm:text-xs mt-0.5 truncate">
+                        {{ author.book_count }} Book{{ author.book_count|pluralize }} Listed
+                    </p>
                 </div>
-            </div>
-            <!-- Author Card 3 -->
-            <div class="flex flex-col items-center">
-                <a href="{% url 'store' %}?q=Author"
-                    class="w-64 h-80 rounded-2xl overflow-hidden shadow-lg relative group bg-gray-900 block hover:scale-[1.02] transition-transform"
-                    title="View Featured Author's Books">
-                    <img alt="Ronald Richards"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFp-h6f6LOrflEwiyq6MGXeznts-DfpY3us4jVPrYTrbwPA_pLZsSKOKr6Vu2lpKOriLSuDgYCS_BGD6yGTFf5kYHW1OToSXn4BsAVwhFnRKtoOBciWimlJNeUSNEFCi5wnBvz-7ju17sKNN2jpkfO61Mkk9bN222rrBTD_tmJL-wbOjLwpJizHsiNjmOXNRGanIssJ97ndPkZFbu4PXMS8r8NPrwAl-23R0jpFFf0n5XzgG_tpIE">
-                    <div
-                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-5 text-center">
-                        <h4 class="text-white font-bold text-base group-hover:text-[#FF5A1F] transition-colors">
-                            Alexander Wright</h4>
-                        <p class="text-gray-300 text-xs">94 Books Published • View All →</p>
-                    </div>
+            </a>
+
+            <!-- Action Mini Links -->
+            <div class="flex items-center space-x-2 mt-2 sm:mt-3">
+                <a href="{% url 'store' %}?q={{ author.name|urlencode }}"
+                    class="px-3 py-1 rounded-xl bg-orange-50 hover:bg-[#FF5A1F] text-[#FF5A1F] hover:text-white text-[11px] font-bold transition-all flex items-center gap-1.5"
+                    title="Browse Books">
+                    <i class="fa-solid fa-book-open text-[10px]"></i>
+                    <span>Books</span>
                 </a>
-                <div class="flex items-center space-x-2 mt-4">
-                    <a href="{% url 'store' %}?q=Author" aria-label="Books"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Books"><i class="fa-solid fa-book"></i></a>
-                    <a href="{% url 'store' %}" aria-label="Profile"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Profile"><i class="fa-solid fa-user"></i></a>
-                    <a href="{% url 'store' %}?q=Author" aria-label="Explore"
-                        class="w-7 h-7 rounded bg-[#43A047] text-white flex items-center justify-center text-xs shadow-sm hover:bg-green-700"
-                        title="Catalog"><i class="fa-solid fa-arrow-right"></i></a>
-                </div>
             </div>
         </div>
-        <!-- Right Arrow -->
-        <a href="{% url 'store' %}" aria-label="Next Author"
-            class="hidden md:flex absolute -right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-gray-200 bg-white text-gray-900 items-center justify-center z-10 hover:bg-gray-50 transition-colors">
-            <i class="fa-solid fa-arrow-right text-xs"></i>
+        {% empty %}
+        <div class="col-span-full py-8 text-gray-400 text-sm">
+            No authors listed yet.
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Bottom Explore CTA -->
+    <div class="mt-8 sm:mt-10 flex justify-center">
+        <a href="{% url 'authors_list' %}"
+            class="px-6 py-3 rounded-full bg-gray-900 hover:bg-black text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2">
+            <span>Explore All Authors Directory</span>
+            <i class="fa-solid fa-arrow-right text-[10px] text-orange-400"></i>
         </a>
     </div>
 </section>

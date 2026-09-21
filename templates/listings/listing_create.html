@@ -111,17 +111,58 @@
                         >
                     </div>
 
-                    <!-- Author -->
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-gray-700">Author / Writer *</label>
-                        <input
-                            type="text"
-                            id="book-author"
-                            name="author"
-                            required
-                            placeholder="e.g. Vanessa Howell"
-                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
-                        >
+                    <!-- Author with Auto-Suggest & Photo Support -->
+                    <div class="space-y-2 sm:col-span-2 relative" id="author-wrapper">
+                        <input type="hidden" id="author-id" name="author_id" value="">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-gray-700">Author / Writer *</label>
+                            <span id="author-hint" class="text-[10px] text-gray-400">Type to search existing authors</span>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-feather-pointed absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input
+                                type="text"
+                                id="book-author"
+                                name="author"
+                                required
+                                autocomplete="off"
+                                placeholder="Type author name (e.g. Roald Dahl, J. K. Rowling)..."
+                                class="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F] transition-all"
+                            >
+                            <div id="author-spinner" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hidden">
+                                <i class="fa-solid fa-spinner fa-spin text-xs text-[#FF5A1F]"></i>
+                            </div>
+
+                            <!-- Live Autocomplete Suggestions Dropdown -->
+                            <div id="author-dropdown" class="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden hidden max-h-60 overflow-y-auto divide-y divide-gray-50">
+                            </div>
+                        </div>
+
+                        <!-- Author Photo Live Status & Upload Box -->
+                        <div id="author-photo-card" class="p-3 bg-orange-50/50 rounded-2xl border border-orange-100 flex items-center justify-between gap-3 transition-all">
+                            <div class="flex items-center space-x-3 min-w-0">
+                                <!-- Round Portrait Slot -->
+                                <div id="author-preview-avatar" class="w-11 h-11 rounded-full bg-orange-100 border-2 border-[#FF5A1F]/30 flex-shrink-0 flex items-center justify-center text-sm font-bold text-[#FF5A1F] overflow-hidden">
+                                    <i class="fa-solid fa-user text-xs"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <h5 id="author-preview-title" class="text-xs font-bold text-gray-800 truncate">Author Portrait</h5>
+                                    <p id="author-preview-desc" class="text-[10px] text-gray-500 truncate">Auto-loaded if exists in directory, or upload below</p>
+                                </div>
+                            </div>
+
+                            <!-- Photo Action Buttons -->
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <button type="button" id="author-photo-reset-btn" class="hidden text-[11px] text-gray-400 hover:text-rose-600 px-2 py-1 transition-colors" title="Revert to original photo">
+                                    <i class="fa-solid fa-rotate-left"></i> Revert
+                                </button>
+                                <input type="file" name="author_photo" id="author-photo-input" accept="image/*" class="hidden">
+                                <label for="author-photo-input" class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-gray-200 hover:border-[#FF5A1F] hover:text-[#FF5A1F] text-gray-700 text-xs font-bold shadow-2xs transition-colors">
+                                    <i class="fa-solid fa-camera text-[11px] text-[#FF5A1F]"></i>
+                                    <span id="author-photo-btn-label">Add Photo</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Category -->
@@ -240,27 +281,37 @@
                 </div>
             </div>
 
-            <!-- Card 4: Photos Upload -->
+            <!-- Card 4: Photos Upload (Max 5 Images) -->
             <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
-                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
-                    <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
-                        <i class="fa-solid fa-camera"></i>
-                    </span>
-                    <div>
-                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Listing Photos</h3>
-                        <p class="text-xs text-gray-400">Upload clear pictures of the front cover, spine, and sample inner page</p>
+                <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-camera"></i>
+                        </span>
+                        <div>
+                            <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Listing Photos</h3>
+                            <p class="text-xs text-gray-400">Upload clear pictures of front cover, back cover, spine, and sample pages</p>
+                        </div>
                     </div>
+                    <span id="photos-counter" class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                        0 / 5 photos
+                    </span>
                 </div>
 
-                <div class="border-2 border-dashed border-gray-200 hover:border-[#FF5A1F] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-gray-50/50">
+                <!-- Dropzone Area -->
+                <div id="photos-dropzone" class="border-2 border-dashed border-gray-200 hover:border-[#FF5A1F] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-gray-50/50">
                     <input type="file" name="photos" id="photos-input" multiple accept="image/*" class="hidden">
                     <label for="photos-input" class="cursor-pointer space-y-2 block">
                         <div class="w-12 h-12 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center mx-auto text-xl">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                         </div>
-                        <p class="text-xs font-bold text-gray-800">Click or drag & drop book photos here</p>
-                        <p class="text-[10px] text-gray-400">PNG, JPG or WebP up to 5MB each (Max 4 images)</p>
+                        <p class="text-xs font-bold text-gray-800">Click or drag & drop up to 5 book photos here</p>
+                        <p class="text-[10px] text-gray-400">PNG, JPG or WebP up to 5MB each (Max 5 images • 1st image is Cover)</p>
                     </label>
+                </div>
+
+                <!-- Live Photos Preview Gallery -->
+                <div id="photos-gallery" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-2">
                 </div>
             </div>
 
@@ -399,7 +450,10 @@
                         statusDiv.textContent = '✓ Found: ' + data.title;
                         statusDiv.className = 'text-[11px] text-green-600 font-semibold';
                         document.getElementById('book-title').value = data.title;
-                        if (data.author) document.getElementById('book-author').value = data.author;
+                        if (data.author) {
+                            document.getElementById('book-author').value = data.author;
+                            setAuthorState(data.author, data.author_photo_url || '', Boolean(data.author_photo_url), '');
+                        }
                         if (data.category_id) document.getElementById('book-category').value = data.category_id;
                         if (data.publication_year) document.getElementById('book-year').value = data.publication_year;
                     } else {
@@ -413,6 +467,348 @@
                     statusDiv.textContent = 'Lookup service unavailable. Enter details manually.';
                     statusDiv.className = 'text-[11px] text-gray-400';
                 });
+        });
+    }
+
+    // ==========================================
+    // 1. Author Autocomplete & Photo Auto-Set
+    // ==========================================
+    const authorInput = document.getElementById('book-author');
+    const authorIdInput = document.getElementById('author-id');
+    const authorDropdown = document.getElementById('author-dropdown');
+    const authorSpinner = document.getElementById('author-spinner');
+    const authorAvatar = document.getElementById('author-preview-avatar');
+    const authorTitle = document.getElementById('author-preview-title');
+    const authorDesc = document.getElementById('author-preview-desc');
+    const authorBtnLabel = document.getElementById('author-photo-btn-label');
+    const authorPhotoInput = document.getElementById('author-photo-input');
+    const authorResetBtn = document.getElementById('author-photo-reset-btn');
+
+    let authorDebounceTimer = null;
+    let currentAuthorDbPhoto = '';
+    let hasCustomUploadedPhoto = false;
+
+    function setAuthorState(name, photoUrl, isFromDb, authorId) {
+        if (authorId !== undefined && authorId !== null) {
+            authorIdInput.value = authorId;
+        }
+
+        if (isFromDb) {
+            currentAuthorDbPhoto = photoUrl || '';
+            hasCustomUploadedPhoto = false;
+        }
+
+        if (photoUrl) {
+            authorAvatar.innerHTML = `<img src="${photoUrl}" alt="${name}" class="w-full h-full object-cover">`;
+            authorTitle.innerHTML = `<span class="text-gray-900 font-extrabold">${name || 'Author Portrait'}</span>`;
+            if (isFromDb) {
+                authorDesc.innerHTML = `<span class="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]"><i class="fa-solid fa-circle-check text-xs"></i> Photo verified in database (Auto-set)</span>`;
+                authorBtnLabel.textContent = 'Change Photo';
+                if (authorResetBtn) authorResetBtn.classList.add('hidden');
+            } else {
+                authorDesc.innerHTML = `<span class="inline-flex items-center gap-1 text-[#FF5A1F] font-bold text-[11px]"><i class="fa-solid fa-image text-xs"></i> New portrait selected (Will save on publish)</span>`;
+                authorBtnLabel.textContent = 'Change Photo';
+                if (authorResetBtn && currentAuthorDbPhoto) {
+                    authorResetBtn.classList.remove('hidden');
+                }
+            }
+        } else {
+            const initial = name ? name.trim().charAt(0).toUpperCase() : 'A';
+            authorAvatar.innerHTML = `<span class="font-extrabold text-base text-[#FF5A1F]">${initial}</span>`;
+            authorTitle.textContent = name || 'Author Portrait';
+            authorDesc.textContent = 'No photo on file for this author. You can upload one below (optional)';
+            authorBtnLabel.textContent = 'Add Photo';
+            if (authorResetBtn) authorResetBtn.classList.add('hidden');
+        }
+    }
+
+    if (authorInput && authorDropdown) {
+        authorInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            clearTimeout(authorDebounceTimer);
+
+            if (query.length < 1) {
+                authorDropdown.classList.add('hidden');
+                authorDropdown.innerHTML = '';
+                authorIdInput.value = '';
+                if (!hasCustomUploadedPhoto) {
+                    setAuthorState('', '', false, '');
+                }
+                return;
+            }
+
+            authorSpinner.classList.remove('hidden');
+            authorDebounceTimer = setTimeout(() => {
+                fetch('{% url "author_autocomplete" %}?q=' + encodeURIComponent(query))
+                    .then(res => res.json())
+                    .then(data => {
+                        authorSpinner.classList.add('hidden');
+
+                        // If exact match found and user hasn't uploaded custom photo, auto-set photo
+                        if (data.exact_match && !hasCustomUploadedPhoto) {
+                            authorIdInput.value = data.exact_match.id;
+                            setAuthorState(data.exact_match.name, data.exact_match.photo_url, data.exact_match.has_photo, data.exact_match.id);
+                        }
+
+                        if (data.results && data.results.length > 0) {
+                            authorDropdown.innerHTML = '';
+                            data.results.forEach(author => {
+                                const row = document.createElement('div');
+                                row.className = 'px-4 py-2.5 hover:bg-orange-50/70 cursor-pointer flex items-center justify-between transition-colors border-b border-gray-50 last:border-0';
+
+                                const avatarHtml = author.photo_url
+                                    ? `<img src="${author.photo_url}" alt="${author.name}" class="w-9 h-9 rounded-full object-cover border-2 border-orange-200">`
+                                    : `<div class="w-9 h-9 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center font-bold text-xs">${author.name.charAt(0).toUpperCase()}</div>`;
+
+                                const photoBadge = author.has_photo
+                                    ? `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 text-[9px] font-bold flex items-center gap-1"><i class="fa-solid fa-camera"></i> Photo on file</span>`
+                                    : `<span class="text-[9px] text-gray-400">No photo</span>`;
+
+                                row.innerHTML = `
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        ${avatarHtml}
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-bold text-gray-800 truncate">${author.name}</p>
+                                            <div class="flex items-center gap-2 mt-0.5">
+                                                <span class="text-[10px] text-gray-400 font-medium">${author.book_count} book${author.book_count === 1 ? '' : 's'}</span>
+                                                ${photoBadge}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="text-[11px] text-[#FF5A1F] font-bold flex items-center gap-1 flex-shrink-0">
+                                        <span>Select</span>
+                                        <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </span>
+                                `;
+
+                                row.addEventListener('mousedown', (e) => {
+                                    e.preventDefault(); // prevents blur before click
+                                    authorInput.value = author.name;
+                                    authorIdInput.value = author.id;
+                                    authorDropdown.classList.add('hidden');
+                                    setAuthorState(author.name, author.photo_url, author.has_photo, author.id);
+                                });
+
+                                authorDropdown.appendChild(row);
+                            });
+                            authorDropdown.classList.remove('hidden');
+                        } else {
+                            authorDropdown.innerHTML = `
+                                <div class="px-4 py-3 text-xs text-gray-600 flex items-center justify-between">
+                                    <span>New author: <strong class="text-gray-900">"${query}"</strong></span>
+                                    <span class="text-[10px] font-bold text-[#FF5A1F]">You can upload portrait below</span>
+                                </div>
+                            `;
+                            authorDropdown.classList.remove('hidden');
+                            if (!hasCustomUploadedPhoto) {
+                                authorIdInput.value = '';
+                                setAuthorState(query, '', false, '');
+                            }
+                        }
+                    })
+                    .catch(() => {
+                        authorSpinner.classList.add('hidden');
+                    });
+            }, 200);
+        });
+
+        // Hide dropdown on blur or outside click
+        document.addEventListener('click', function(e) {
+            const authorWrapper = document.getElementById('author-wrapper');
+            if (authorWrapper && !authorWrapper.contains(e.target)) {
+                authorDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    // Author Photo file input preview
+    if (authorPhotoInput) {
+        authorPhotoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    hasCustomUploadedPhoto = true;
+                    setAuthorState(authorInput.value, e.target.result, false, authorIdInput.value);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Author Photo reset button (revert to original DB photo)
+    if (authorResetBtn) {
+        authorResetBtn.addEventListener('click', function() {
+            authorPhotoInput.value = '';
+            hasCustomUploadedPhoto = false;
+            setAuthorState(authorInput.value, currentAuthorDbPhoto, Boolean(currentAuthorDbPhoto), authorIdInput.value);
+        });
+    }
+
+    // ==========================================
+    // 2. Multiple Book Photos (Max 5 Images)
+    // ==========================================
+    const photosInput = document.getElementById('photos-input');
+    const photosGallery = document.getElementById('photos-gallery');
+    const photosCounter = document.getElementById('photos-counter');
+    const photosDropzone = document.getElementById('photos-dropzone');
+    
+    // Internal state array of File objects
+    let selectedFiles = [];
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(0) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function syncFilesToInput() {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        photosInput.files = dt.files;
+
+        // Counter UI
+        const count = selectedFiles.length;
+        photosCounter.textContent = `${count} / 5 photos`;
+        if (count >= 5) {
+            photosCounter.className = 'text-xs font-mono font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200';
+            photosCounter.textContent = '5 / 5 (Max Reached)';
+        } else {
+            photosCounter.className = 'text-xs font-mono font-bold px-3 py-1 rounded-full bg-orange-50 text-[#FF5A1F] border border-orange-200';
+        }
+    }
+
+    function renderPhotosGallery() {
+        photosGallery.innerHTML = '';
+        syncFilesToInput();
+
+        if (selectedFiles.length === 0) {
+            photosGallery.classList.add('hidden');
+            return;
+        }
+
+        photosGallery.classList.remove('hidden');
+
+        selectedFiles.forEach((file, index) => {
+            const card = document.createElement('div');
+            card.className = 'relative rounded-2xl overflow-hidden border border-gray-200 bg-white p-2 shadow-2xs group flex flex-col items-center transition-all hover:shadow-md';
+
+            const objectUrl = URL.createObjectURL(file);
+            const isCover = (index === 0);
+
+            card.innerHTML = `
+                <div class="w-full h-32 rounded-xl overflow-hidden relative bg-gray-100 flex items-center justify-center">
+                    <img src="${objectUrl}" alt="${file.name}" class="w-full h-full object-cover">
+                    ${isCover
+                        ? `<span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md bg-[#FF5A1F] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm flex items-center gap-1">
+                             <i class="fa-solid fa-star text-[9px]"></i> Cover
+                           </span>`
+                        : `<button type="button" data-index="${index}" class="make-cover-btn absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/70 hover:bg-[#FF5A1F] text-white text-[9px] font-bold transition-colors shadow-xs">
+                             Set as Cover
+                           </button>`
+                    }
+                    <button type="button" data-index="${index}" class="remove-photo-btn absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 hover:bg-rose-600 text-white flex items-center justify-center text-[10px] transition-colors cursor-pointer shadow-sm">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="w-full px-1 mt-1.5 flex items-center justify-between text-[10px] text-gray-500">
+                    <span class="font-semibold text-gray-800 truncate" title="${file.name}">${file.name}</span>
+                    <span class="font-mono text-gray-400 flex-shrink-0 ml-1">${formatFileSize(file.size)}</span>
+                </div>
+            `;
+
+            // Remove button
+            card.querySelector('.remove-photo-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const removeIdx = parseInt(this.getAttribute('data-index'));
+                selectedFiles.splice(removeIdx, 1);
+                renderPhotosGallery();
+            });
+
+            // Set as Cover button
+            const makeCoverBtn = card.querySelector('.make-cover-btn');
+            if (makeCoverBtn) {
+                makeCoverBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const coverIdx = parseInt(this.getAttribute('data-index'));
+                    const [picked] = selectedFiles.splice(coverIdx, 1);
+                    selectedFiles.unshift(picked);
+                    renderPhotosGallery();
+                });
+            }
+
+            photosGallery.appendChild(card);
+        });
+
+        // If fewer than 5 photos, show an "+ Add More" card
+        if (selectedFiles.length < 5) {
+            const addCard = document.createElement('div');
+            addCard.className = 'border-2 border-dashed border-gray-200 hover:border-[#FF5A1F] bg-gray-50/60 hover:bg-orange-50/30 rounded-2xl p-2 flex flex-col items-center justify-center cursor-pointer min-h-[140px] transition-all text-center';
+            addCard.innerHTML = `
+                <div class="w-9 h-9 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center text-sm font-bold mb-1.5">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+                <p class="text-xs font-bold text-gray-700">Add More</p>
+                <p class="text-[9px] text-gray-400 mt-0.5">${5 - selectedFiles.length} spot${(5 - selectedFiles.length) === 1 ? '' : 's'} left</p>
+            `;
+            addCard.addEventListener('click', () => {
+                photosInput.click();
+            });
+            photosGallery.appendChild(addCard);
+        }
+    }
+
+    function handleIncomingFiles(fileList) {
+        let reachedLimit = false;
+        Array.from(fileList).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+            if (selectedFiles.length >= 5) {
+                reachedLimit = true;
+                return;
+            }
+            selectedFiles.push(file);
+        });
+
+        if (reachedLimit) {
+            alert('A maximum of 5 images can be uploaded per book listing. First 5 images retained.');
+        }
+
+        renderPhotosGallery();
+    }
+
+    if (photosInput) {
+        photosInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                handleIncomingFiles(this.files);
+                this.value = ''; // allow selecting same file again if re-added
+            }
+        });
+    }
+
+    // Drag & Drop on Dropzone
+    if (photosDropzone) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            photosDropzone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.add('border-[#FF5A1F]', 'bg-orange-50/40');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            photosDropzone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('border-[#FF5A1F]', 'bg-orange-50/40');
+            });
+        });
+
+        photosDropzone.addEventListener('drop', function(e) {
+            if (e.dataTransfer && e.dataTransfer.files) {
+                handleIncomingFiles(e.dataTransfer.files);
+            }
         });
     }
 </script>

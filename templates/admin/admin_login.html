@@ -1,0 +1,132 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Admin Portal Sign In | e-Book Platform Operations{% endblock %}
+
+{% block content %}
+<!-- BEGIN: Platform Admin Login Container -->
+<section class="min-h-[82vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <!-- Ambient Background Glow & Tech Grid -->
+    <div class="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div
+            class="absolute -top-40 left-1/2 -translate-x-1/2 w-[650px] h-[650px] bg-indigo-600/10 rounded-full blur-3xl">
+        </div>
+        <div class="absolute bottom-0 right-1/4 w-[450px] h-[450px] bg-[#FF5A1F]/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="w-full max-w-md">
+        <!-- Brand Security Header -->
+        <div class="text-center mb-8">
+
+            <h1 class="font-heading font-black text-2xl sm:text-3xl text-gray-900 tracking-tight">
+                Staff Administration
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1.5">
+                Authorized staff sign-in for financial controls, KYC approvals, and order dispatch.
+            </p>
+        </div>
+
+        <!-- Alert Messages Container -->
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for msg in messages %}
+            <div class="p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-3 border shadow-sm
+                {% if msg.tags == 'error' %}bg-red-50 text-red-800 border-red-200
+                {% elif msg.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200
+                {% else %}bg-indigo-50 text-indigo-800 border-indigo-200{% endif %}">
+                <i
+                    class="fa-solid {% if msg.tags == 'error' %}fa-triangle-exclamation text-red-500{% elif msg.tags == 'success' %}fa-circle-check text-emerald-500{% else %}fa-circle-info text-indigo-500{% endif %} mt-0.5 text-sm flex-shrink-0"></i>
+                <div class="flex-1">{{ msg }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Admin Login Card -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative">
+            <form method="POST" action="{% url 'platform_admin_login' %}" class="space-y-5">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <!-- Email Input -->
+                <div>
+                    <label for="admin-email"
+                        class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                        Staff Email Address
+                    </label>
+                    <div class="relative">
+                        <input type="email" id="admin-email" name="email" value="{{ email|default:'' }}" required
+                            autocomplete="email" placeholder="admin@bookstore.com"
+                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/20 focus:border-[#FF5A1F] transition-all">
+                        <i
+                            class="fa-regular fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Password Input with Show/Hide Toggle -->
+                <div>
+                    <label for="admin-password"
+                        class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                        Master Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="admin-password" name="password" required
+                            autocomplete="current-password" placeholder="••••••••••••"
+                            class="w-full pl-10 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium text-gray-900 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/20 focus:border-[#FF5A1F] transition-all">
+                        <i
+                            class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none"></i>
+                        <button type="button" onclick="togglePasswordVisibility()"
+                            aria-label="Toggle password visibility"
+                            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors p-1">
+                            <i id="eye-icon" class="fa-regular fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit"
+                    class="w-full py-3.5 px-4 bg-gradient-to-r from-[#FF5A1F] via-[#FF5A1F] to-[#FF5A1F] text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-slate-900/20 hover:shadow-slate-900/30 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-2">
+
+                    <span>Authenticate Administrative Session</span>
+                </button>
+            </form>
+
+            <!-- Security Audit Notice Footer -->
+            <div class="mt-6 pt-5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+                <span class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-lock text-[10px] text-[#FF5A1F]"></i>
+                    256-Bit SSL Encrypted
+                </span>
+                <a href="{% url 'login' %}" class="font-semibold text-gray-600 hover:text-[#FF5A1F] transition-colors">
+                    Customer Sign In &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- Back Link -->
+        <div class="text-center mt-6">
+            <a href="{% url 'home' %}"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors">
+                <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                <span>Return to Bookstore Home</span>
+            </a>
+        </div>
+    </div>
+</section>
+<!-- END: Platform Admin Login Container -->
+
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('admin-password');
+        const eyeIcon = document.getElementById('eye-icon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}

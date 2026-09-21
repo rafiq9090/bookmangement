@@ -1,11 +1,11 @@
 /* -------------------------------------------------------------------------- */
-/* e-Book Custom Theme & Micro-interaction Utilities                           */
+/* e-Book Custom Theme & Responsive Utilities                                 */
 /* -------------------------------------------------------------------------- */
 
 /* Custom smooth scrollbar */
 ::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -19,6 +19,20 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
+}
+
+/* Hide scrollbars for touch-scrollable pill navigation bars */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Touch momentum scrolling */
+.touch-scroll {
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Glassmorphic card styling */
@@ -44,4 +58,20 @@
 
 .card-hover:hover {
     transform: translateY(-3px);
+}
+
+/* Mobile drawer animation states */
+#mobileNavDrawer {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#mobileNavBackdrop {
+    transition: opacity 0.3s ease-out;
+}
+
+/* Responsive Table Wrapper shadow indicators */
+.responsive-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 1rem;
 }

@@ -69,6 +69,10 @@ def login_register_view(request):
                     phone_number=phone_number,
                     is_seller=is_seller,
                 )
+                if "avatar" in request.FILES:
+                    user.avatar = request.FILES["avatar"]
+                    user.save(update_fields=["avatar"])
+
                 login(request, user)
                 migrate_session_cart_to_user(request, user)
 
@@ -145,6 +149,15 @@ def user_profile_view(request):
 
             user.save()
             messages.success(request, "Your profile information has been updated.")
+            return redirect("profile")
+
+        elif form_type == "update_avatar":
+            if "avatar" in request.FILES:
+                user.avatar = request.FILES["avatar"]
+                user.save(update_fields=["avatar"])
+                messages.success(request, "Profile photo uploaded and saved successfully!")
+            else:
+                messages.error(request, "Please select an image file to upload.")
             return redirect("profile")
 
         elif form_type == "add_address":

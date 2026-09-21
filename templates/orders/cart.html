@@ -28,17 +28,17 @@
         </div>
 
         <!-- Checkout Steps Indicator -->
-        <div class="flex items-center space-x-3 text-xs font-semibold">
+        <div class="flex items-center space-x-2 sm:space-x-3 text-[11px] sm:text-xs font-semibold flex-wrap">
             <span class="flex items-center gap-1.5 text-[#FF5A1F]">
                 <span class="w-5 h-5 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-[10px]">1</span>
                 <span>Cart</span>
             </span>
-            <span class="w-6 h-0.5 bg-gray-200"></span>
+            <span class="w-4 sm:w-6 h-0.5 bg-gray-200"></span>
             <span class="flex items-center gap-1.5 text-gray-400">
                 <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-[10px]">2</span>
                 <span>Checkout</span>
             </span>
-            <span class="w-6 h-0.5 bg-gray-200"></span>
+            <span class="w-4 sm:w-6 h-0.5 bg-gray-200"></span>
             <span class="flex items-center gap-1.5 text-gray-400">
                 <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-[10px]">3</span>
                 <span>Confirmation</span>
@@ -49,13 +49,13 @@
 <!-- END: Cart Header Section -->
 
 <!-- BEGIN: Cart Content Area -->
-<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-16 box-border">
+<section class="w-full max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-8 py-4 pb-16 box-border">
     {% if items %}
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             <!-- Left Column: Cart Items List (8 Cols) -->
             <div class="lg:col-span-8 space-y-4">
-                <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+                <div class="bg-white rounded-3xl p-4 sm:p-8 border border-gray-100 shadow-sm space-y-6">
                     <div class="flex items-center justify-between pb-4 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
                         <span>Items ({{ items|length }})</span>
                         <span>Price</span>
@@ -68,15 +68,19 @@
                                 <!-- Book Info with Thumbnail Artwork -->
                                 <div class="flex items-center space-x-4">
                                     <a href="{% url 'book_detail' item.listing.book.slug %}" class="w-20 h-28 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-2 shadow-inner border border-gray-100 hover:scale-105 transition-transform">
-                                        <div class="w-14 h-20 bg-white rounded shadow-sm flex flex-col items-center justify-between p-1 text-center border border-gray-100">
-                                            <span class="text-[6px] font-bold text-gray-400 uppercase">
-                                                {{ item.listing.book.categories.first.name|default:"BOOK" }}
-                                            </span>
-                                            <i class="fa-solid fa-book-open text-xs text-[#FF5A1F]"></i>
-                                            <span class="text-[6px] font-semibold text-gray-600 line-clamp-1">
-                                                {{ item.listing.book.title }}
-                                            </span>
-                                        </div>
+                                        {% if item.listing.book.cover_image %}
+                                            <img src="{{ item.listing.book.cover_image.url }}" alt="{{ item.listing.book.title }}" class="w-16 h-24 object-cover rounded shadow-sm" />
+                                        {% else %}
+                                            <div class="w-14 h-20 bg-white rounded shadow-sm flex flex-col items-center justify-between p-1 text-center border border-gray-100">
+                                                <span class="text-[6px] font-bold text-gray-400 uppercase truncate w-full">
+                                                    {{ item.listing.book.categories.first.name|default:"BOOK" }}
+                                                </span>
+                                                <i class="fa-solid fa-book-open text-xs text-[#FF5A1F]"></i>
+                                                <span class="text-[6px] font-semibold text-gray-600 line-clamp-1">
+                                                    {{ item.listing.book.title }}
+                                                </span>
+                                            </div>
+                                        {% endif %}
                                     </a>
                                     <div class="space-y-1">
                                         <span class="text-[10px] font-bold text-[#FF5A1F] uppercase tracking-wider">
@@ -86,7 +90,12 @@
                                             {{ item.listing.book.title }}
                                         </a>
                                         <p class="text-xs text-gray-500">
-                                            By {{ item.listing.book.authors.first.name|default:"Vanessa Howell" }}
+                                            By 
+                                            {% for auth in item.listing.book.authors.all %}
+                                                {{ auth.name }}{% if not forloop.last %}, {% endif %}
+                                            {% empty %}
+                                                Featured Author
+                                            {% endfor %}
                                         </p>
                                         <p class="text-[10px] text-gray-400 font-mono">
                                             ISBN-{{ item.listing.book.isbn_10|default:item.listing.book.isbn_13 }}
@@ -98,14 +107,12 @@
                                 <div class="flex items-center justify-between sm:justify-end space-x-6 w-full sm:w-auto">
                                     <!-- Quantity Stepper -->
                                     <div class="flex items-center border border-gray-200 rounded-full px-3 py-1.5 bg-gray-50 text-xs font-semibold space-x-3">
-                                        <button type="button" class="text-gray-400 hover:text-gray-700">-</button>
-                                        <span class="text-gray-900 font-bold">{{ item.quantity }}</span>
-                                        <button type="button" class="text-gray-400 hover:text-gray-700">+</button>
+                                        <span class="text-gray-900 font-bold">Qty: {{ item.quantity }}</span>
                                     </div>
 
                                     <!-- Price -->
                                     <div class="text-right">
-                                        <p class="font-extrabold text-base text-green-600 font-heading">
+                                        <p class="font-extrabold text-base text-[#FF5A1F] font-heading font-mono">
                                             ${{ item.total }}
                                         </p>
                                         {% if item.listing.original_mrp %}
@@ -136,7 +143,7 @@
                             <span>Continue Shopping</span>
                         </a>
                         <span class="text-gray-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-lock text-[10px] text-[#43A047]"></i>
+                            <i class="fa-solid fa-lock text-[10px] text-[#FF5A1F]"></i>
                             <span>Safe & Encrypted Checkout</span>
                         </span>
                     </div>
@@ -159,7 +166,7 @@
                         <div class="flex items-center justify-between text-gray-600">
                             <span>Estimated Shipping</span>
                             {% if shipping_fee == 0 %}
-                                <span class="font-bold text-[#43A047]">FREE</span>
+                                <span class="font-bold text-[#FF5A1F]">FREE</span>
                             {% else %}
                                 <span class="font-bold text-gray-900 font-mono">${{ shipping_fee }}</span>
                             {% endif %}
@@ -193,7 +200,7 @@
                             <p class="text-xs text-gray-500 font-medium">Total Amount</p>
                             <p class="text-[10px] text-gray-400">Inclusive of all taxes</p>
                         </div>
-                        <span class="text-2xl sm:text-3xl font-heading font-extrabold text-green-600">
+                        <span class="text-2xl sm:text-3xl font-heading font-extrabold text-[#FF5A1F] font-mono">
                             ${{ total }}
                         </span>
                     </div>

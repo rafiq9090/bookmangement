@@ -1,0 +1,339 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>{% block title %}Platform Operations Console | eB Marketplace{% endblock %}</title>
+
+    <!-- Tailwind CSS v3 CDN with forms & container queries plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Google Fonts: Poppins & Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            orange: '#FF5A1F',
+                            green: '#43A047',
+                            darkGreen: '#2E7D32',
+                            dark: '#0f172a',
+                            bgLight: '#f8fafc',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Micro-interactions & Styles -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-[#FF5A1F] selection:text-white">
+
+    {% if request.user.is_authenticated and request.user.is_staff %}
+    <!-- ==================== RESPONSIVE LEFT SIDEBAR DRAWER ==================== -->
+
+    <!-- Mobile Backdrop Overlay -->
+    <div id="adminSidebarBackdrop"
+         onclick="closeAdminSidebar()"
+         class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 hidden lg:hidden transition-opacity duration-300">
+    </div>
+
+    <!-- Left Sidebar (Fixed on Desktop, Slide-out Drawer on Mobile/Tablet) -->
+    <aside id="adminSidebar"
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none">
+
+        <!-- Sidebar Brand Header -->
+        <div class="h-16 px-5 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-950/50">
+            <a href="{% url 'platform_admin_dashboard' %}" class="flex items-center space-x-3 group">
+                <span class="bg-[#FF5A1F] text-white font-heading font-extrabold text-lg w-9 h-9 rounded-xl flex items-center justify-center shadow-md shadow-orange-500/30 group-hover:scale-105 transition-transform">eB</span>
+                <div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="font-heading font-black text-sm text-white tracking-wide">eBook</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-[#FF5A1F]/20 text-[#FF5A1F] border border-[#FF5A1F]/30">Ops</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-medium">Platform Console</p>
+                </div>
+            </a>
+
+            <!-- Mobile Close Button (Hidden on Desktop) -->
+            <button type="button"
+                    onclick="closeAdminSidebar()"
+                    class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                    title="Close Sidebar Menu">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Scrollable Navigation Items -->
+        <div class="flex-1 overflow-y-auto px-3 py-5 space-y-6">
+            <!-- Section: Primary Operations -->
+            <div>
+                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 font-mono">
+                    Management Menu
+                </p>
+                <nav class="space-y-1 text-xs font-semibold">
+                    <!-- Tab: Overview -->
+                    <a href="{% url 'platform_admin_dashboard' %}?tab=overview"
+                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'overview' or not active_tab %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span class="flex items-center space-x-3">
+                            <i class="fa-solid fa-chart-pie w-4 text-center {% if active_tab == 'overview' or not active_tab %}text-white{% else %}text-slate-400{% endif %}"></i>
+                            <span>Overview</span>
+                        </span>
+                    </a>
+
+                    <!-- Tab: KYC Queue -->
+                    <a href="{% url 'platform_admin_dashboard' %}?tab=kyc"
+                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'kyc' %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span class="flex items-center space-x-3">
+                            <i class="fa-solid fa-id-card w-4 text-center {% if active_tab == 'kyc' %}text-white{% else %}text-slate-400{% endif %}"></i>
+                            <span>KYC Queue</span>
+                        </span>
+                        {% if pending_kyc_count %}
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full {% if active_tab == 'kyc' %}bg-white text-[#FF5A1F]{% else %}bg-amber-500/20 text-amber-400 border border-amber-500/30{% endif %}">
+                            {{ pending_kyc_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Tab: Payouts & Escrow -->
+                    <a href="{% url 'platform_admin_dashboard' %}?tab=payouts"
+                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'payouts' %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span class="flex items-center space-x-3">
+                            <i class="fa-solid fa-vault w-4 text-center {% if active_tab == 'payouts' %}text-white{% else %}text-slate-400{% endif %}"></i>
+                            <span>Payouts & Escrow</span>
+                        </span>
+                    </a>
+
+                    <!-- Tab: Orders & Courier -->
+                    <a href="{% url 'platform_admin_dashboard' %}?tab=orders"
+                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'orders' %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span class="flex items-center space-x-3">
+                            <i class="fa-solid fa-truck-fast w-4 text-center {% if active_tab == 'orders' %}text-white{% else %}text-slate-400{% endif %}"></i>
+                            <span>Orders & Courier</span>
+                        </span>
+                        {% if pending_dispatch_count %}
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full {% if active_tab == 'orders' %}bg-white text-[#FF5A1F]{% else %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% endif %}">
+                            {{ pending_dispatch_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- Tab: Catalog Moderation -->
+                    <a href="{% url 'platform_admin_dashboard' %}?tab=listings"
+                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'listings' %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <span class="flex items-center space-x-3">
+                            <i class="fa-solid fa-book-open w-4 text-center {% if active_tab == 'listings' %}text-white{% else %}text-slate-400{% endif %}"></i>
+                            <span>Catalog Moderation</span>
+                        </span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Section: System & Quick Shortcuts -->
+            <div>
+                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 font-mono">
+                    System & Links
+                </p>
+                <nav class="space-y-1 text-xs font-semibold">
+                    <a href="{% url 'home' %}" target="_blank"
+                       class="flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+                        <span class="flex items-center space-x-3">
+                            <i class="fa-solid fa-store w-4 text-center text-[#FF5A1F]"></i>
+                            <span>Live Bookstore</span>
+                        </span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500 group-hover:text-slate-300"></i>
+                    </a>
+
+                    <a href="/admin/" target="_blank"
+                       class="flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
+                        <span class="flex items-center space-x-3">
+                            <i class="fa-solid fa-database w-4 text-center text-indigo-400"></i>
+                            <span>Django ORM DB</span>
+                        </span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500 group-hover:text-slate-300"></i>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Sidebar User Footer -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950/60 shrink-0">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-500 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
+                        {{ request.user.first_name|default:request.user.email|slice:":1"|upper }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-white truncate leading-tight">
+                            {{ request.user.first_name|default:"Administrator" }}
+                        </p>
+                        <p class="text-[10px] text-slate-400 font-mono truncate leading-tight mt-0.5">
+                            {{ request.user.email }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Sign Out Button -->
+                <a href="{% url 'logout' %}"
+                   class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-xl transition-colors shrink-0"
+                   title="Sign Out of Admin Console">
+                    <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+    {% endif %}
+
+    <!-- ==================== MAIN WORKSPACE CONTAINER ==================== -->
+    <div class="{% if request.user.is_authenticated and request.user.is_staff %}lg:pl-64{% endif %} flex-1 flex flex-col min-w-0 min-h-screen">
+
+        {% if request.user.is_authenticated and request.user.is_staff %}
+        <!-- Top Operations Utility Bar -->
+        <header class="sticky top-0 z-30 bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-xs">
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <!-- Hamburger Button to Open Left Sidebar on Mobile / Tablet -->
+                <button type="button"
+                        onclick="openAdminSidebar()"
+                        class="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Open Left Navigation Menu">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+
+                <!-- Page Header Title / Breadcrumb -->
+                <div class="flex items-center space-x-2">
+                    <span class="font-heading font-black text-slate-900 text-sm sm:text-base">Operations Console</span>
+                    <span class="text-slate-300 text-xs hidden sm:inline">•</span>
+                    <span class="text-xs font-bold text-[#FF5A1F] capitalize hidden sm:inline">
+                        {% if active_tab %}{{ active_tab }}{% else %}Overview{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Topbar Right Controls -->
+            <div class="flex items-center space-x-3">
+                <!-- Live Storefront Link -->
+                <a href="{% url 'home' %}" target="_blank"
+                   class="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-orange-50 text-[#FF5A1F] hover:bg-orange-100 border border-orange-200 transition-colors">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    <span class="hidden sm:inline">Live Store</span>
+                </a>
+
+                <!-- Security Badge -->
+                <div class="hidden sm:flex items-center space-x-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Audit Active</span>
+                </div>
+
+                <!-- Sign Out -->
+                <a href="{% url 'logout' %}"
+                   class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                   title="Sign Out">
+                    <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+                </a>
+            </div>
+        </header>
+
+        {% else %}
+        <!-- Unauthenticated Topbar (e.g. for /admin-login/) -->
+        <header class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">
+            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <a href="{% url 'platform_admin_login' %}" class="flex items-center space-x-2.5">
+                    <span class="bg-[#FF5A1F] text-white font-heading font-extrabold text-xl w-9 h-9 rounded-xl flex items-center justify-center shadow-md shadow-orange-500/30">eB</span>
+                    <span class="font-heading font-black text-white text-base">Platform Operations Portal</span>
+                </a>
+
+                <a href="{% url 'home' %}" target="_blank"
+                   class="inline-flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-[#FF5A1F]"></i>
+                    <span>Storefront</span>
+                </a>
+            </div>
+        </header>
+        {% endif %}
+
+        <!-- Main Workspace View (Only one single block content tag) -->
+        <main class="flex-1 w-full pb-12">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Minimalist Operational Footer -->
+        <footer class="bg-white border-t border-slate-200 text-slate-500 py-4 px-4 sm:px-6 lg:px-8 mt-auto text-xs">
+            <div class="w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                <div class="flex items-center space-x-3">
+                    <span class="font-heading font-black text-slate-800">eB<span class="text-[#FF5A1F]">.</span></span>
+                    <span class="text-slate-300">|</span>
+                    <span class="text-[11px] text-slate-500">Marketplace Platform Operations Console</span>
+                </div>
+
+                <div class="flex items-center space-x-4 text-[11px] text-slate-500">
+                    <span class="flex items-center space-x-1.5">
+                        <i class="fa-solid fa-lock text-[10px] text-[#FF5A1F]"></i>
+                        <span>256-Bit SSL Encrypted</span>
+                    </span>
+                    <span class="text-slate-300">•</span>
+                    <a href="/admin/" target="_blank" class="text-slate-600 hover:text-[#FF5A1F] transition-colors font-medium">
+                        Django ORM
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    {% if request.user.is_authenticated and request.user.is_staff %}
+    <!-- Mobile Drawer Controls JS -->
+    <script>
+        function openAdminSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const backdrop = document.getElementById('adminSidebarBackdrop');
+            if (sidebar && backdrop) {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        function closeAdminSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const backdrop = document.getElementById('adminSidebarBackdrop');
+            if (sidebar && backdrop) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        // Close on Escape key press
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAdminSidebar();
+            }
+        });
+    </script>
+    {% endif %}
+
+    <!-- Global Scripts -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

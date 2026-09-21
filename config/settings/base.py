@@ -60,6 +60,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.books.context_processors.global_marketplace_context",
             ],
         },
     },

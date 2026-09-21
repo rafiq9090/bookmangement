@@ -62,6 +62,7 @@ def get_cart_items_for_request(request):
 def migrate_session_cart_to_user(request, user):
     """
     Transfers items from anonymous guest session cart to authenticated user's DB cart.
+    Safely handles OneToOneField uniqueness constraint on listing.
     """
     session_cart_ids = request.session.get("cart_items", [])
     if session_cart_ids:
@@ -69,6 +70,18 @@ def migrate_session_cart_to_user(request, user):
         for listing_id in session_cart_ids:
             listing = BookListing.objects.filter(id=listing_id, status=BookListing.Status.ACTIVE, is_deleted=False).first()
             if listing:
-                CartItem.objects.get_or_create(cart=cart, listing=listing)
+                # Do not add seller's own listing to their cart
+                if listing.seller_id == user.id:
+                    continue
+
+                existing_item = CartItem.objects.filter(listing=listing).first()
+                if existing_item:
+                    if existing_item.cart_id != cart.id:
+                        existing_item.cart = cart
+                        existing_item.save(update_fields=["cart"])
+                else:
+                    CartItem.objects.create(cart=cart, listing=listing)
         request.session["cart_items"] = []
-        request.session.modified = True
+        if hasattr(request.session, "modified"):
+            request.session.modified = True
+

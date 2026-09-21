@@ -1,0 +1,927 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.store_name }} - Seller Dashboard | eB Online Bookshop{% endblock %}
+
+{% block content %}
+<!-- BEGIN: Breadcrumb Navigation -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
+    <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
+        <a href="{% url 'home' %}" class="hover:text-gray-700 transition-colors">Home</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <span class="text-gray-800 font-semibold">Seller Dashboard</span>
+        {% if active_tab != 'overview' %}
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <span class="text-[#FF5A1F] capitalize font-bold">{{ active_tab }}</span>
+        {% endif %}
+    </nav>
+</section>
+<!-- END: Breadcrumb Navigation -->
+
+<!-- BEGIN: Seller Store Header & Quick Actions -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-3 box-border">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm relative overflow-hidden">
+        <!-- Background decorative watermark -->
+        <div
+            class="absolute right-0 bottom-0 translate-x-10 translate-y-10 text-gray-50 opacity-40 pointer-events-none text-9xl">
+            <i class="fa-solid fa-book-bookmark"></i>
+        </div>
+
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+            <div class="flex items-center space-x-4">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FF5A1F] to-orange-400 flex items-center justify-center text-white text-2xl font-black shadow-md shadow-orange-500/20 flex-shrink-0">
+                    {{ profile.store_name|slice:":1"|upper|default:"S" }}
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="font-heading font-black text-2xl sm:text-3xl text-gray-900 tracking-tight">
+                            {{ profile.store_name }}
+                        </h1>
+                        {% if profile.kyc_status == 'VERIFIED' %}
+                        <span
+                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 text-[#FF5A1F] border border-orange-200">
+                            <i class="fa-solid fa-circle-check text-[10px]"></i> Verified Merchant
+                        </span>
+                        {% elif profile.kyc_status == 'PENDING' %}
+                        <span
+                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            <i class="fa-solid fa-clock text-[10px]"></i> KYC In Review
+                        </span>
+                        {% else %}
+                        <span
+                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                            Standard Seller
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1 max-w-xl">
+                        {{ profile.bio|default:"Official merchant dashboard for inventory listings, courier dispatching, and escrow payouts." }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+
+                <a href="{% url 'sell_book' %}"
+                    class="px-5 py-2.5 bg-[#FF5A1F] hover:bg-orange-600 text-white text-xs font-bold rounded-full shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5">
+                    <i class="fa-solid fa-circle-plus text-sm"></i>
+                    <span>+ List a New Book</span>
+                </a>
+                <a href="{% url 'store' %}?seller={{ seller.id }}"
+                    class="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold rounded-full border border-gray-200 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                    <span>View Public Store</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- END: Seller Store Header -->
+
+<!-- BEGIN: High-Level Metrics Strip -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-2 box-border">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <!-- Metric 1: Total Sales Revenue -->
+        <div
+            class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm flex flex-col justify-between hover:border-orange-200 transition-all">
+            <div class="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+                <span class="text-[11px] sm:text-xs text-gray-400 font-bold uppercase tracking-wider">Total Sales</span>
+                <div
+                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-sm sm:text-base flex-shrink-0">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900 tracking-tight">${{ total_revenue|floatformat:2 }}</h3>
+                <p class="text-[10px] sm:text-[11px] text-gray-400 font-medium mt-1 truncate">Gross lifetime sales</p>
+            </div>
+        </div>
+
+        <!-- Metric 2: Available Wallet Balance -->
+        <div
+            class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm flex flex-col justify-between hover:border-orange-200 transition-all">
+            <div class="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+                <span class="text-[11px] sm:text-xs text-gray-400 font-bold uppercase tracking-wider">Available
+                    Balance</span>
+                <div
+                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-sm sm:text-base flex-shrink-0">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900 tracking-tight">${{ available_balance|floatformat:2 }}</h3>
+                <p class="text-[10px] sm:text-[11px] text-gray-400 font-medium mt-1 truncate">${{ escrow_balance|floatformat:2 }} in escrow</p>
+            </div>
+        </div>
+
+        <!-- Metric 3: Active Listings -->
+        <div
+            class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm flex flex-col justify-between hover:border-orange-200 transition-all">
+            <div class="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+                <span class="text-[11px] sm:text-xs text-gray-400 font-bold uppercase tracking-wider">Inventory</span>
+                <div
+                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-sm sm:text-base flex-shrink-0">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900 tracking-tight">{{ active_count }}
+                </h3>
+                <p class="text-[10px] sm:text-[11px] text-gray-400 font-medium mt-1 truncate">{{ total_listings }} Total
+                    • {{ sold_count }} Sold</p>
+            </div>
+        </div>
+
+        <!-- Metric 4: Orders Awaiting Dispatch -->
+        <div
+            class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm flex flex-col justify-between hover:border-orange-200 transition-all">
+            <div class="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+                <span class="text-[11px] sm:text-xs text-gray-400 font-bold uppercase tracking-wider">To Dispatch</span>
+                <div
+                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-sm sm:text-base flex-shrink-0 relative">
+                    <i class="fa-solid fa-truck-fast"></i>
+                    {% if waiting_shipments_count > 0 %}
+                    <span
+                        class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FF5A1F] text-white text-[9px] font-black flex items-center justify-center ring-2 ring-white">
+                        {{ waiting_shipments_count }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900 tracking-tight">{{ waiting_shipments_count }}</h3>
+                <p class="text-[10px] sm:text-[11px] text-gray-400 font-medium mt-1 truncate">{{ in_transit_count }}
+                    Transit • {{ delivered_count }} Done</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- END: High-Level Metrics Strip -->
+
+<!-- BEGIN: Navigation Tabs -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 box-border">
+    <div class="flex items-center space-x-2 sm:space-x-4 border-b border-gray-200 overflow-x-auto no-scrollbar">
+        <a href="{% url 'seller_dashboard' %}?tab=overview"
+            class="flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap {% if active_tab == 'overview' %}border-[#FF5A1F] text-[#FF5A1F]{% else %}border-transparent text-gray-500 hover:text-gray-900{% endif %}">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>Overview</span>
+        </a>
+        <a href="{% url 'seller_dashboard' %}?tab=listings"
+            class="flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap {% if active_tab == 'listings' %}border-[#FF5A1F] text-[#FF5A1F]{% else %}border-transparent text-gray-500 hover:text-gray-900{% endif %}">
+            <i class="fa-solid fa-book-open"></i>
+            <span>My Listings</span>
+            <span
+                class="text-[10px] px-2 py-0.5 rounded-full {% if active_tab == 'listings' %}bg-orange-100 text-[#FF5A1F]{% else %}bg-gray-100 text-gray-600{% endif %} font-bold">{{ total_listings }}</span>
+        </a>
+        <a href="{% url 'seller_dashboard' %}?tab=shipments"
+            class="flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap {% if active_tab == 'shipments' %}border-[#FF5A1F] text-[#FF5A1F]{% else %}border-transparent text-gray-500 hover:text-gray-900{% endif %}">
+            <i class="fa-solid fa-truck-fast"></i>
+            <span>Orders & Shipments</span>
+            {% if waiting_shipments_count > 0 %}
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-red-500 text-white font-bold animate-pulse">{{ waiting_shipments_count }}</span>
+            {% endif %}
+        </a>
+        <a href="{% url 'seller_dashboard' %}?tab=wallet"
+            class="flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap {% if active_tab == 'wallet' %}border-[#FF5A1F] text-[#FF5A1F]{% else %}border-transparent text-gray-500 hover:text-gray-900{% endif %}">
+            <i class="fa-solid fa-wallet"></i>
+            <span>Wallet & Payouts</span>
+        </a>
+        <a href="{% url 'seller_dashboard' %}?tab=settings"
+            class="flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap {% if active_tab == 'settings' %}border-[#FF5A1F] text-[#FF5A1F]{% else %}border-transparent text-gray-500 hover:text-gray-900{% endif %}">
+            <i class="fa-solid fa-gear"></i>
+            <span>Store Settings</span>
+        </a>
+    </div>
+</section>
+<!-- END: Navigation Tabs -->
+
+<!-- BEGIN: Tab Content Sections -->
+<div class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 box-border">
+
+    <!-- ==================== TAB 1: OVERVIEW ==================== -->
+    {% if active_tab == 'overview' %}
+    <div class="space-y-6">
+        <!-- Quick Action Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Card 1: Add New Book -->
+            <div
+                class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 hover:border-orange-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+                <div>
+                    <div
+                        class="w-11 h-11 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-lg mb-3.5 group-hover:bg-[#FF5A1F] group-hover:text-white transition-all">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <h4 class="font-heading font-bold text-gray-900 text-base">Add Book Listing</h4>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Autofill details by ISBN, choose condition
+                        grade, and list physical copies in under 1 minute.</p>
+                </div>
+                <a href="{% url 'sell_book' %}"
+                    class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#FF5A1F] group-hover:gap-2.5 transition-all">
+                    <span>Create listing now</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+
+            <!-- Card 2: Dispatch Pending Orders -->
+            <div
+                class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 hover:border-orange-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+                <div>
+                    <div
+                        class="w-11 h-11 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-lg mb-3.5 group-hover:bg-[#FF5A1F] group-hover:text-white transition-all">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <h4 class="font-heading font-bold text-gray-900 text-base">Courier Handover</h4>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Assign orders to Steadfast Courier or Pathao
+                        Courier, generate consignment numbers and print labels.</p>
+                </div>
+                <a href="{% url 'seller_dashboard' %}?tab=shipments"
+                    class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#FF5A1F] group-hover:gap-2.5 transition-all">
+                    <span>Manage shipments ({{ waiting_shipments_count }} pending)</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+
+            <!-- Card 3: Request Payout -->
+            <div
+                class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 hover:border-orange-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+                <div>
+                    <div
+                        class="w-11 h-11 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-lg mb-3.5 group-hover:bg-[#FF5A1F] group-hover:text-white transition-all">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <h4 class="font-heading font-bold text-gray-900 text-base">Instant Payouts</h4>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Transfer cleared escrow balances directly to
+                        your verified bKash, Nagad, or Bangladeshi Bank Account.</p>
+                </div>
+                <a href="{% url 'seller_dashboard' %}?tab=wallet"
+                    class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#FF5A1F] group-hover:gap-2.5 transition-all">
+                    <span>Withdraw balance (${{ available_balance|floatformat:2 }})</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Two Column Activity: Recent Shipments + Recent Listings -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left: Orders Awaiting Dispatch -->
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+                    <h3 class="font-heading font-bold text-base text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-truck-fast text-[#FF5A1F]"></i>
+                        <span>Recent Orders & Shipments</span>
+                    </h3>
+                    <a href="{% url 'seller_dashboard' %}?tab=shipments"
+                        class="text-xs font-bold text-[#FF5A1F] hover:underline">View All →</a>
+                </div>
+
+                {% if recent_shipments %}
+                <div class="space-y-3">
+                    {% for shipment in recent_shipments %}
+                    <div
+                        class="p-3.5 rounded-xl border border-gray-100 bg-gray-50/60 hover:bg-gray-50 transition-colors flex items-center justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-gray-900">Order #{{ shipment.order.id|stringformat:".8s" }}</span>
+                                {% if shipment.status == 'WAITING_SELLER' %}
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-[#FF5A1F]">Waiting
+                                    Dispatch</span>
+                                {% elif shipment.status == 'IN_TRANSIT' %}
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">In
+                                    Transit</span>
+                                {% elif shipment.status == 'DELIVERED' %}
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-900 font-bold">Delivered</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-1">
+                                Buyer: {{ shipment.order.buyer.email }} • Shipping: ${{ shipment.shipping_fee|floatformat:2 }}
+                            </p>
+                        </div>
+                        <a href="{% url 'seller_dashboard' %}?tab=shipments"
+                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-colors">
+                            Details
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-400">
+                    <i class="fa-solid fa-box-open text-3xl mb-2 text-gray-300"></i>
+                    <p class="text-xs">No pending orders yet. Keep your listings updated!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right: Recent Inventory Listings -->
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+                    <h3 class="font-heading font-bold text-base text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-boxes-stacked text-[#FF5A1F]"></i>
+                        <span>Recent Book Listings</span>
+                    </h3>
+                    <a href="{% url 'seller_dashboard' %}?tab=listings"
+                        class="text-xs font-bold text-[#FF5A1F] hover:underline">View All →</a>
+                </div>
+
+                {% if recent_listings %}
+                <div class="space-y-3">
+                    {% for listing in recent_listings %}
+                    <div
+                        class="p-3.5 rounded-xl border border-gray-100 bg-gray-50/60 hover:bg-gray-50 transition-colors flex items-center justify-between gap-3">
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <div class="w-10 h-13 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0">
+                                {% if listing.images.first %}
+                                <img src="{{ listing.images.first.image.url }}" alt="{{ listing.book.title }}"
+                                    class="w-full h-full object-cover">
+                                {% else %}
+                                <div
+                                    class="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold bg-gray-100">
+                                    📖</div>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0">
+                                <h5 class="text-xs font-bold text-gray-900 truncate">{{ listing.book.title }}</h5>
+                                <p class="text-[11px] text-gray-500 truncate">{{ listing.get_condition_display }} • ${{ listing.price }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            {% if listing.status == 'ACTIVE' %}
+                            <span
+                                class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-[#FF5A1F]">Active</span>
+                            {% elif listing.status == 'SOLD' %}
+                            <span
+                                class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">Sold</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">{{ listing.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-400">
+                    <i class="fa-solid fa-book text-3xl mb-2 text-gray-300"></i>
+                    <p class="text-xs">No book listings in your catalog yet.</p>
+                    <a href="{% url 'sell_book' %}"
+                        class="inline-block mt-2 text-xs font-bold text-[#FF5A1F] hover:underline">+ List Your First
+                        Book</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ==================== TAB 2: MY LISTINGS ==================== -->
+    {% if active_tab == 'listings' %}
+    <div class="space-y-5">
+        <!-- Sub-filter Navigation & Search Bar -->
+        <div
+            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+            <!-- Filter Pills -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar touch-scroll py-0.5">
+                <a href="{% url 'seller_dashboard' %}?tab=listings&status=ALL"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if current_status == 'ALL' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    All ({{ total_listings }})
+                </a>
+                <a href="{% url 'seller_dashboard' %}?tab=listings&status=ACTIVE"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if current_status == 'ACTIVE' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    Active ({{ active_count }})
+                </a>
+                <a href="{% url 'seller_dashboard' %}?tab=listings&status=RESERVED"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if current_status == 'RESERVED' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    In Cart ({{ reserved_count }})
+                </a>
+                <a href="{% url 'seller_dashboard' %}?tab=listings&status=SOLD"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if current_status == 'SOLD' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    Sold ({{ sold_count }})
+                </a>
+                <a href="{% url 'seller_dashboard' %}?tab=listings&status=ARCHIVED"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if current_status == 'ARCHIVED' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    Archived
+                </a>
+            </div>
+
+            <!-- Search Form & Add Book Button -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+                <form method="GET" action="{% url 'seller_dashboard' %}"
+                    class="flex items-center gap-2 w-full sm:w-auto flex-1">
+                    <input type="hidden" name="tab" value="listings">
+                    <input type="hidden" name="status" value="{{ current_status }}">
+                    <div class="relative flex-1 sm:w-60">
+                        <input type="text" name="q" value="{{ query }}" placeholder="Search title, ISBN..."
+                            class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-[#FF5A1F] transition-all">
+                        <i
+                            class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    </div>
+                    <button type="submit"
+                        class="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors whitespace-nowrap">
+                        Filter
+                    </button>
+                </form>
+
+                <a href="{% url 'sell_book' %}"
+                    class="px-4 py-2 bg-[#FF5A1F] hover:bg-orange-600 text-white rounded-xl text-xs font-bold shadow-sm whitespace-nowrap transition-colors flex items-center justify-center gap-1.5 flex-shrink-0">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>List Book</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Listings Grid -->
+        {% if listings %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {% for listing in listings %}
+            <div
+                class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between hover:border-orange-200 transition-colors">
+                <div>
+                    <!-- Top Cover and Status Badge -->
+                    <div class="relative w-full h-44 rounded-xl bg-gray-100 overflow-hidden mb-3">
+                        {% if listing.images.first %}
+                        <img src="{{ listing.images.first.image.url }}" alt="{{ listing.book.title }}"
+                            class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                            <i class="fa-solid fa-book text-3xl mb-1 text-gray-300"></i>
+                            <span class="text-[10px] uppercase font-bold text-gray-400">No Photo</span>
+                        </div>
+                        {% endif %}
+
+                        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shadow-sm
+                            {% if listing.status == 'ACTIVE' %}bg-emerald-500 text-white
+                            {% elif listing.status == 'RESERVED' %}bg-amber-500 text-white
+                            {% elif listing.status == 'SOLD' %}bg-blue-600 text-white
+                            {% else %}bg-gray-600 text-white{% endif %}">
+                            {{ listing.status }}
+                        </span>
+
+                        <span
+                            class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-black/60 text-white backdrop-blur-sm">
+                            {{ listing.get_condition_display }}
+                        </span>
+                    </div>
+
+                    <!-- Book Metadata -->
+                    <h4 class="font-heading font-bold text-sm text-gray-900 line-clamp-2"
+                        title="{{ listing.book.title }}">
+                        {{ listing.book.title }}
+                    </h4>
+                    <p class="text-[11px] text-gray-500 mt-0.5 truncate">
+                        By {{ listing.book.authors.first.name|default:"Unknown Author" }}
+                    </p>
+                    <p class="text-[10px] text-gray-400 mt-1 font-mono">
+                        ISBN: {{ listing.book.isbn_13|default:listing.book.isbn_10|default:"N/A" }}
+                    </p>
+
+                    <!-- Features -->
+                    <div class="flex flex-wrap gap-1 mt-2">
+                        {% if listing.is_hardcover %}
+                        <span
+                            class="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-semibold">Hardcover</span>
+                        {% endif %}
+                        {% if listing.is_signed_by_author %}
+                        <span
+                            class="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold">Signed</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Price and Quick Edit Form -->
+                <div class="pt-3 mt-3 border-t border-gray-100">
+                    <form method="POST" action="{% url 'seller_dashboard' %}"
+                        class="flex items-center justify-between gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_price">
+                        <input type="hidden" name="listing_id" value="{{ listing.id }}">
+
+                        <div class="flex items-center gap-1">
+                            <span class="text-xs text-gray-400 font-bold">$</span>
+                            <input type="number" step="0.01" min="0.50" name="price" value="{{ listing.price }}"
+                                class="w-20 px-2 py-1 text-xs font-bold text-gray-900 border border-gray-200 rounded-lg focus:border-[#FF5A1F] focus:outline-none">
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <button type="submit" title="Save Price"
+                                class="px-2 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors">
+                                Save
+                            </button>
+                            <a href="{% url 'toggle_listing' listing.id %}" title="Toggle Active / Archive"
+                                class="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                                {% if listing.status == 'ACTIVE' %}Archive{% else %}Activate{% endif %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl p-8 sm:p-12 text-center border border-gray-100 shadow-sm">
+            <div
+                class="w-14 h-14 rounded-2xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-2xl mx-auto mb-3">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3 class="font-heading font-bold text-base text-gray-900">No book listings found</h3>
+            <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">There are no book listings matching your selected
+                filter or search term.</p>
+            <a href="{% url 'sell_book' %}"
+                class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FF5A1F] text-white text-xs font-bold hover:bg-orange-600 transition-colors shadow-sm">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>List a Book Now</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+
+    <!-- ==================== TAB 3: ORDERS & SHIPMENTS ==================== -->
+    {% if active_tab == 'shipments' %}
+    <div class="space-y-5">
+        <!-- Sub-filter Strip -->
+        <div
+            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar touch-scroll py-0.5">
+                <a href="{% url 'seller_dashboard' %}?tab=shipments&shipment_status=ALL"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if shipment_status_filter == 'ALL' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    All Shipments
+                </a>
+                <a href="{% url 'seller_dashboard' %}?tab=shipments&shipment_status=WAITING_SELLER"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if shipment_status_filter == 'WAITING_SELLER' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    To Dispatch ({{ waiting_shipments_count }})
+                </a>
+                <a href="{% url 'seller_dashboard' %}?tab=shipments&shipment_status=IN_TRANSIT"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if shipment_status_filter == 'IN_TRANSIT' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    In Transit ({{ in_transit_count }})
+                </a>
+                <a href="{% url 'seller_dashboard' %}?tab=shipments&shipment_status=DELIVERED"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all {% if shipment_status_filter == 'DELIVERED' %}bg-[#FF5A1F] text-white shadow-sm shadow-orange-500/20{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    Delivered ({{ delivered_count }})
+                </a>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs text-gray-500 font-semibold">
+                <i class="fa-solid fa-circle-info text-[#FF5A1F]"></i>
+                <span class="text-[11px] sm:text-xs">Supported Couriers: Steadfast, Pathao, eCourier</span>
+            </div>
+        </div>
+
+        <!-- Shipments List -->
+        {% if all_shipments %}
+        <div class="space-y-4">
+            {% for shipment in all_shipments %}
+            <div
+                class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5 hover:border-gray-200 transition-colors">
+                <div class="space-y-2 max-w-xl">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-mono text-xs font-black text-gray-900">Shipment #{{ shipment.id|stringformat:".8s" }}</span>
+                        <span class="text-xs text-gray-400">• Order #{{ shipment.order.id|stringformat:".8s" }}</span>
+                        {% if shipment.status == 'WAITING_SELLER' %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                            Awaiting Courier Handover
+                        </span>
+                        {% elif shipment.status == 'IN_TRANSIT' %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                            In Transit ({{ shipment.courier_name }})
+                        </span>
+                        {% elif shipment.status == 'DELIVERED' %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            Delivered
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Book Items in this shipment -->
+                    <div class="space-y-1">
+                        {% for item in shipment.items.all %}
+                        <div class="text-xs text-gray-700 font-medium flex items-center gap-2">
+                            <span class="text-[#FF5A1F] font-bold">1x</span>
+                            <span class="font-bold">{{ item.listing.book.title }}</span>
+                            <span class="text-gray-400">({{ item.listing.get_condition_display }})</span>
+                            <span class="text-gray-900 font-bold">${{ item.price }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-xs text-gray-400 italic">No item details recorded</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Destination address snapshot -->
+                    <p class="text-[11px] text-gray-500">
+                        <i class="fa-solid fa-location-dot text-gray-400 mr-1"></i>
+                        Deliver to: <span class="font-semibold text-gray-700">{{ shipment.order.buyer.first_name }} {{ shipment.order.buyer.last_name }}</span>,
+                        {{ shipment.order.shipping_address_snapshot.city|default:"Dhaka" }}, {{ shipment.order.shipping_address_snapshot.district|default:"Bangladesh" }}
+                    </p>
+
+                    {% if shipment.tracking_number %}
+                    <p class="text-[11px] text-gray-600 font-mono">
+                        <i class="fa-solid fa-barcode text-gray-400 mr-1"></i>
+                        Tracking #: <span class="font-bold text-gray-900">{{ shipment.tracking_number }}</span>
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Action / Dispatch Form -->
+                <div class="lg:w-80 flex-shrink-0 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    {% if shipment.status == 'WAITING_SELLER' %}
+                    <form method="POST" action="{% url 'seller_dashboard' %}" class="space-y-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="dispatch_shipment">
+                        <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">Assign Courier Partner</label>
+                            <select name="courier_name"
+                                class="w-full text-xs bg-white border border-gray-200 rounded-lg p-2 focus:outline-none focus:border-[#43A047]">
+                                <option value="Steadfast Courier">Steadfast Courier (Fastest Pickup)</option>
+                                <option value="Pathao Courier">Pathao Courier</option>
+                                <option value="Paperfly / RedX">Paperfly / RedX</option>
+                                <option value="Sundarban Courier Service">Sundarban Courier</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">Tracking / Consignment ID
+                                (Optional)</label>
+                            <input type="text" name="tracking_number" placeholder="e.g. STDF-198234"
+                                class="w-full text-xs bg-white border border-gray-200 rounded-lg p-2 focus:outline-none focus:border-[#FF5A1F]">
+                        </div>
+
+                        <button type="submit"
+                            class="w-full py-2.5 bg-[#FF5A1F] hover:bg-orange-600 text-white rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-truck text-xs"></i>
+                            <span>Mark Dispatched to Courier</span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                            <span>Dispatched via {{ shipment.courier_name }}</span>
+                        </p>
+                        <a href="{% url 'parcel_tracking_detail' shipment.tracking_number %}"
+                            class="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF5A1F] hover:underline">
+                            <i class="fa-solid fa-location-arrow text-[10px]"></i>
+                            <span>Track Live Parcel Status</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl p-8 sm:p-12 text-center border border-gray-100 shadow-sm">
+            <div
+                class="w-14 h-14 rounded-2xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center text-2xl mx-auto mb-3">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+            <h3 class="font-heading font-bold text-base text-gray-900">No shipments found</h3>
+            <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">When buyers purchase your books, orders will appear
+                here ready for courier dispatch.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+
+    <!-- ==================== TAB 4: WALLET & PAYOUTS ==================== -->
+    {% if active_tab == 'wallet' %}
+    <div class="space-y-6">
+        <!-- Escrow Policy Notice Strip -->
+        <div
+            class="bg-orange-50/70 border border-orange-100 rounded-2xl p-4 flex items-start space-x-3 text-xs text-orange-950">
+            <i class="fa-solid fa-shield-halved text-lg text-[#FF5A1F] mt-0.5 flex-shrink-0"></i>
+            <div>
+                <p class="font-bold">Platform Buyer & Seller Escrow Protection Active</p>
+                <p class="text-orange-900/80 mt-0.5 leading-relaxed">
+                    Customer payments are held securely in platform escrow. Upon confirmed courier delivery, funds clear
+                    automatically into your available balance after the standard 3-day return window.
+                </p>
+            </div>
+        </div>
+
+        <!-- Wallet Two-Column: Withdrawal Form & Balances -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left: Request Withdrawal -->
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm lg:col-span-1 space-y-4">
+                <h3
+                    class="font-heading font-bold text-base text-gray-900 flex items-center gap-2 pb-2 border-b border-gray-100">
+                    <i class="fa-solid fa-money-bill-transfer text-[#FF5A1F]"></i>
+                    <span>Request Payout</span>
+                </h3>
+
+                <div class="p-3.5 bg-gray-50 rounded-xl space-y-1">
+                    <p class="text-[11px] text-gray-500 font-semibold">Available for Immediate Payout</p>
+                    <p class="font-heading font-black text-2xl text-gray-900">${{ available_balance|floatformat:2 }}</p>
+                </div>
+
+                <form method="POST" action="{% url 'seller_dashboard' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="request_payout">
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Withdrawal Amount ($)</label>
+                        <input type="number" step="0.01" min="1.00" max="{{ available_balance }}" name="amount"
+                            value="{{ available_balance }}"
+                            class="w-full text-sm font-bold bg-white border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A1F]">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Payout Channel</label>
+                        <select name="payout_method"
+                            class="w-full text-xs bg-white border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A1F]">
+                            {% if profile.payout_method == "BKASH" %}
+                            <option value="BKASH" selected>bKash Mobile Wallet</option>
+                            {% else %}
+                            <option value="BKASH">bKash Mobile Wallet</option>
+                            {% endif %}
+
+                            {% if profile.payout_method == "NAGAD" %}
+                            <option value="NAGAD" selected>Nagad Mobile Wallet</option>
+                            {% else %}
+                            <option value="NAGAD">Nagad Mobile Wallet</option>
+                            {% endif %}
+
+                            {% if profile.payout_method == "BANK" %}
+                            <option value="BANK" selected>Direct Bank Transfer (EFTN / BEFTN)</option>
+                            {% else %}
+                            <option value="BANK">Direct Bank Transfer (EFTN / BEFTN)</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Account Number / Details</label>
+                        <input type="text" name="account_details" value="{{ profile.payout_account_details }}"
+                            placeholder="e.g. 017XXXXXXXX or Bank Account No"
+                            class="w-full text-xs bg-white border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A1F]"
+                            required>
+                    </div>
+
+                    {% if available_balance <= 0 %}
+                    <button type="submit" disabled
+                        class="w-full py-3 bg-[#FF5A1F] hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-down-to-bracket text-xs"></i>
+                        <span>Submit Payout Request</span>
+                    </button>
+                    {% else %}
+                    <button type="submit"
+                        class="w-full py-3 bg-[#FF5A1F] hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-down-to-bracket text-xs"></i>
+                        <span>Submit Payout Request</span>
+                    </button>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Right: Financial Ledger Table -->
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm lg:col-span-2">
+                <h3
+                    class="font-heading font-bold text-base text-gray-900 flex items-center gap-2 pb-3 border-b border-gray-100 mb-4">
+                    <i class="fa-solid fa-receipt text-[#43A047]"></i>
+                    <span>Financial Transaction Ledger</span>
+                </h3>
+
+                {% if ledger_entries %}
+                <div class="overflow-x-auto no-scrollbar">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="text-gray-400 uppercase text-[10px] tracking-wider border-b border-gray-100">
+                                <th class="pb-2">Date</th>
+                                <th class="pb-2">Type</th>
+                                <th class="pb-2">Reference</th>
+                                <th class="pb-2 text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 font-medium">
+                            {% for entry in ledger_entries %}
+                            <tr>
+                                <td class="py-3 text-gray-500">{{ entry.created_at|date:"M d, Y" }}</td>
+                                <td class="py-3">
+                                    {% if entry.entry_type == 'SALE_CREDIT' %}
+                                    <span
+                                        class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-[#43A047]">Book
+                                        Sale Credit</span>
+                                    {% elif entry.entry_type == 'PLATFORM_FEE' %}
+                                    <span
+                                        class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600">Platform
+                                        Commission (15%)</span>
+                                    {% elif entry.entry_type == 'PAYOUT_DEBIT' %}
+                                    <span
+                                        class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700">Withdrawal
+                                        Paid</span>
+                                    {% else %}
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-700">{{ entry.entry_type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 font-mono text-gray-400 text-[11px]">{{ entry.reference_id }}</td>
+                                <td
+                                    class="py-3 text-right font-bold {% if entry.entry_type == 'SALE_CREDIT' %}text-[#43A047]{% else %}text-gray-900{% endif %}">
+                                    {% if entry.entry_type == 'SALE_CREDIT' %}+{% else %}-{% endif %}${{ entry.amount|floatformat:2 }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-400">
+                    <p class="text-xs">No financial ledger records found yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ==================== TAB 5: STORE SETTINGS ==================== -->
+    {% if active_tab == 'settings' %}
+    <div class="max-w-2xl bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+        <div>
+            <h3 class="font-heading font-bold text-lg text-gray-900">Store Profile & Payout Settings</h3>
+            <p class="text-xs text-gray-500 mt-1">Configure your marketplace storefront details and default payout
+                routing.</p>
+        </div>
+
+        <form method="POST" action="{% url 'seller_dashboard' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_settings">
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Store / Merchant Display Name</label>
+                <input type="text" name="store_name" value="{{ profile.store_name }}"
+                    class="w-full text-xs font-bold bg-gray-50 border border-gray-200 rounded-xl p-3 focus:bg-white focus:outline-none focus:border-[#FF5A1F]"
+                    required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">About Store / Bio</label>
+                <textarea name="bio" rows="3"
+                    placeholder="Tell readers about your book collection, rare finds, or condition standards..."
+                    class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:bg-white focus:outline-none focus:border-[#FF5A1F]">{{ profile.bio }}</textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Merchant Contact Phone</label>
+                    <input type="text" name="phone_number" value="{{ seller.phone_number }}"
+                        class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:bg-white focus:outline-none focus:border-[#FF5A1F]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Preferred Payout Channel</label>
+                    <select name="payout_method"
+                        class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:bg-white focus:outline-none focus:border-[#FF5A1F]">
+                        {% if profile.payout_method == "BKASH" %}
+                        <option value="BKASH" selected>bKash</option>
+                        {% else %}
+                        <option value="BKASH">bKash</option>
+                        {% endif %}
+
+                        {% if profile.payout_method == "NAGAD" %}
+                        <option value="NAGAD" selected>Nagad</option>
+                        {% else %}
+                        <option value="NAGAD">Nagad</option>
+                        {% endif %}
+
+                        {% if profile.payout_method == "BANK" %}
+                        <option value="BANK" selected>Bank Account</option>
+                        {% else %}
+                        <option value="BANK">Bank Account</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Default Account Number / Routing
+                    Details</label>
+                <input type="text" name="payout_account_details" value="{{ profile.payout_account_details }}"
+                    placeholder="e.g. 01712345678 or DBBL A/C 123-456"
+                    class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:bg-white focus:outline-none focus:border-[#FF5A1F]">
+            </div>
+
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-gray-800">Identity & Merchant Verification (KYC)</p>
+                    <p class="text-[11px] text-gray-500">Status: <span class="font-bold text-emerald-600">{{ profile.get_kyc_status_display }}</span></p>
+                </div>
+                <a href="{% url 'seller_apply' %}" class="text-xs font-bold text-[#43A047] hover:underline">Manage KYC
+                    →</a>
+            </div>
+
+            <button type="submit"
+                class="px-6 py-3 bg-[#FF5A1F] hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-orange-500/20">
+                Save Store Settings
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+<!-- END: Tab Content Sections -->
+{% endblock %}

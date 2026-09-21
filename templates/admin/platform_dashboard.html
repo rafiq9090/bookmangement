@@ -1,0 +1,658 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Platform Admin Operations | e-Book Marketplace{% endblock %}
+
+{% block content %}
+<!-- BEGIN: Financial KPIs Strip -->
+<section class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <!-- KPI 1: Gross Sales (GMV) -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center space-x-4 hover:border-orange-200 transition-colors">
+            <i class="fa-solid fa-sack-dollar text-2xl text-[#FF5A1F] flex-shrink-0"></i>
+            <div>
+                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Gross Sales (GMV)</p>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">${{ total_gmv|floatformat:2 }}</h3>
+                <p class="text-[10px] text-emerald-600 font-semibold mt-0.5">{{ total_orders_count }} total orders placed</p>
+            </div>
+        </div>
+
+        <!-- KPI 2: Platform Revenue (15% Commission) -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center space-x-4 hover:border-orange-200 transition-colors">
+            <i class="fa-solid fa-chart-pie text-2xl text-[#FF5A1F] flex-shrink-0"></i>
+            <div>
+                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Platform Commission</p>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">${{ platform_revenue|floatformat:2 }}</h3>
+                <p class="text-[10px] text-[#FF5A1F] font-semibold mt-0.5">15% fee on seller transactions</p>
+            </div>
+        </div>
+
+        <!-- KPI 3: Escrow In Custody -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center space-x-4 hover:border-orange-200 transition-colors">
+            <i class="fa-solid fa-vault text-2xl text-[#FF5A1F] flex-shrink-0"></i>
+            <div>
+                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Escrow in Custody</p>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">${{ escrow_held|floatformat:2 }}</h3>
+                <p class="text-[10px] text-blue-600 font-semibold mt-0.5">Protected buyer funds held</p>
+            </div>
+        </div>
+
+        <!-- KPI 4: Disbursed Payouts -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center space-x-4 hover:border-orange-200 transition-colors">
+            <i class="fa-solid fa-money-bill-transfer text-2xl text-[#FF5A1F] flex-shrink-0"></i>
+            <div>
+                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Disbursed Payouts</p>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">${{ total_payouts|floatformat:2 }}</h3>
+                <p class="text-[10px] text-purple-600 font-semibold mt-0.5">Paid out to verified sellers</p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- END: Financial KPIs Strip -->
+
+
+
+<!-- BEGIN: Tab Content Sections -->
+<div class="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 box-border">
+
+    <!-- ==================== TAB 1: OVERVIEW ==================== -->
+    {% if active_tab == 'overview' %}
+    <div class="space-y-6">
+        <!-- Operational Health Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Registered Users</p>
+                <h4 class="font-heading font-black text-2xl text-gray-900 mt-1">{{ total_users_count }}</h4>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Active Sellers</p>
+                <h4 class="font-heading font-black text-2xl text-emerald-600 mt-1">{{ total_sellers_count }}</h4>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Pending KYC Review</p>
+                <h4 class="font-heading font-black text-2xl text-amber-600 mt-1">{{ pending_kyc_count }}</h4>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Awaiting Courier</p>
+                <h4 class="font-heading font-black text-2xl text-blue-600 mt-1">{{ pending_dispatch_count }}</h4>
+            </div>
+        </div>
+
+        <!-- Two Columns: Pending Seller Applications + Recent Orders Stream -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Pending KYC Verification Applications -->
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                    <h3 class="font-heading font-bold text-base text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-[#FF5A1F]"></i>
+                        <span>Pending Seller Approvals</span>
+                    </h3>
+                    <a href="{% url 'platform_admin_dashboard' %}?tab=kyc"
+                        class="text-xs font-bold text-[#FF5A1F] hover:underline">View All ({{ pending_kyc_count }})
+                        →</a>
+                </div>
+
+                {% if recent_sellers %}
+                <div class="space-y-3">
+                    {% for seller_prof in recent_sellers %}
+                    <div
+                        class="p-3.5 rounded-xl border border-gray-100 bg-gray-50/60 flex items-center justify-between gap-3">
+                        <div>
+                            <h5 class="text-xs font-bold text-gray-900">{{ seller_prof.store_name }}</h5>
+                            <p class="text-[11px] text-gray-500">{{ seller_prof.user.email }} • NID: {{ seller_prof.national_id_number|default:"Uploaded" }}</p>
+                        </div>
+                        <form method="POST" action="{% url 'platform_admin_dashboard' %}"
+                            class="flex items-center gap-1.5">
+                            {% csrf_token %}
+                            <input type="hidden" name="profile_id" value="{{ seller_prof.id }}">
+                            <button type="submit" name="action" value="approve_kyc"
+                                class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors shadow-sm">
+                                Approve
+                            </button>
+                            <button type="submit" name="action" value="reject_kyc"
+                                class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-gray-200 hover:bg-red-100 hover:text-red-700 text-gray-700 transition-colors">
+                                Reject
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-400">
+                    <i class="fa-solid fa-circle-check text-3xl mb-2 text-[#FF5A1F]"></i>
+                    <p class="text-xs">No pending seller verification requests. All caught up!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Column: Recent Marketplace Orders -->
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                    <h3 class="font-heading font-bold text-base text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-basket-shopping text-[#FF5A1F]"></i>
+                        <span>Recent Order Placements</span>
+                    </h3>
+                    <a href="{% url 'platform_admin_dashboard' %}?tab=orders"
+                        class="text-xs font-bold text-[#FF5A1F] hover:underline">View All →</a>
+                </div>
+
+                {% if recent_orders %}
+                <div class="space-y-3">
+                    {% for order in recent_orders %}
+                    <div
+                        class="p-3.5 rounded-xl border border-gray-100 bg-gray-50/60 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-gray-900">Order #{{ order.id|stringformat:".8s" }}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold
+                                    {% if order.status == 'PAID' %}bg-emerald-100 text-emerald-700
+                                    {% elif order.status == 'COMPLETED' %}bg-blue-100 text-blue-700
+                                    {% elif order.status == 'PENDING' %}bg-amber-100 text-amber-700
+                                    {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-0.5">
+                                Buyer: {{ order.buyer.email }} • Total: <span class="font-bold text-gray-900">${{ order.total_amount }}</span>
+                            </p>
+                        </div>
+                        <a href="{% url 'order_detail' order.id %}" target="_blank"
+                            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:text-[#FF5A1F] transition-colors">
+                            Invoice
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-400">
+                    <p class="text-xs">No orders recorded in the marketplace yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ==================== TAB 2: SELLER KYC QUEUE ==================== -->
+    {% if active_tab == 'kyc' %}
+    <div class="space-y-4">
+        <!-- Filter Strip -->
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center justify-between gap-4">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <a href="{% url 'platform_admin_dashboard' %}?tab=kyc&kyc_status=ALL"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if kyc_filter == 'ALL' %}bg-gray-900 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    All Merchants
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=kyc&kyc_status=PENDING"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if kyc_filter == 'PENDING' %}bg-amber-500 text-white{% else %}bg-amber-50 text-amber-800 hover:bg-amber-100{% endif %}">
+                    Pending Review ({{ pending_kyc_count }})
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=kyc&kyc_status=VERIFIED"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if kyc_filter == 'VERIFIED' %}bg-emerald-600 text-white{% else %}bg-emerald-50 text-emerald-800 hover:bg-emerald-100{% endif %}">
+                    Verified Sellers
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=kyc&kyc_status=REJECTED"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if kyc_filter == 'REJECTED' %}bg-red-600 text-white{% else %}bg-red-50 text-red-700 hover:bg-red-100{% endif %}">
+                    Rejected
+                </a>
+            </div>
+        </div>
+
+        <!-- KYC Table -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto no-scrollbar">
+                <table class="w-full text-left text-xs">
+                    <thead
+                        class="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="py-3.5 px-4">Store / Merchant</th>
+                            <th class="py-3.5 px-4">Owner Email & Phone</th>
+                            <th class="py-3.5 px-4">National ID (NID)</th>
+                            <th class="py-3.5 px-4">Payout Method</th>
+                            <th class="py-3.5 px-4">KYC Status</th>
+                            <th class="py-3.5 px-4 text-right">Administrative Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium">
+                        {% for sp in sellers_query %}
+                        <tr class="hover:bg-gray-50/70 transition-colors">
+                            <td class="py-3.5 px-4">
+                                <span class="font-bold text-gray-900 block">{{ sp.store_name }}</span>
+                                <span class="text-[11px] text-gray-400">Joined {{ sp.created_at|date:"M d, Y" }}</span>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <span class="text-gray-800 block">{{ sp.user.email }}</span>
+                                <span class="text-[11px] text-gray-500">{{ sp.user.phone_number|default:"No phone" }}</span>
+                            </td>
+                            <td class="py-3.5 px-4 font-mono text-gray-700">
+                                {{ sp.national_id_number|default:"Not Provided" }}
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">
+                                    {{ sp.get_payout_method_display }}
+                                </span>
+                                <span class="block text-[10px] text-gray-400 font-mono mt-0.5">{{ sp.payout_account_details|default:"" }}</span>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                {% if sp.kyc_status == 'VERIFIED' %}
+                                <span
+                                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                    <i class="fa-solid fa-circle-check text-[9px]"></i> Verified
+                                </span>
+                                {% elif sp.kyc_status == 'PENDING' %}
+                                <span
+                                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                    <i class="fa-solid fa-clock text-[9px]"></i> Under Review
+                                </span>
+                                {% else %}
+                                <span
+                                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">
+                                    {{ sp.get_kyc_status_display }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3.5 px-4 text-right">
+                                <form method="POST" action="{% url 'platform_admin_dashboard' %}"
+                                    class="inline-flex items-center gap-1.5">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="profile_id" value="{{ sp.id }}">
+                                    {% if sp.kyc_status != 'VERIFIED' %}
+                                    <button type="submit" name="action" value="approve_kyc"
+                                        class="px-3 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm">
+                                        Approve
+                                    </button>
+                                    {% endif %}
+                                    {% if sp.kyc_status != 'REJECTED' %}
+                                    <button type="submit" name="action" value="reject_kyc"
+                                        class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-gray-100 hover:bg-red-50 hover:text-red-700 text-gray-600 transition-colors">
+                                        Reject
+                                    </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-10 text-gray-400">
+                                No merchant profiles found matching this status filter.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ==================== TAB 3: ESCROW & PAYOUTS ==================== -->
+    {% if active_tab == 'payouts' %}
+    <div class="space-y-6">
+        <!-- Payout Requests Section -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <h3
+                class="font-heading font-bold text-base text-gray-900 pb-3 border-b border-gray-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-money-bill-transfer text-[#FF5A1F]"></i>
+                <span>Seller Withdrawal & Payout Requests</span>
+            </h3>
+
+            {% if payout_batches %}
+            <div class="overflow-x-auto no-scrollbar">
+                <table class="w-full text-left text-xs">
+                    <thead
+                        class="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="py-3 px-3">Date</th>
+                            <th class="py-3 px-3">Seller</th>
+                            <th class="py-3 px-3">Payout Method</th>
+                            <th class="py-3 px-3">Account Details</th>
+                            <th class="py-3 px-3">Status</th>
+                            <th class="py-3 px-3">Amount</th>
+                            <th class="py-3 px-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium">
+                        {% for pb in payout_batches %}
+                        <tr>
+                            <td class="py-3 px-3 text-gray-500">{{ pb.created_at|date:"M d, Y" }}</td>
+                            <td class="py-3 px-3 font-bold text-gray-800">{{ pb.seller.email }}</td>
+                            <td class="py-3 px-3">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700">
+                                    {{ pb.get_payout_method_display }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-3 font-mono text-gray-600">{{ pb.account_details }}</td>
+                            <td class="py-3 px-3">
+                                {% if pb.status == 'COMPLETED' %}
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">Paid
+                                    & Done</span>
+                                {% elif pb.status == 'REQUESTED' %}
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Requested</span>
+                                {% else %}
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">{{ pb.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-3 font-black text-gray-900">${{ pb.amount|floatformat:2 }}</td>
+                            <td class="py-3 px-3 text-right">
+                                {% if pb.status != 'COMPLETED' %}
+                                <form method="POST" action="{% url 'platform_admin_dashboard' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="complete_payout">
+                                    <input type="hidden" name="batch_id" value="{{ pb.id }}">
+                                    <button type="submit"
+                                        class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-sm transition-colors">
+                                        Mark Paid
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-xs text-gray-400 font-bold">Disbursed ✓</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <p class="text-xs">No payout withdrawal requests recorded.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Escrow Holds Custody Table -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <h3
+                class="font-heading font-bold text-base text-gray-900 pb-3 border-b border-gray-100 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-vault text-[#FF5A1F]"></i>
+                <span>Active Escrow Holds in Platform Custody</span>
+            </h3>
+
+            {% if escrow_holds %}
+            <div class="overflow-x-auto no-scrollbar">
+                <table class="w-full text-left text-xs">
+                    <thead
+                        class="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="py-3 px-3">Escrow ID</th>
+                            <th class="py-3 px-3">Order</th>
+                            <th class="py-3 px-3">Seller Payee</th>
+                            <th class="py-3 px-3">Hold Status</th>
+                            <th class="py-3 px-3">Net Seller Amount</th>
+                            <th class="py-3 px-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium">
+                        {% for eh in escrow_holds %}
+                        <tr>
+                            <td class="py-3 px-3 font-mono text-gray-500 text-[11px]">#{{ eh.id|stringformat:".8s" }}
+                            </td>
+                            <td class="py-3 px-3">
+                                <a href="{% url 'order_detail' eh.order.id %}" target="_blank"
+                                    class="font-bold text-[#FF5A1F] hover:underline">
+                                    Order #{{ eh.order.id|stringformat:".8s" }}
+                                </a>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700">{{ eh.shipment.seller.email }}</td>
+                            <td class="py-3 px-3">
+                                {% if eh.status == 'HELD' %}
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Held
+                                    in Custody</span>
+                                {% elif eh.status == 'RELEASED' %}
+                                <span
+                                    class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">Released
+                                    to Seller</span>
+                                {% else %}
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">{{ eh.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-3 font-black text-gray-900">${{ eh.seller_net_amount|floatformat:2 }}
+                            </td>
+                            <td class="py-3 px-3 text-right">
+                                {% if eh.status == 'HELD' %}
+                                <form method="POST" action="{% url 'platform_admin_dashboard' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="release_escrow">
+                                    <input type="hidden" name="escrow_id" value="{{ eh.id }}">
+                                    <button type="submit"
+                                        class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] shadow-sm transition-colors">
+                                        Release Early
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-xs text-gray-400 font-bold">Released ✓</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <p class="text-xs">No active escrow holds currently.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ==================== TAB 4: GLOBAL ORDERS & SHIPMENTS ==================== -->
+    {% if active_tab == 'orders' %}
+    <div class="space-y-4">
+        <!-- Order Filters -->
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center justify-between gap-4">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <a href="{% url 'platform_admin_dashboard' %}?tab=orders&order_status=ALL"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if orders_status == 'ALL' %}bg-gray-900 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    All Orders ({{ total_orders_count }})
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=orders&order_status=PAID"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if orders_status == 'PAID' %}bg-emerald-600 text-white{% else %}bg-emerald-50 text-emerald-800 hover:bg-emerald-100{% endif %}">
+                    Paid & Escrow Held
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=orders&order_status=PROCESSING"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if orders_status == 'PROCESSING' %}bg-blue-600 text-white{% else %}bg-blue-50 text-blue-800 hover:bg-blue-100{% endif %}">
+                    In Transit
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=orders&order_status=COMPLETED"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if orders_status == 'COMPLETED' %}bg-green-700 text-white{% else %}bg-green-50 text-green-800 hover:bg-green-100{% endif %}">
+                    Delivered
+                </a>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto no-scrollbar">
+                <table class="w-full text-left text-xs">
+                    <thead
+                        class="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="py-3 px-4">Order ID & Date</th>
+                            <th class="py-3 px-4">Buyer Details</th>
+                            <th class="py-3 px-4">Delivery City</th>
+                            <th class="py-3 px-4">Shipments / Couriers</th>
+                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4">Total Amount</th>
+                            <th class="py-3 px-4 text-right">View</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium">
+                        {% for o in all_orders %}
+                        <tr class="hover:bg-gray-50/70 transition-colors">
+                            <td class="py-3 px-4">
+                                <span class="font-bold text-gray-900 block font-mono">#{{ o.id|stringformat:".8s" }}</span>
+                                <span class="text-[11px] text-gray-400">{{ o.created_at|date:"M d, Y P" }}</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="text-gray-900 block">{{ o.buyer.first_name }} {{ o.buyer.last_name }}</span>
+                                <span class="text-[11px] text-gray-500">{{ o.buyer.email }}</span>
+                            </td>
+                            <td class="py-3 px-4 text-gray-700">
+                                {{ o.shipping_address_snapshot.city|default:"Dhaka" }}, {{ o.shipping_address_snapshot.district|default:"Bangladesh" }}
+                            </td>
+                            <td class="py-3 px-4">
+                                {% for sh in o.shipments.all %}
+                                <div class="text-[11px] text-gray-600 mb-1">
+                                    <span class="font-bold">{{ sh.seller.first_name|default:sh.seller.email }}</span>:
+                                    <span class="text-gray-500">{{ sh.courier_name|default:"Awaiting Courier" }}</span>
+                                    {% if sh.tracking_number %}
+                                    <span class="font-mono text-[10px] text-emerald-700 block">({{ sh.tracking_number }})</span>
+                                    {% endif %}
+                                </div>
+                                {% empty %}
+                                <span class="text-gray-400 text-[11px] italic">No shipment recorded</span>
+                                {% endfor %}
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold
+                                    {% if o.status == 'PAID' %}bg-emerald-100 text-emerald-800
+                                    {% elif o.status == 'COMPLETED' %}bg-blue-100 text-blue-800
+                                    {% elif o.status == 'PENDING' %}bg-amber-100 text-amber-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ o.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 font-black text-gray-900">${{ o.total_amount }}</td>
+                            <td class="py-3 px-4 text-right">
+                                <a href="{% url 'order_detail' o.id %}" target="_blank"
+                                    class="px-2.5 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[11px] transition-colors">
+                                    Invoice
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-10 text-gray-400">
+                                No marketplace orders match this filter.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- ==================== TAB 5: CATALOG & LISTINGS ==================== -->
+    {% if active_tab == 'listings' %}
+    <div class="space-y-4">
+        <!-- Search & Filter Bar -->
+        <div
+            class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <a href="{% url 'platform_admin_dashboard' %}?tab=listings&listing_status=ALL"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if listing_status == 'ALL' %}bg-gray-900 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    All Books ({{ total_listings_count }})
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=listings&listing_status=ACTIVE"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if listing_status == 'ACTIVE' %}bg-[#43A047] text-white{% else %}bg-green-50 text-[#43A047] hover:bg-green-100{% endif %}">
+                    Active on Store
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=listings&listing_status=SOLD"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if listing_status == 'SOLD' %}bg-blue-600 text-white{% else %}bg-blue-50 text-blue-700 hover:bg-blue-100{% endif %}">
+                    Sold
+                </a>
+                <a href="{% url 'platform_admin_dashboard' %}?tab=listings&listing_status=ARCHIVED"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if listing_status == 'ARCHIVED' %}bg-gray-600 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    Archived
+                </a>
+            </div>
+
+            <!-- Search Form -->
+            <form method="GET" action="{% url 'platform_admin_dashboard' %}" class="flex items-center gap-2">
+                <input type="hidden" name="tab" value="listings">
+                <input type="hidden" name="listing_status" value="{{ listing_status }}">
+                <div class="relative w-64">
+                    <input type="text" name="q" value="{{ listing_search }}" placeholder="Search title, ISBN, seller..."
+                        class="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-[#FF5A1F]">
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                </div>
+                <button type="submit"
+                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold">
+                    Filter
+                </button>
+            </form>
+        </div>
+
+        <!-- Listings Table -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto no-scrollbar">
+                <table class="w-full text-left text-xs">
+                    <thead
+                        class="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="py-3 px-4">Book Title & ISBN</th>
+                            <th class="py-3 px-4">Condition Grade</th>
+                            <th class="py-3 px-4">Seller Account</th>
+                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4">Price</th>
+                            <th class="py-3 px-4 text-right">Moderation Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium">
+                        {% for ml in marketplace_listings %}
+                        <tr class="hover:bg-gray-50/70 transition-colors">
+                            <td class="py-3 px-4">
+                                <a href="{% url 'book_detail' ml.book.slug %}" target="_blank"
+                                    class="font-bold text-gray-900 hover:text-[#FF5A1F] block">
+                                    {{ ml.book.title }}
+                                </a>
+                                <span class="text-[10px] font-mono text-gray-400">ISBN: {{ ml.book.isbn_13|default:ml.book.isbn_10|default:"N/A" }}</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800">
+                                    {{ ml.get_condition_display }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-gray-700">
+                                {{ ml.seller.email }}
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold
+                                    {% if ml.status == 'ACTIVE' %}bg-emerald-100 text-emerald-800
+                                    {% elif ml.status == 'SOLD' %}bg-blue-100 text-blue-800
+                                    {% elif ml.status == 'RESERVED' %}bg-amber-100 text-amber-800
+                                    {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                    {{ ml.status }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 font-black text-gray-900">${{ ml.price }}</td>
+                            <td class="py-3 px-4 text-right">
+                                <form method="POST" action="{% url 'platform_admin_dashboard' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle_listing">
+                                    <input type="hidden" name="listing_id" value="{{ ml.id }}">
+                                    <button type="submit" class="px-3 py-1 rounded text-[11px] font-bold transition-colors
+                                        {% if ml.status == 'ACTIVE' %}bg-gray-100 hover:bg-amber-100 hover:text-amber-800 text-gray-700
+                                        {% else %}bg-emerald-50 text-emerald-700 hover:bg-emerald-100{% endif %}">
+                                        {% if ml.status == 'ACTIVE' %}Archive{% else %}Activate{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-10 text-gray-400">
+                                No book listings found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+<!-- END: Tab Content Sections -->
+{% endblock %}

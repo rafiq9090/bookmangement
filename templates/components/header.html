@@ -1,135 +1,187 @@
 <!-- BEGIN: MainHeader -->
-<header class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between box-border"
+<header
+    class="w-full max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex items-center justify-between box-border relative z-40"
     data-purpose="site-header">
-    <!-- Left Logo & Gift Banner -->
-    <div class="flex items-center space-x-4">
-        <a class="flex items-center space-x-1" href="{% url 'home' %}">
+
+    <!-- Left: Mobile Menu Button & Brand Logo -->
+    <div class="flex items-center space-x-2 sm:space-x-4">
+        <!-- Mobile Menu Hamburger Button -->
+        <button type="button" onclick="toggleMobileNav(true)" aria-label="Open Navigation Menu"
+            class="md:hidden p-2 rounded-xl text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30">
+            <i class="fa-solid fa-bars-staggered text-lg text-gray-800"></i>
+        </button>
+
+        <!-- Brand Logo -->
+        <a class="flex items-center space-x-1.5" href="{% url 'home' %}">
             <span
                 class="bg-[#FF5A1F] text-white font-heading font-extrabold text-2xl w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-orange-500/30">eB</span>
+            <span
+                class="hidden xs:inline-block font-heading font-black text-lg text-gray-900 tracking-tight">e-Book</span>
         </a>
+
+        <!-- Festival Offer Badge -->
         <div
-            class="hidden sm:flex items-center space-x-2 bg-amber-50/80 border border-amber-100 rounded-full px-3.5 py-1 text-xs font-semibold text-gray-700">
+            class="hidden lg:flex items-center space-x-2 bg-amber-50/80 border border-amber-100 rounded-full px-3.5 py-1 text-xs font-semibold text-gray-700">
             <i class="fa-solid fa-gift text-amber-500"></i>
-            <span class="">Festival Gift Overs</span>
+            <span>Festival Gift Offers</span>
         </div>
     </div>
-    <!-- Center Navigation Links -->
-    <nav class="hidden md:flex items-center space-x-8 text-[15px] font-medium text-gray-600"
+
+    <!-- Center Navigation Links (Desktop) -->
+    <nav class="hidden md:flex items-center space-x-6 lg:space-x-8 text-[14px] lg:text-[15px] font-medium text-gray-600"
         data-purpose="primary-navigation">
         <a class="text-[#FF5A1F] font-semibold transition-colors" href="{% url 'home' %}">Home</a>
+
+        <!-- Categories Dropdown -->
         <div
             class="relative group cursor-pointer flex items-center space-x-1 hover:text-gray-900 transition-colors py-2">
             <span>Categories</span>
             <i
                 class="fa-solid fa-chevron-down text-xs text-gray-400 group-hover:translate-y-0.5 transition-transform"></i>
-            <!-- Dropdown Menu -->
             <div
-                class="absolute top-full left-0 hidden group-hover:block bg-white border border-gray-100 rounded-2xl shadow-xl py-3 px-4 min-w-[200px] z-50 space-y-2">
-                <a href="{% url 'store' %}?category=fiction"
-                    class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Fiction</a>
-                <a href="{% url 'store' %}?category=non-fiction"
-                    class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Non
-                    Fiction</a>
-                <a href="{% url 'store' %}?category=history"
-                    class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">History</a>
-                <a href="{% url 'store' %}?category=thriller"
-                    class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Thriller</a>
-                <a href="{% url 'store' %}?category=poetry"
-                    class="block text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors">Poetry</a>
+                class="absolute top-full left-0 hidden group-hover:block bg-white border border-gray-100 rounded-2xl shadow-xl py-3 px-4 min-w-[220px] z-50 space-y-2">
+                {% for cat in nav_categories|slice:":7" %}
+                <a href="{% url 'store' %}?category={{ cat.slug }}"
+                    class="flex items-center justify-between text-xs font-semibold text-gray-700 hover:text-[#FF5A1F] transition-colors py-0.5">
+                    <span>{{ cat.name }}</span>
+                    <span class="text-[10px] text-gray-400 font-mono">({{ cat.book_count }})</span>
+                </a>
+                {% empty %}
+                <a href="{% url 'store' %}"
+                    class="block text-xs font-semibold text-gray-500 hover:text-[#FF5A1F]">Explore All Books</a>
+                {% endfor %}
                 <div class="pt-2 border-t border-gray-100">
                     <a href="{% url 'store' %}" class="block text-[11px] font-bold text-[#FF5A1F] hover:underline">All
                         Categories →</a>
                 </div>
             </div>
         </div>
-        <a class="hover:text-gray-900 transition-colors" href="{% url 'store' %}">Store</a>
-        
-        <!-- Seller Hub Dropdown -->
-        <div class="relative group cursor-pointer flex items-center space-x-1 hover:text-gray-900 transition-colors py-2">
-            <span class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-[#43A047]"></span>
-                Seller Hub
-            </span>
-            <i class="fa-solid fa-chevron-down text-xs text-gray-400 group-hover:translate-y-0.5 transition-transform"></i>
-            <div class="absolute top-full left-0 hidden group-hover:block bg-white border border-gray-100 rounded-2xl shadow-xl py-3 px-3 min-w-[220px] z-50 space-y-1">
-                <a href="{% url 'seller_listings' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
-                    <i class="fa-solid fa-boxes-stacked w-4 text-gray-400 group-hover:text-[#FF5A1F]"></i>
-                    <span>My Listings</span>
-                </a>
-                <a href="{% url 'seller_wallet' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
-                    <i class="fa-solid fa-wallet w-4 text-gray-400"></i>
-                    <span>Wallet & Payouts</span>
-                </a>
-                <a href="{% url 'seller_shipments' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
-                    <i class="fa-solid fa-truck-fast w-4 text-gray-400"></i>
-                    <span>Shipment Dispatch</span>
-                </a>
-                <div class="pt-1.5 mt-1 border-t border-gray-100">
-                    <a href="{% url 'sell_book' %}" class="flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-white bg-[#FF5A1F] hover:bg-orange-600 transition-colors shadow-sm shadow-orange-500/30">
-                        <i class="fa-solid fa-circle-plus"></i>
-                        <span>+ List a New Book</span>
-                    </a>
-                </div>
-            </div>
-        </div>
 
-        <a class="hover:text-gray-900 transition-colors flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#FF5A1F]" href="{% url 'parcel_tracking' %}">
-            <i class="fa-solid fa-location-dot text-[#43A047]"></i>
+        <a class="hover:text-gray-900 transition-colors" href="{% url 'store' %}">Store</a>
+        <a class="hover:text-gray-900 transition-colors" href="{% url 'authors_list' %}">Authors</a>
+        <a class="hover:text-[#FF5A1F] transition-colors flex items-center gap-1.5 text-gray-600"
+            href="{% url 'parcel_tracking' %}">
             <span>Track Order</span>
         </a>
     </nav>
 
     <!-- Right Action Items -->
-    <div class="flex items-center space-x-3 sm:space-x-4">
+    <div class="flex items-center space-x-2 sm:space-x-3.5">
         <!-- Cart Shopping Icon -->
         <a href="{% url 'cart' %}" aria-label="Cart"
-            class="text-gray-600 hover:text-gray-900 transition-colors text-base relative p-2 rounded-xl hover:bg-gray-100" title="View Cart">
+            class="text-gray-700 hover:text-[#FF5A1F] transition-colors text-base relative p-2 rounded-xl hover:bg-gray-100"
+            title="View Cart">
             <i class="fa-solid fa-cart-shopping"></i>
             <span
-                class="absolute 0 top-0.5 right-0.5 bg-[#FF5A1F] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-sm">
-                {{ cart_count|default:"0" }}
+                class="absolute top-0 right-0 bg-[#FF5A1F] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-sm">
+                {{ global_cart_count|default:"0" }}
             </span>
         </a>
 
-        <!-- Account & Auth Dropdown / Sign In -->
+        <!-- Account & Auth Dropdown / Sign In (Desktop & Mobile) -->
         {% if request.user.is_authenticated %}
         <div class="relative group cursor-pointer">
-            <button type="button" class="flex items-center space-x-2 py-1 px-2 rounded-2xl hover:bg-gray-100 transition-all">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#FF5A1F] to-amber-500 text-white font-bold text-xs flex items-center justify-center shadow-sm">
+            <button type="button" aria-label="Account Menu"
+                class="flex items-center space-x-1.5 py-1 px-1.5 sm:px-2 rounded-2xl hover:bg-gray-100 transition-all">
+                <div
+                    class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#FF5A1F] to-amber-500 text-white font-bold text-xs flex items-center justify-center shadow-sm overflow-hidden border border-white">
+                    {% if request.user.avatar %}
+                    <img src="{{ request.user.avatar.url }}" alt="{{ request.user.first_name }}"
+                        class="w-full h-full object-cover">
+                    {% else %}
                     {{ request.user.first_name|default:request.user.email|slice:":1"|upper }}
+                    {% endif %}
                 </div>
-                <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 group-hover:translate-y-0.5 transition-transform"></i>
+                <i
+                    class="fa-solid fa-chevron-down text-[9px] text-gray-400 group-hover:translate-y-0.5 transition-transform hidden sm:inline-block"></i>
             </button>
 
             <!-- Dropdown Menu -->
-            <div class="absolute right-0 top-full hidden group-hover:block bg-white border border-gray-100 rounded-2xl shadow-xl py-3 px-3 min-w-[220px] z-50 space-y-1">
-                <div class="px-3 py-2 border-b border-gray-100 mb-1">
-                    <p class="text-xs font-bold text-gray-900 truncate">{{ request.user.first_name|default:"" }} {{ request.user.last_name|default:"" }}</p>
-                    <p class="text-[10px] text-gray-500 truncate">{{ request.user.email }}</p>
+            <div
+                class="absolute right-0 top-full hidden group-hover:block bg-white border border-gray-100 rounded-2xl shadow-xl py-3 px-3 min-w-[220px] z-50 space-y-1">
+                <div class="px-3 py-2 border-b border-gray-100 mb-1 flex items-center space-x-3">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#FF5A1F] to-amber-500 text-white font-bold text-xs flex items-center justify-center shadow-xs overflow-hidden flex-shrink-0">
+                        {% if request.user.avatar %}
+                        <img src="{{ request.user.avatar.url }}" alt="{{ request.user.first_name }}"
+                            class="w-full h-full object-cover">
+                        {% else %}
+                        {{ request.user.first_name|default:request.user.email|slice:":1"|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-gray-900 truncate">{{ request.user.get_full_name|default:request.user.email }}</p>
+                        <p class="text-[10px] text-gray-500 truncate">{{ request.user.email }}</p>
+                    </div>
                 </div>
 
-                <a href="{% url 'profile' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                <a href="{% url 'profile' %}"
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
                     <i class="fa-regular fa-user w-4 text-gray-400"></i>
                     <span>My Profile</span>
                 </a>
-                <a href="{% url 'profile' %}?tab=addresses" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                <a href="{% url 'profile' %}?tab=addresses"
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
                     <i class="fa-solid fa-location-dot w-4 text-gray-400"></i>
                     <span>Saved Addresses</span>
                 </a>
-                <a href="{% url 'profile' %}?tab=orders" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                <a href="{% url 'profile' %}?tab=orders"
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
                     <i class="fa-solid fa-box-open w-4 text-gray-400"></i>
                     <span>My Orders</span>
                 </a>
 
-                {% if not request.user.is_seller %}
-                <a href="{% url 'seller_apply' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-[#43A047] hover:bg-green-50 transition-all">
-                    <i class="fa-solid fa-bolt w-4"></i>
+                {% if request.user.is_seller %}
+                <!-- Account Mode Switcher Widget in Dropdown -->
+                <div
+                    class="p-2.5 my-1.5 rounded-xl bg-orange-50/70 border border-orange-100 flex items-center justify-between">
+                    <div class="min-w-0">
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Active
+                            View</span>
+                        <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            {% if request.path|slice:":8" == "/seller/" or request.path|slice:":6" == "/sell/" %}
+                            <i class="fa-solid fa-store text-[11px] text-[#]"></i> Seller Account
+                            {% else %}
+                            <i class="fa-solid fa-user text-[11px] text-[#43A047]"></i> Buyer Account
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if request.path|slice:":8" == "/seller/" or request.path|slice:":6" == "/sell/" %}
+                    <a href="{% url 'profile' %}"
+                        class="px-2.5 py-1 bg-white hover:bg-gray-50 text-gray-700 text-[10px] font-bold rounded-lg border border-gray-200 shadow-2xs transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-repeat text-[9px] text-[#FF5A1F]"></i>
+                        <span>Buyer</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'seller_dashboard' %}"
+                        class="px-2.5 py-1 bg-[#FF5A1F] hover:bg-orange-600 text-white text-[10px] font-bold rounded-lg shadow-2xs transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-repeat text-[9px]"></i>
+                        <span>Seller</span>
+                    </a>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'seller_dashboard' %}"
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-[#FF5A1F] hover:bg-orange-50 transition-all">
+                    <i class="fa-solid fa-gauge-high w-4"></i>
+                    <span>Seller Dashboard</span>
+                </a>
+                <a href="{% url 'seller_listings' %}"
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                    <i class="fa-solid fa-boxes-stacked w-4 text-gray-400"></i>
+                    <span>My Inventory</span>
+                </a>
+                {% else %}
+                <a href="{% url 'seller_apply' %}"
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-[#43A047] hover:bg-green-50 transition-all">
+                    <i class="fa-solid fa-store w-4"></i>
                     <span>Become a Seller</span>
                 </a>
                 {% endif %}
 
                 <div class="pt-1.5 mt-1 border-t border-gray-100">
-                    <a href="{% url 'logout' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-all">
+                    <a href="{% url 'logout' %}"
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-all">
                         <i class="fa-solid fa-arrow-right-from-bracket w-4"></i>
                         <span>Sign Out</span>
                     </a>
@@ -137,18 +189,270 @@
             </div>
         </div>
         {% else %}
-        <a href="{% url 'login' %}" class="flex items-center space-x-1.5 text-xs font-bold text-gray-700 hover:text-[#FF5A1F] px-3 py-2 rounded-xl hover:bg-gray-50 transition-all">
+        <a href="{% url 'login' %}"
+            class="flex items-center space-x-1.5 text-xs font-bold text-gray-700 hover:text-[#FF5A1F] px-2.5 sm:px-3 py-2 rounded-xl hover:bg-gray-100 transition-all">
             <i class="fa-regular fa-user text-sm"></i>
-            <span>Sign In</span>
+            <span class="hidden xs:inline">Sign In</span>
         </a>
         {% endif %}
 
-        <!-- Primary Sell Book Action Button -->
-        <a class="flex items-center space-x-2 bg-[#FF5A1F] text-white rounded-full px-4 py-2 text-sm font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
-            href="{% url 'sell_book' %}">
-            <i class="fa-solid fa-plus-circle text-xs"></i>
-            <span>Sell Book</span>
+        <!-- Primary Action Button: Dynamic Switch Account or Become a Seller -->
+        {% if request.user.is_authenticated %}
+        {% if request.user.is_seller %}
+        {% if request.path|slice:":8" == "/seller/" or request.path|slice:":6" == "/sell/" %}
+        <!-- When inside Seller Dashboard, give quick switch to Buyer view -->
+        <a class="hidden sm:inline-flex items-center space-x-2 bg-[#FF5A1F] text-white rounded-full px-3.5 sm:px-4 hover:bg-orange-600 py-2 text-xs sm:text-sm font-bold shadow-md hover:-translate-y-0.5 transition-all"
+            href="{% url 'profile' %}" title="Switch to Buyer Account">
+            <i class="fa-solid fa-repeat text-xs"></i>
+            <span class="hidden md:inline">Switch to Buyer</span>
+            <span class="md:hidden">Buyer</span>
         </a>
+        {% else %}
+        <!-- When in Buyer View, show Switch Account to Seller -->
+        <a class="hidden sm:inline-flex items-center space-x-2 bg-[#FF5A1F] text-white rounded-full px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
+            href="{% url 'seller_dashboard' %}" title="Switch to Seller Account">
+            <i class="fa-solid fa-repeat text-xs"></i>
+            <span class="hidden md:inline">Switch Account</span>
+            <span class="md:hidden">Switch</span>
+        </a>
+        {% endif %}
+        {% else %}
+        <!-- Normal Buyer who hasn't registered as a seller yet -->
+        <a class="hidden sm:inline-flex items-center space-x-2 bg-[#43A047] text-white rounded-full px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold shadow-md shadow-green-600/20 hover:bg-green-700 hover:-translate-y-0.5 transition-all"
+            href="{% url 'seller_apply' %}">
+            <i class="fa-solid fa-store text-xs"></i>
+            <span class="hidden md:inline">Become a Seller</span>
+            <span class="md:hidden">Sell</span>
+        </a>
+        {% endif %}
+        {% else %}
+        <a class="hidden sm:inline-flex items-center space-x-2 bg-[#FF5A1F] text-white rounded-full px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
+            href="{% url 'seller_apply' %}">
+            <i class="fa-solid fa-store text-xs"></i>
+            <span>Become a Seller</span>
+        </a>
+        {% endif %}
     </div>
 </header>
 <!-- END: MainHeader -->
+
+<!-- ================= MOBILE NAVIGATION DRAWER & BACKDROP ================= -->
+<div id="mobileNavBackdrop" onclick="toggleMobileNav(false)"
+    class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden opacity-0 transition-opacity duration-300"></div>
+
+<aside id="mobileNavDrawer"
+    class="fixed top-0 left-0 bottom-0 w-[300px] sm:w-[340px] max-w-[85vw] bg-white shadow-2xl z-50 flex flex-col transform -translate-x-full transition-transform duration-300 ease-out">
+
+    <!-- Drawer Top Header -->
+    <div class="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-[#FFFDF9]">
+        <a class="flex items-center space-x-2" href="{% url 'home' %}" onclick="toggleMobileNav(false)">
+            <span
+                class="bg-[#FF5A1F] text-white font-heading font-extrabold text-xl w-9 h-9 rounded-xl flex items-center justify-center shadow-md shadow-orange-500/30">eB</span>
+            <span class="font-heading font-black text-lg text-gray-900 tracking-tight">e-Book</span>
+        </a>
+        <button type="button" onclick="toggleMobileNav(false)" aria-label="Close Menu"
+            class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+            <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+    </div>
+
+    <!-- Drawer Navigation Links -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+        <!-- Main Links -->
+        <div class="space-y-1">
+            <a href="{% url 'home' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-800 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                <i class="fa-solid fa-house w-5 text-[#FF5A1F]"></i>
+                <span>Home</span>
+            </a>
+
+            <a href="{% url 'store' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-800 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                <i class="fa-solid fa-book-open w-5 text-[#FF5A1F]"></i>
+                <span>Browse Store</span>
+            </a>
+
+            <a href="{% url 'authors_list' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-800 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                <i class="fa-solid fa-feather-pointed w-5 text-[#FF5A1F]"></i>
+                <span>Meet Authors</span>
+            </a>
+
+            <!-- Expandable Categories Accordion -->
+            <div>
+                <button type="button" onclick="toggleMobileCategories()"
+                    class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold text-gray-800 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                    <span class="flex items-center gap-3">
+                        <i class="fa-solid fa-layer-group w-5 text-[#FF5A1F]"></i>
+                        <span>Book Categories</span>
+                    </span>
+                    <i id="mobileCatChevron"
+                        class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform"></i>
+                </button>
+                <div id="mobileCategoriesList" class="hidden pl-8 pr-2 py-1 space-y-1">
+                    {% for cat in nav_categories|slice:":8" %}
+                    <a href="{% url 'store' %}?category={{ cat.slug }}" onclick="toggleMobileNav(false)"
+                        class="flex items-center justify-between py-1.5 px-2 rounded-lg text-xs font-semibold text-gray-600 hover:text-[#FF5A1F] hover:bg-gray-50">
+                        <span>{{ cat.name }}</span>
+                        <span class="text-[10px] text-gray-400 font-mono">{{ cat.book_count }}</span>
+                    </a>
+                    {% empty %}
+                    <a href="{% url 'store' %}" onclick="toggleMobileNav(false)"
+                        class="block py-1 text-xs text-gray-500">All Collections</a>
+                    {% endfor %}
+                    <a href="{% url 'store' %}" onclick="toggleMobileNav(false)"
+                        class="block pt-1 text-xs font-bold text-[#FF5A1F]">
+                        View All Categories →
+                    </a>
+                </div>
+            </div>
+
+            <a href="{% url 'parcel_tracking' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-800 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                <i class="fa-solid fa-truck-fast w-5 text-[#FF5A1F]"></i>
+                <span>Track Order</span>
+            </a>
+
+            <a href="{% url 'cart' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold text-gray-800 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                <span class="flex items-center gap-3">
+                    <i class="fa-solid fa-cart-shopping w-5 text-[#FF5A1F]"></i>
+                    <span>Shopping Cart</span>
+                </span>
+                <span class="bg-[#FF5A1F] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                    {{ global_cart_count|default:"0" }}
+                </span>
+            </a>
+        </div>
+
+        <!-- Divider -->
+        <hr class="border-gray-100">
+
+        <!-- User / Seller Hub Links -->
+        <div class="space-y-1">
+            <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-gray-400">Account & Selling</span>
+
+            {% if request.user.is_authenticated %}
+            <a href="{% url 'profile' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-50">
+                <i class="fa-regular fa-user w-5 text-gray-400"></i>
+                <span>My Profile</span>
+            </a>
+            <a href="{% url 'profile' %}?tab=orders" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-50">
+                <i class="fa-solid fa-box-open w-5 text-gray-400"></i>
+                <span>My Orders</span>
+            </a>
+
+            {% if request.user.is_seller %}
+            <div
+                class="px-3 py-2 my-1 rounded-xl bg-orange-50/80 border border-orange-100 flex items-center justify-between">
+                <span class="text-[11px] font-bold text-gray-700">
+                    {% if request.path|slice:":8" == "/seller/" or request.path|slice:":6" == "/sell/" %}Seller Mode{% else %}Buyer Mode{% endif %}
+                </span>
+                {% if request.path|slice:":8" == "/seller/" or request.path|slice:":6" == "/sell/" %}
+                <a href="{% url 'profile' %}" onclick="toggleMobileNav(false)"
+                    class="text-[10px] font-extrabold text-[#FF5A1F] flex items-center gap-1 hover:underline">
+                    <i class="fa-solid fa-repeat"></i> Switch to Buyer
+                </a>
+                {% else %}
+                <a href="{% url 'seller_dashboard' %}" onclick="toggleMobileNav(false)"
+                    class="text-[10px] font-extrabold text-[#FF5A1F] flex items-center gap-1 hover:underline">
+                    <i class="fa-solid fa-repeat"></i> Switch to Seller
+                </a>
+                {% endif %}
+            </div>
+            <a href="{% url 'seller_dashboard' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-[#FF5A1F] hover:bg-orange-50">
+                <i class="fa-solid fa-gauge-high w-5"></i>
+                <span>Seller Dashboard</span>
+            </a>
+            <a href="{% url 'seller_listings' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-50">
+                <i class="fa-solid fa-book-bookmark w-5 text-gray-400"></i>
+                <span>Inventory & Listings</span>
+            </a>
+            <a href="{% url 'sell_book' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-[#FF5A1F] hover:bg-orange-50">
+                <i class="fa-solid fa-plus w-5"></i>
+                <span>Sell a Book</span>
+            </a>
+            {% else %}
+            <a href="{% url 'seller_apply' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-[#FF5A1F] hover:bg-orange-50">
+                <i class="fa-solid fa-store w-5"></i>
+                <span>Become a Seller</span>
+            </a>
+            {% endif %}
+
+            <div class="pt-2">
+                <a href="{% url 'logout' %}" onclick="toggleMobileNav(false)"
+                    class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50">
+                    <i class="fa-solid fa-arrow-right-from-bracket w-5"></i>
+                    <span>Sign Out</span>
+                </a>
+            </div>
+            {% else %}
+            <a href="{% url 'login' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-gray-800 hover:bg-gray-100">
+                <i class="fa-regular fa-user w-5 text-gray-400"></i>
+                <span>Sign In</span>
+            </a>
+            <a href="{% url 'register' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-[#43A047] hover:bg-green-50">
+                <i class="fa-solid fa-user-plus w-5"></i>
+                <span>Create Free Account</span>
+            </a>
+            <a href="{% url 'seller_apply' %}" onclick="toggleMobileNav(false)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-[#FF5A1F] hover:bg-orange-50">
+                <i class="fa-solid fa-store w-5"></i>
+                <span>Become a Seller</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Drawer Footer Info -->
+    <div class="p-4 border-t border-gray-100 bg-gray-50/70 text-center">
+        <p class="text-[11px] text-gray-500">eB Online Peer-to-Peer Bookshop</p>
+        <p class="text-[10px] text-gray-400 mt-0.5">Nationwide Express Delivery</p>
+    </div>
+</aside>
+
+<script>
+    function toggleMobileNav(open) {
+        const backdrop = document.getElementById('mobileNavBackdrop');
+        const drawer = document.getElementById('mobileNavDrawer');
+        if (!backdrop || !drawer) return;
+
+        if (open) {
+            backdrop.classList.remove('hidden');
+            // Trigger reflow for transition
+            void backdrop.offsetWidth;
+            backdrop.classList.remove('opacity-0');
+            drawer.classList.remove('-translate-x-full');
+            document.body.classList.add('overflow-hidden');
+        } else {
+            backdrop.classList.add('opacity-0');
+            drawer.classList.add('-translate-x-full');
+            document.body.classList.remove('overflow-hidden');
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+            }, 300);
+        }
+    }
+
+    function toggleMobileCategories() {
+        const list = document.getElementById('mobileCategoriesList');
+        const chevron = document.getElementById('mobileCatChevron');
+        if (!list || !chevron) return;
+
+        if (list.classList.contains('hidden')) {
+            list.classList.remove('hidden');
+            chevron.classList.add('rotate-180');
+        } else {
+            list.classList.add('hidden');
+            chevron.classList.remove('rotate-180');
+        }
+    }
+</script>

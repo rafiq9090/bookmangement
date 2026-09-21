@@ -18,21 +18,6 @@ def seller_wallet_view(request):
     seller = get_or_create_seller_user(request)
     _, _, cart_count = get_cart_items_for_request(request)
 
-    # Initialize sample ledger entry if fresh
-    if not SellerLedger.objects.filter(seller=seller).exists():
-        SellerLedger.objects.create(
-            seller=seller,
-            entry_type=SellerLedger.EntryType.SALE_CREDIT,
-            amount=Decimal("45.50"),
-            reference_id="INIT-SALE-101",
-        )
-        SellerLedger.objects.create(
-            seller=seller,
-            entry_type=SellerLedger.EntryType.PLATFORM_FEE,
-            amount=Decimal("4.55"),
-            reference_id="COMM-101",
-        )
-
     # Handle Payout Withdrawal POST
     if request.method == "POST":
         amount_str = request.POST.get("amount", "0").strip()
@@ -82,7 +67,7 @@ def seller_wallet_view(request):
         shipment__seller=seller,
         status=EscrowHold.EscrowStatus.HELD,
     ).aggregate(total=Sum("seller_net_amount"))
-    escrow_balance = escrow_agg["total"] or Decimal("12.50")
+    escrow_balance = escrow_agg["total"] or Decimal("0.00")
 
     ledger_entries = SellerLedger.objects.filter(seller=seller).order_by("-created_at")[:20]
     payout_requests = PayoutBatch.objects.filter(seller=seller).order_by("-created_at")[:10]

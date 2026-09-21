@@ -26,19 +26,19 @@
                 Manage your book inventory, track sold editions, and update listing prices.
             </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
             <a href="{% url 'seller_wallet' %}"
-               class="px-4 py-2.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-bold rounded-full border border-orange-200 transition-colors flex items-center gap-2">
+               class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-bold rounded-full border border-orange-200 transition-colors flex items-center gap-1.5 sm:gap-2">
                 <i class="fa-solid fa-wallet text-xs"></i>
-                <span>Wallet Payouts</span>
+                <span>Wallet</span>
             </a>
             <a href="{% url 'seller_shipments' %}"
-               class="px-4 py-2.5 bg-green-50 hover:bg-green-100 text-[#43A047] text-xs font-bold rounded-full border border-green-200 transition-colors flex items-center gap-2">
+               class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-green-50 hover:bg-green-100 text-[#43A047] text-xs font-bold rounded-full border border-green-200 transition-colors flex items-center gap-1.5 sm:gap-2">
                 <i class="fa-solid fa-truck-fast text-xs"></i>
                 <span>Shipments</span>
             </a>
             <a href="{% url 'sell_book' %}"
-               class="px-5 py-2.5 bg-[#FF5A1F] hover:bg-orange-600 text-white text-xs font-bold rounded-full shadow-md shadow-orange-500/20 transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+               class="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#FF5A1F] hover:bg-orange-600 text-white text-xs font-bold rounded-full shadow-md shadow-orange-500/20 transition-all flex items-center gap-1.5 sm:gap-2 transform hover:-translate-y-0.5">
                 <i class="fa-solid fa-plus text-xs"></i>
                 <span>Sell a Book</span>
             </a>
@@ -48,8 +48,8 @@
 <!-- END: Seller Header & Quick Actions -->
 
 <!-- BEGIN: Metrics Overview Cards -->
-<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-2 box-border">
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+<section class="w-full max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-8 py-2 box-border">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <!-- Metric 1: Total Listings -->
         <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center space-x-4">
             <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-xl flex-shrink-0">

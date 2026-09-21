@@ -81,9 +81,26 @@
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-16 box-border">
     <div class="flex flex-col lg:flex-row gap-8 items-start">
 
+        <!-- Mobile Filter Toggle Button (< lg) -->
+        <div class="lg:hidden w-full flex items-center justify-between gap-3">
+            <button type="button" onclick="toggleStoreFilters()"
+                class="flex-1 py-2.5 px-4 bg-white border border-gray-200 rounded-2xl shadow-xs text-xs font-bold text-gray-800 flex items-center justify-center gap-2 hover:border-[#FF5A1F] transition-colors">
+                <i class="fa-solid fa-sliders text-[#FF5A1F]"></i>
+                <span>Filter Books</span>
+                {% if selected_category or min_price or max_price %}
+                    <span class="w-2 h-2 rounded-full bg-[#FF5A1F]"></span>
+                {% endif %}
+            </button>
+            {% if selected_category or query or min_price or max_price %}
+                <a href="{% url 'store' %}" class="py-2.5 px-4 bg-rose-50 text-rose-600 rounded-2xl text-xs font-bold border border-rose-100">
+                    Reset
+                </a>
+            {% endif %}
+        </div>
+
         <!-- =================== LEFT FILTER SIDEBAR =================== -->
-        <aside class="w-full lg:w-72 flex-shrink-0 space-y-6">
-            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6">
+        <aside id="storeFilterSidebar" class="hidden lg:block w-full lg:w-72 flex-shrink-0 space-y-6">
+            <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-6">
                 <!-- Sidebar Header -->
                 <div class="flex items-center justify-between pb-4 border-b border-gray-100">
                     <h3 class="font-heading font-extrabold text-base text-gray-900 flex items-center gap-2">
@@ -162,7 +179,72 @@
                         </button>
                     </form>
                 </div>
+
+                <!-- 3. Customer Rating Filter -->
+                <div class="space-y-3 pt-4 border-t border-gray-100">
+                    <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Customer Rating</h4>
+                    <div class="space-y-1.5 text-xs">
+                        <a href="{% url 'store' %}?{% if query %}q={{ query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}" class="flex items-center justify-between px-3 py-1.5 rounded-xl transition-all {% if not min_rating %}bg-orange-50 text-[#FF5A1F] font-bold{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+                            <span>All Ratings</span>
+                        </a>
+                        <a href="{% url 'store' %}?rating=4{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="flex items-center justify-between px-3 py-1.5 rounded-xl transition-all {% if min_rating == '4' %}bg-orange-50 text-[#FF5A1F] font-bold{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+                            <span class="flex items-center gap-1.5">
+                                <span class="text-amber-400 flex items-center">
+                                    <i class="fa-solid fa-star text-[10px]"></i>
+                                    <i class="fa-solid fa-star text-[10px]"></i>
+                                    <i class="fa-solid fa-star text-[10px]"></i>
+                                    <i class="fa-solid fa-star text-[10px]"></i>
+                                    <i class="fa-regular fa-star text-gray-300 text-[10px]"></i>
+                                </span>
+                                <span>4★ & Above</span>
+                            </span>
+                        </a>
+                        <a href="{% url 'store' %}?rating=3{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" class="flex items-center justify-between px-3 py-1.5 rounded-xl transition-all {% if min_rating == '3' %}bg-orange-50 text-[#FF5A1F] font-bold{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+                            <span class="flex items-center gap-1.5">
+                                <span class="text-amber-400 flex items-center">
+                                    <i class="fa-solid fa-star text-[10px]"></i>
+                                    <i class="fa-solid fa-star text-[10px]"></i>
+                                    <i class="fa-solid fa-star text-[10px]"></i>
+                                    <i class="fa-regular fa-star text-gray-300 text-[10px]"></i>
+                                    <i class="fa-regular fa-star text-gray-300 text-[10px]"></i>
+                                </span>
+                                <span>3★ & Above</span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
             </div>
+
+            <!-- Community Reviews Spotlight in Sidebar -->
+            {% if featured_reviews %}
+                <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <h4 class="font-heading font-extrabold text-xs text-gray-900 flex items-center gap-1.5 uppercase tracking-wider">
+                            <i class="fa-solid fa-comments text-[#FF5A1F]"></i>
+                            <span>Recent Reviews</span>
+                        </h4>
+                        <span class="text-[10px] text-gray-400 font-medium">Verified</span>
+                    </div>
+                    <div class="space-y-3">
+                        {% for rev in featured_reviews %}
+                            <div class="p-3 rounded-2xl bg-gray-50/70 border border-gray-100 space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-gray-800 truncate">{{ rev.name }}</span>
+                                    <div class="flex items-center space-x-0.5 text-amber-400 text-[9px]">
+                                        {% for _ in rev.stars_data.full %}<i class="fa-solid fa-star"></i>{% endfor %}
+                                        {% for _ in rev.stars_data.empty %}<i class="fa-regular fa-star text-gray-300"></i>{% endfor %}
+                                    </div>
+                                </div>
+                                <p class="text-[11px] text-gray-600 line-clamp-2 leading-relaxed italic">"{{ rev.comment }}"</p>
+                                <a href="{% url 'book_detail' rev.book.slug %}#reviews" class="text-[10px] font-semibold text-[#FF5A1F] hover:underline flex items-center gap-1 truncate pt-0.5">
+                                    <i class="fa-solid fa-book-open text-[9px]"></i>
+                                    <span class="truncate">{{ rev.book.title }}</span>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </aside>
 
         <!-- =================== RIGHT PRODUCT CATALOG =================== -->
@@ -174,18 +256,24 @@
                         Showing <span class="font-bold text-gray-900">{{ page_obj.object_list|length }}</span> of <span class="font-bold text-gray-900">{{ total_count }}</span> books
                     </p>
                     <!-- Active Filter Chips -->
-                    {% if selected_category or query or min_price or max_price %}
+                    {% if selected_category or query or min_price or max_price or min_rating %}
                         <div class="flex flex-wrap items-center gap-2 mt-2">
                             {% if query %}
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-[11px] font-medium">
                                     "{{ query }}"
-                                    <a href="{% url 'store' %}{% if selected_category %}?category={{ selected_category }}{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
+                                    <a href="{% url 'store' %}?{% if selected_category %}category={{ selected_category }}&{% endif %}{% if min_rating %}rating={{ min_rating }}&{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
                                 </span>
                             {% endif %}
                             {% if selected_category %}
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 text-[#FF5A1F] text-[11px] font-medium border border-orange-200">
                                     Category: {{ selected_category }}
-                                    <a href="{% url 'store' %}{% if query %}?q={{ query }}{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
+                                    <a href="{% url 'store' %}?{% if query %}q={{ query }}&{% endif %}{% if min_rating %}rating={{ min_rating }}&{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
+                                </span>
+                            {% endif %}
+                            {% if min_rating %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-medium border border-amber-200">
+                                    <i class="fa-solid fa-star text-[10px] text-amber-500"></i> {{ min_rating }}★ & Above
+                                    <a href="{% url 'store' %}?{% if query %}q={{ query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
                                 </span>
                             {% endif %}
                         </div>
@@ -206,6 +294,9 @@
                     {% if max_price %}
                         <input type="hidden" name="max_price" value="{{ max_price }}">
                     {% endif %}
+                    {% if min_rating %}
+                        <input type="hidden" name="rating" value="{{ min_rating }}">
+                    {% endif %}
                     <label for="sort-select" class="text-xs text-gray-500 font-medium whitespace-nowrap">Sort By:</label>
                     <select
                         id="sort-select"
@@ -214,6 +305,7 @@
                         class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-[#FF5A1F]"
                     >
                         <option value="featured" {% if sort == "featured" %}selected{% endif %}>Featured</option>
+                        <option value="rating" {% if sort == "rating" %}selected{% endif %}>Highest Rated</option>
                         <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Price: Low to High</option>
                         <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price: High to Low</option>
                         <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest Arrivals</option>
@@ -222,58 +314,81 @@
                 </form>
             </div>
 
-            <!-- Book Cards Grid (1:1 with Home Page Popular Collections Card Design) -->
+            <!-- Book Cards Grid: 2-Cols Mobile, 3-Cols Tablet, 4-Cols Desktop -->
             {% if page_obj.object_list %}
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                     {% for listing in page_obj.object_list %}
-                        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
+                        <div class="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
                             <!-- Book Visual Artwork Container -->
-                            <a href="{% url 'book_detail' listing.book.slug %}" class="w-full h-64 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner group-hover:scale-[1.02] transition-transform">
-                                <div class="w-36 h-52 bg-white rounded shadow-md flex flex-col items-center justify-between p-3 border border-gray-100 text-center relative overflow-hidden">
-                                    <span class="text-[9px] font-bold tracking-widest text-gray-400 uppercase">
-                                        {{ listing.book.categories.first.name|default:"BOOK" }}
-                                    </span>
-                                    <div class="w-16 h-16 rounded-full border-2 border-dashed border-[#FF5A1F]/40 flex items-center justify-center">
-                                        <i class="fa-solid fa-book-open text-xl text-[#FF5A1F]"></i>
+                            <a href="{% url 'book_detail' listing.book.slug %}" class="w-full h-44 sm:h-64 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden mb-2.5 sm:mb-4 relative flex items-center justify-center p-2 sm:p-3 shadow-inner group-hover:scale-[1.02] transition-transform">
+                                {% if listing.book.cover_image %}
+                                    <img src="{{ listing.book.cover_image.url }}" alt="{{ listing.book.title }}" class="w-24 h-36 sm:w-36 sm:h-52 object-cover rounded shadow-md border border-gray-100" />
+                                {% else %}
+                                    <div class="w-24 h-36 sm:w-36 sm:h-52 bg-white rounded shadow-md flex flex-col items-center justify-between p-2 sm:p-3 border border-gray-100 text-center relative overflow-hidden">
+                                        <span class="text-[8px] sm:text-[9px] font-bold tracking-widest text-gray-400 uppercase truncate w-full">
+                                            {{ listing.book.categories.first.name|default:"BOOK" }}
+                                        </span>
+                                        <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-full border-2 border-dashed border-[#FF5A1F]/40 flex items-center justify-center">
+                                            <i class="fa-solid fa-book-open text-base sm:text-xl text-[#FF5A1F]"></i>
+                                        </div>
+                                        <span class="text-[7px] sm:text-[8px] font-semibold text-gray-600 line-clamp-2">
+                                            {{ listing.book.title }}
+                                        </span>
                                     </div>
-                                    <span class="text-[8px] font-semibold text-gray-600 line-clamp-2">
-                                        {{ listing.book.title }}
-                                    </span>
-                                </div>
+                                {% endif %}
                             </a>
 
-                            <!-- Rating Stars -->
-                            <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                            </div>
+                            <!-- Dynamic Rating Stars & Reviews -->
+                            <a href="{% url 'book_detail' listing.book.slug %}#reviews" class="flex items-center space-x-1 text-[10px] sm:text-xs mb-1 hover:opacity-85 transition-opacity" title="{% if listing.reviews_count %}{{ listing.rounded_rating }} out of 5 stars ({{ listing.reviews_count }} review{{ listing.reviews_count|pluralize }}){% else %}No reviews yet • Add Review{% endif %}">
+                                {% if listing.reviews_count > 0 %}
+                                    <div class="flex items-center space-x-0.5 text-amber-400">
+                                        {% for _ in listing.stars_data.full %}
+                                            <i class="fa-solid fa-star text-[9px] sm:text-[10px]"></i>
+                                        {% endfor %}
+                                        {% if listing.stars_data.half %}
+                                            <i class="fa-solid fa-star-half-stroke text-[9px] sm:text-[10px]"></i>
+                                        {% endif %}
+                                        {% for _ in listing.stars_data.empty %}
+                                            <i class="fa-regular fa-star text-gray-300 text-[9px] sm:text-[10px]"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <span class="font-bold text-gray-700 text-[10px] sm:text-[11px] ml-0.5">{{ listing.rounded_rating }}</span>
+                                    <span class="text-gray-400 text-[9px] sm:text-[10px]">({{ listing.reviews_count }})</span>
+                                {% else %}
+                                    <div class="flex items-center space-x-0.5 text-gray-200">
+                                        <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                                        <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                                        <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                                        <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                                        <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                                    </div>
+                                    <span class="text-[9px] sm:text-[10px] text-gray-400 font-medium">(0)</span>
+                                {% endif %}
+                            </a>
 
                             <!-- Title & Author -->
-                            <a href="{% url 'book_detail' listing.book.slug %}" class="font-bold text-sm text-gray-900 text-center mb-0.5 line-clamp-1 group-hover:text-[#FF5A1F] transition-colors" title="{{ listing.book.title }}">
+                            <a href="{% url 'book_detail' listing.book.slug %}" class="font-bold text-xs sm:text-sm text-gray-900 text-center mb-0.5 line-clamp-1 group-hover:text-[#FF5A1F] transition-colors" title="{{ listing.book.title }}">
                                 {{ listing.book.title }}
                             </a>
-                            <p class="text-[11px] text-gray-400 mb-2 font-mono">
+                            <p class="text-[10px] sm:text-[11px] text-gray-400 mb-2 font-mono">
                                 ISBN-{{ listing.book.isbn_10|default:listing.book.isbn_13 }}
                             </p>
 
                             <!-- Price Display -->
-                            <div class="flex items-center space-x-2 text-xs font-bold mb-3 mt-auto">
+                            <div class="flex items-center space-x-1.5 sm:space-x-2 text-xs font-bold mb-2.5 sm:mb-3 mt-auto">
                                 {% if listing.original_mrp %}
-                                    <span class="text-rose-400 line-through text-[11px]">${{ listing.original_mrp }}</span>
+                                    <span class="text-rose-400 line-through text-[10px] sm:text-[11px]">${{ listing.original_mrp }}</span>
                                 {% endif %}
-                                <span class="text-green-600 font-extrabold text-sm">${{ listing.price }}</span>
+                                <span class="text-[#FF5A1F] font-extrabold text-xs sm:text-sm font-mono">${{ listing.price }}</span>
                             </div>
 
-                            <!-- Action Button (Matching Home page Purchase button) -->
+                            <!-- Action Button -->
                             <a
                                 href="{% url 'book_detail' listing.book.slug %}"
-                                class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all"
+                                class="w-full py-1.5 sm:py-2 px-2 sm:px-3 border border-gray-200 group-hover:border-[#FF5A1F] rounded-xl text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-[#FF5A1F] group-hover:bg-orange-50/50 flex items-center justify-center space-x-1.5 transition-all"
                             >
-                                <span>Purchase</span>
-                                <i class="fa-solid fa-cart-shopping text-[11px]"></i>
+                                <span>View Details</span>
+                                <i class="fa-solid fa-arrow-right text-[10px] text-[#FF5A1F]"></i>
                             </a>
                         </div>
                     {% endfor %}
@@ -348,4 +463,12 @@
 <!-- Reusable 50% Sale Ribbon Banner from Components -->
 {% include "components/sale_ribbon.html" %}
 
+<script>
+    function toggleStoreFilters() {
+        const sidebar = document.getElementById('storeFilterSidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('hidden');
+        }
+    }
+</script>
 {% endblock %}

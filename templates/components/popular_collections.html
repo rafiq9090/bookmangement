@@ -5,113 +5,119 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
         <div>
             <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Popular Collections</h2>
-            <p class="text-xs sm:text-sm text-gray-400 mt-1">Handpicked editions available for direct purchase</p>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">Handpicked editions available for direct purchase</p>
         </div>
-        <div class="flex items-center space-x-3 sm:space-x-5 text-sm font-medium text-gray-500 overflow-x-auto pb-1">
-            <a href="{% url 'store' %}" class="text-green-600 font-bold border-b-2 border-green-600 pb-1 flex-shrink-0">All</a>
+        <div class="flex items-center space-x-3 sm:space-x-5 text-sm font-medium text-gray-500 overflow-x-auto pb-1 no-scrollbar touch-scroll">
+            <a href="{% url 'store' %}" class="text-[#FF5A1F] font-bold border-b-2 border-[#FF5A1F] pb-1 flex-shrink-0">All</a>
             {% for cat in categories|slice:":5" %}
                 <a href="{% url 'store' %}?category={{ cat.slug }}" class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">{{ cat.name }}</a>
-            {% empty %}
-                <a href="{% url 'store' %}?category=fiction" class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">Fiction</a>
-                <a href="{% url 'store' %}?category=history" class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">History</a>
-                <a href="{% url 'store' %}?category=thriller" class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">Thriller</a>
-                <a href="{% url 'store' %}?category=non-fiction" class="hover:text-gray-900 transition-colors pb-1 flex-shrink-0">Non Fiction</a>
             {% endfor %}
             <a href="{% url 'store' %}" class="text-[#FF5A1F] hover:text-orange-600 font-semibold pb-1 flex-shrink-0">View All →</a>
         </div>
     </div>
 
-    <!-- Book Grid 4 Columns x 2 Rows -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Book Grid: 2 Columns Mobile, 4 Columns Desktop -->
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {% for item in featured_books %}
-            <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
+            <div class="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
                 <!-- Book Artwork Cover linking to Book Detail -->
                 <a href="{% url 'book_detail' item.listing.book.slug %}"
-                   class="w-full h-64 bg-gradient-to-b {{ item.style.bg_gradient }} rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner group-hover:scale-[1.02] transition-transform">
-                    <div class="w-36 h-52 {{ item.style.book_bg }} {{ item.style.text_color }} {{ item.style.border }} rounded shadow-md flex flex-col items-center justify-between p-3 border text-center">
-                        <span class="text-[9px] font-bold tracking-widest uppercase opacity-80 truncate w-full">
-                            {{ item.style.badge }}
-                        </span>
-                        <div class="my-auto flex flex-col items-center justify-center">
-                            <i class="fa-solid {{ item.style.icon }} text-3xl opacity-80 mb-2"></i>
-                            <span class="text-[8px] font-bold leading-tight line-clamp-2 px-1">
-                                {{ item.listing.book.title }}
+                   class="w-full h-44 sm:h-64 bg-gradient-to-b {{ item.style.bg_gradient }} rounded-xl overflow-hidden mb-2.5 sm:mb-4 relative flex items-center justify-center p-2 sm:p-3 shadow-inner group-hover:scale-[1.02] transition-transform">
+                    {% if item.listing.book.cover_image %}
+                        <img src="{{ item.listing.book.cover_image.url }}" alt="{{ item.listing.book.title }}" class="w-24 h-36 sm:w-36 sm:h-52 object-cover rounded shadow-md border border-gray-200" />
+                    {% else %}
+                        <div class="w-24 h-36 sm:w-36 sm:h-52 {{ item.style.book_bg }} {{ item.style.text_color }} {{ item.style.border }} rounded shadow-md flex flex-col items-center justify-between p-2 sm:p-3 border text-center">
+                            <span class="text-[8px] sm:text-[9px] font-bold tracking-widest uppercase opacity-80 truncate w-full">
+                                {{ item.style.badge }}
+                            </span>
+                            <div class="my-auto flex flex-col items-center justify-center">
+                                <i class="fa-solid {{ item.style.icon }} text-2xl sm:text-3xl opacity-80 mb-1.5"></i>
+                                <span class="text-[7px] sm:text-[8px] font-bold leading-tight line-clamp-2 px-1">
+                                    {{ item.listing.book.title }}
+                                </span>
+                            </div>
+                            <span class="text-[7px] sm:text-[8px] font-medium opacity-80 truncate w-full">
+                                {{ item.style.sub }}
                             </span>
                         </div>
-                        <span class="text-[8px] font-medium opacity-80 truncate w-full">
-                            {{ item.style.sub }}
-                        </span>
-                    </div>
+                    {% endif %}
                 </a>
 
-                <!-- Stars -->
-                <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                </div>
+                <!-- Dynamic Stars Rating & Reviews -->
+                <a href="{% url 'book_detail' item.listing.book.slug %}#reviews" class="flex items-center space-x-1 text-[10px] sm:text-xs mb-1 hover:opacity-85 transition-opacity" title="{% if item.listing.reviews_count %}{{ item.listing.rounded_rating }} out of 5 stars ({{ item.listing.reviews_count }} review{{ item.listing.reviews_count|pluralize }}){% else %}No reviews yet • Add Review{% endif %}">
+                    {% if item.listing.reviews_count > 0 %}
+                        <div class="flex items-center space-x-0.5 text-amber-400">
+                            {% for _ in item.listing.stars_data.full %}
+                                <i class="fa-solid fa-star text-[9px] sm:text-[10px]"></i>
+                            {% endfor %}
+                            {% if item.listing.stars_data.half %}
+                                <i class="fa-solid fa-star-half-stroke text-[9px] sm:text-[10px]"></i>
+                            {% endif %}
+                            {% for _ in item.listing.stars_data.empty %}
+                                <i class="fa-regular fa-star text-gray-300 text-[9px] sm:text-[10px]"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="font-bold text-gray-700 text-[10px] sm:text-[11px] ml-0.5">{{ item.listing.rounded_rating }}</span>
+                        <span class="text-gray-400 text-[9px] sm:text-[10px]">({{ item.listing.reviews_count }})</span>
+                    {% else %}
+                        <div class="flex items-center space-x-0.5 text-gray-200">
+                            <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                            <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                            <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                            <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                            <i class="fa-regular fa-star text-[9px] sm:text-[10px]"></i>
+                        </div>
+                        <span class="text-[9px] sm:text-[10px] text-gray-400 font-medium">(0)</span>
+                    {% endif %}
+                </a>
 
                 <!-- Book Title linking to Book Detail -->
                 <a href="{% url 'book_detail' item.listing.book.slug %}"
-                   class="font-bold text-sm text-gray-900 text-center mb-0.5 hover:text-[#FF5A1F] transition-colors line-clamp-1 w-full"
+                   class="font-bold text-xs sm:text-sm text-gray-900 text-center mb-0.5 hover:text-[#FF5A1F] transition-colors line-clamp-1 w-full"
                    title="{{ item.listing.book.title }}">
                     {{ item.listing.book.title }}
                 </a>
 
-                <p class="text-[11px] text-gray-400 mb-2 font-mono">
+                <!-- Author & ISBN -->
+                <p class="text-[10px] sm:text-[11px] text-gray-500 mb-0.5 truncate max-w-full text-center">
+                    {% for auth in item.listing.book.authors.all %}
+                        {{ auth.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Featured Author
+                    {% endfor %}
+                </p>
+                <p class="text-[9px] sm:text-[10px] text-gray-400 mb-2 font-mono">
                     ISBN-{{ item.listing.book.isbn_10|default:item.listing.book.isbn_13|default:"1002365478" }}
                 </p>
 
                 <!-- Price -->
-                <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                    <span class="text-rose-400 line-through text-[11px]">${{ item.original_price }}</span>
-                    <span class="text-green-600 font-extrabold text-sm font-mono">${{ item.listing.price }}</span>
+                <div class="flex items-center space-x-1.5 sm:space-x-2 text-xs font-bold mb-2.5 sm:mb-3">
+                    <span class="text-rose-400 line-through text-[10px] sm:text-[11px]">${{ item.original_price }}</span>
+                    <span class="text-[#FF5A1F] font-extrabold text-xs sm:text-sm font-mono">${{ item.listing.price }}</span>
                 </div>
 
-                <!-- Purchase Button linking to Add to Cart -->
+                <!-- Purchase Button linking to Add to Cart with direct checkout -->
                 <a href="{% url 'add_to_cart' item.listing.id %}"
-                   class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 group-hover:bg-green-50/50 flex items-center justify-center space-x-2 transition-all">
-                    <span>Purchase</span>
-                    <i class="fa-solid fa-cart-shopping text-[11px]"></i>
+                   class="w-full py-1.5 sm:py-2 px-2 sm:px-3 border border-gray-200 group-hover:border-[#FF5A1F] rounded-xl text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-[#FF5A1F] group-hover:bg-orange-50/50 flex items-center justify-center space-x-1.5 transition-all">
+                    <span>Add to Cart</span>
+                    <i class="fa-solid fa-cart-shopping text-[10px] text-[#FF5A1F]"></i>
                 </a>
             </div>
         {% empty %}
-            <!-- Fallback Static Demo Cards linking to Store -->
-            {% for idx in "12345678" %}
-                <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
-                    <a href="{% url 'store' %}" class="w-full h-64 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner">
-                        <div class="w-36 h-52 bg-white rounded shadow-md flex flex-col items-center justify-between p-3 border border-gray-100 text-center">
-                            <span class="text-[9px] font-bold tracking-widest text-gray-400">BESTSELLER</span>
-                            <i class="fa-solid fa-book-open text-3xl text-teal-500 my-auto"></i>
-                            <span class="text-[8px] font-semibold text-gray-500">Popular Edition</span>
-                        </div>
-                    </a>
-                    <div class="flex items-center space-x-1 text-amber-400 text-xs mb-1.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <a href="{% url 'store' %}" class="font-bold text-sm text-gray-900 text-center mb-0.5 hover:text-[#FF5A1F]">Learn Abstract Design</a>
-                    <p class="text-[11px] text-gray-400 mb-2 font-mono">ISBN-100236547851</p>
-                    <div class="flex items-center space-x-2 text-xs font-bold mb-3">
-                        <span class="text-rose-400 line-through text-[11px]">$6.72</span>
-                        <span class="text-green-600 font-extrabold text-sm">$3.36</span>
-                    </div>
-                    <a href="{% url 'store' %}" class="w-full py-2 px-3 border border-gray-200 group-hover:border-green-600 rounded-lg text-xs font-semibold text-gray-600 group-hover:text-green-700 flex items-center justify-center space-x-2 transition-all">
-                        <span>Purchase</span>
-                        <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-                    </a>
-                </div>
-            {% endfor %}
+            <div class="col-span-full text-center py-12">
+                <i class="fa-solid fa-book-open text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500 text-sm font-medium">No featured books available at the moment.</p>
+                <a href="{% url 'store' %}" class="inline-block mt-3 text-sm text-[#FF5A1F] font-semibold hover:underline">Explore Marketplace Store →</a>
+            </div>
         {% endfor %}
     </div>
 
-    <!-- Centered Load More / Explore Store Button -->
+    <!-- Centered Explore Store Button -->
     <div class="flex justify-center mt-12">
         <a href="{% url 'store' %}"
-           class="bg-[#43A047] hover:bg-[#388E3C] text-white font-medium text-sm px-8 py-3.5 rounded-full flex items-center space-x-2.5 shadow-md shadow-green-600/20 hover:shadow-lg transition-all transform hover:-translate-y-0.5">
-            <i class="fa-solid fa-arrows-rotate text-xs"></i>
-            <span>Explore All in Store</span>
+           class="bg-[#FF5A1F] hover:bg-orange-600 text-white font-medium text-sm px-8 py-3.5 rounded-full flex items-center space-x-2.5 shadow-md shadow-orange-500/20 hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+            <i class="fa-solid fa-book-open text-xs"></i>
+            <span>Explore All Books in Store</span>
             <i class="fa-solid fa-arrow-right text-xs"></i>
         </a>
     </div>

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -83,3 +84,27 @@ class Book(models.Model):
             base_slug = slugify(self.title) or "book"
             self.slug = f"{base_slug}-{self.isbn_13}"
         super().save(*args, **kwargs)
+
+
+class BookReview(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="book_reviews",
+    )
+    name = models.CharField(max_length=150)
+    rating = models.PositiveSmallIntegerField(default=5)
+    headline = models.CharField(max_length=255, blank=True)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Book Review"
+        verbose_name_plural = "Book Reviews"
+
+    def __str__(self) -> str:
+        return f"{self.book.title} - {self.rating} stars by {self.name}"

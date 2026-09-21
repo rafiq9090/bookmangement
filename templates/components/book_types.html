@@ -1,119 +1,49 @@
 <!-- BEGIN: BookTypesSection -->
-<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-12 box-border"
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 box-border"
     data-purpose="book-types-section">
     <!-- Section Header with Arrows -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
-            <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Browse By Book Types</h2>
+            <h2
+                class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight leading-tight">
+                Browse By Book Types</h2>
             <p class="text-xs sm:text-sm text-gray-400 mt-1">Discover titles organized by your favorite genres</p>
         </div>
-        <div class="flex items-center space-x-3">
-            <a href="{% url 'store' %}" aria-label="Store"
-                class="w-10 h-10 rounded-full border border-orange-200 text-[#FF5A1F] hover:bg-orange-50 flex items-center justify-center transition-colors">
-                <i class="fa-solid fa-arrow-left text-sm"></i>
-            </a>
-            <a href="{% url 'store' %}" aria-label="Store"
-                class="w-10 h-10 rounded-full bg-[#FF5A1F] text-white hover:bg-orange-600 flex items-center justify-center transition-colors shadow-md shadow-orange-500/20">
-                <i class="fa-solid fa-arrow-right text-sm"></i>
-            </a>
-        </div>
     </div>
-    <!-- Categories Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-        <!-- Item 1: Non Fiction -->
-        <a href="{% url 'store' %}?category=non-fiction"
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    <path d="M6 6h10"></path>
-                    <path d="M6 10h10"></path>
-                    <path d="M12 2v6l2.5-1.5L17 8V2"></path>
-                </svg>
-            </div>
-            <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">Non Fiction</h4>
-                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
-            </div>
-        </a>
 
-        <!-- Item 2: Fiction -->
-        <a href="{% url 'store' %}?category=fiction"
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                    <circle cx="12" cy="8" r="2.5"></circle>
-                    <ellipse cx="12" cy="8" rx="5" ry="2" transform="rotate(-20 12 8)"></ellipse>
-                    <path d="M12 2v1.5"></path>
-                </svg>
+    <!-- Categories Grid (2 Columns on Mobile, 3 on Tablet, 6 on Desktop) -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
+        {% for cat in categories|slice:":6" %}
+        <a href="{% url 'store' %}?category={{ cat.slug }}"
+            class="bg-white rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-2.5 sm:space-x-3.5 cursor-pointer hover:border-[#FF5A1F] group min-w-0">
+            <div
+                class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-orange-50/80 flex-shrink-0 flex items-center justify-center text-[#FF5A1F] group-hover:bg-[#FF5A1F] group-hover:text-white transition-all shadow-sm text-base sm:text-lg">
+                {% if forloop.counter == 1 %}
+                <i class="fa-solid fa-palette"></i>
+                {% elif forloop.counter == 2 %}
+                <i class="fa-solid fa-book-bookmark"></i>
+                {% elif forloop.counter == 3 %}
+                <i class="fa-solid fa-landmark"></i>
+                {% elif forloop.counter == 4 %}
+                <i class="fa-solid fa-feather"></i>
+                {% elif forloop.counter == 5 %}
+                <i class="fa-solid fa-brain"></i>
+                {% else %}
+                <i class="fa-solid fa-pen-nib"></i>
+                {% endif %}
             </div>
-            <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">Fiction</h4>
-                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
-            </div>
-        </a>
-
-        <!-- Item 3: History -->
-        <a href="{% url 'store' %}?category=history"
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
-                    <circle cx="10" cy="8" r="5"></circle>
-                    <path d="M10 3c-1.5 2-2.5 3.5-2.5 5s1 3 2.5 5"></path>
-                    <path d="M5.5 8h9"></path>
-                    <path d="M15 11a7 7 0 0 1-7 7"></path>
-                    <path d="M8 18v3"></path>
-                    <path d="M4 21h18"></path>
-                    <path d="M12 18h8a2 2 0 0 0 0-4h-8"></path>
-                </svg>
-            </div>
-            <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">History</h4>
-                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
+            <div class="min-w-0 flex-1">
+                <h4 class="font-bold text-gray-900 text-xs sm:text-sm leading-tight group-hover:text-[#FF5A1F] transition-colors truncate"
+                    title="{{ cat.name }}">{{ cat.name }}</h4>
+                <p class="text-[10px] sm:text-xs text-gray-400 font-mono mt-0.5 whitespace-nowrap">{{ cat.book_count }}
+                    Book{{ cat.book_count|pluralize }}</p>
             </div>
         </a>
-
-        <!-- Item 4: Thriller -->
-        <a href="{% url 'store' %}?category=thriller"
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                    <circle cx="15" cy="10" r="3"></circle>
-                    <path d="m17.2 12.2 2.8 2.8"></path>
-                </svg>
-            </div>
-            <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">Thriller</h4>
-                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
-            </div>
-        </a>
-
-        <!-- Item 5: Poetry -->
-        <a href="{% url 'store' %}?category=poetry"
-            class="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center space-x-4 cursor-pointer hover:border-[#FF5A1F] group">
-            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center text-gray-900 group-hover:text-[#FF5A1F] transition-colors">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path d="m18 2 4 4-10 10H8v-4L18 2z"></path>
-                    <path d="m15 5 3 3"></path>
-                    <path d="M4 15v6h12"></path>
-                    <path d="M4 18h8"></path>
-                </svg>
-            </div>
-            <div>
-                <h4 class="font-bold text-gray-900 text-sm sm:text-base leading-snug group-hover:text-[#FF5A1F] transition-colors">Poetry</h4>
-                <p class="text-xs sm:text-sm text-gray-400">View Catalog →</p>
-            </div>
-        </a>
+        {% empty %}
+        <div class="col-span-full text-center py-6 text-gray-400">
+            <p class="text-xs">No categories listed yet.</p>
+        </div>
+        {% endfor %}
     </div>
 </section>
 <!-- END: BookTypesSection -->

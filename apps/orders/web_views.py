@@ -9,6 +9,8 @@ from apps.accounts.models import Address
 from apps.listings.models import BookListing
 from apps.orders.models import Cart, CartItem, Order, OrderItem, OrderShipment
 from apps.orders.services.cart import get_cart_items_for_request
+from apps.payments.models import EscrowHold, Payment
+from apps.shipping.models import TrackingEvent
 
 
 def cart_view(request):
@@ -40,8 +42,18 @@ def add_to_cart_view(request, listing_id):
     """
     listing = get_object_or_404(BookListing, id=listing_id, status=BookListing.Status.ACTIVE, is_deleted=False)
     if request.user.is_authenticated:
+        if listing.seller_id == request.user.id:
+            messages.warning(request, "You cannot purchase your own book listing.")
+            return redirect("book_detail", slug=listing.book.slug)
+
         cart, _ = Cart.objects.get_or_create(user=request.user)
-        CartItem.objects.get_or_create(cart=cart, listing=listing)
+        existing_item = CartItem.objects.filter(listing=listing).first()
+        if existing_item:
+            if existing_item.cart_id != cart.id:
+                existing_item.cart = cart
+                existing_item.save(update_fields=["cart"])
+        else:
+            CartItem.objects.create(cart=cart, listing=listing)
     else:
         cart_ids = request.session.get("cart_items", [])
         if listing.id not in cart_ids:
@@ -110,12 +122,28 @@ def checkout_view(request):
         buyer = request.user
 
         with transaction.atomic():
+            is_paid = payment_method in ["bkash", "nagad", "card"]
             order = Order.objects.create(
                 buyer=buyer,
                 shipping_address_snapshot=address_snapshot,
                 total_amount=total,
                 shipping_total=shipping_fee,
-                status=Order.Status.PAID if payment_method in ["bkash", "nagad", "card"] else Order.Status.PENDING,
+                status=Order.Status.PAID if is_paid else Order.Status.PENDING,
+            )
+
+            # Record Payment
+            gateway_map = {
+                "bkash": Payment.Gateway.BKASH,
+                "card": Payment.Gateway.STRIPE,
+                "nagad": Payment.Gateway.SSLCOMMERZ,
+            }
+            payment_gateway = gateway_map.get(payment_method, Payment.Gateway.SSLCOMMERZ)
+            Payment.objects.create(
+                order=order,
+                gateway=payment_gateway,
+                transaction_id=f"TXN-{uuid.uuid4().hex[:10].upper()}",
+                amount=total,
+                status=Payment.Status.SUCCESS if is_paid else Payment.Status.INITIATED,
             )
 
             # Group items by seller
@@ -125,13 +153,14 @@ def checkout_view(request):
 
             for seller, listings in seller_items_map.items():
                 shipment_subtotal = sum(l.price for l in listings)
+                tracking_num = f"EB-{uuid.uuid4().hex[:8].upper()}"
                 shipment = OrderShipment.objects.create(
                     order=order,
                     seller=seller,
                     shipping_fee=shipping_fee,
                     subtotal=shipment_subtotal,
                     courier_name="Steadfast Courier",
-                    tracking_number=f"EB-{uuid.uuid4().hex[:8].upper()}",
+                    tracking_number=tracking_num,
                     status=OrderShipment.ShipmentStatus.WAITING_SELLER,
                 )
                 for l in listings:
@@ -140,6 +169,28 @@ def checkout_view(request):
                         listing=l,
                         price_at_purchase=l.price,
                     )
+                    # Mark physical listing as SOLD so it disappears from available store inventory
+                    l.status = BookListing.Status.SOLD
+                    l.save(update_fields=["status"])
+
+                # Create Escrow Hold for consignment custody
+                platform_commission = (shipment_subtotal * Decimal("0.10")).quantize(Decimal("0.01"))
+                seller_net = shipment_subtotal - platform_commission
+                EscrowHold.objects.create(
+                    order=order,
+                    shipment=shipment,
+                    gross_amount=shipment_subtotal,
+                    platform_fee=platform_commission,
+                    seller_net_amount=seller_net,
+                    status=EscrowHold.EscrowStatus.HELD,
+                )
+
+                # Initialize First Tracking Event
+                TrackingEvent.objects.create(
+                    shipment=shipment,
+                    event_name="Order Placed & Processing",
+                    location=city or "Dhaka Central Processing",
+                )
 
             # Clear cart
             if request.user.is_authenticated:

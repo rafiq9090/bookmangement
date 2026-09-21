@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.books.models import Author, Book, Category
+from apps.books.models import Author, Book, BookReview, Category
 
 
 @admin.register(Author)
@@ -22,3 +22,10 @@ class BookAdmin(admin.ModelAdmin):
     search_fields = ("title", "isbn_13", "isbn_10", "authors__name")
     list_filter = ("publication_year", "language")
     filter_horizontal = ("authors", "categories")
+
+
+@admin.register(BookReview)
+class BookReviewAdmin(admin.ModelAdmin):
+    list_display = ("book", "name", "rating", "headline", "created_at")
+    list_filter = ("rating", "created_at")
+    search_fields = ("book__title", "name", "headline", "comment")
