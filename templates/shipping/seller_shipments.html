@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Shipments & Courier Dispatch | eB Online Bookshop{% endblock %}
+
+{% block content %}
+<!-- BEGIN: Breadcrumb Navigation -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
+    <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
+        <a href="{% url 'home' %}" class="hover:text-gray-700 transition-colors">Home</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <a href="{% url 'seller_listings' %}" class="hover:text-gray-700 transition-colors">Seller Central</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <span class="text-gray-800 font-semibold">Shipments & Dispatch</span>
+    </nav>
+</section>
+<!-- END: Breadcrumb Navigation -->
+
+<!-- BEGIN: Shipments Header -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 box-border">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+        <div>
+            <h1 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight">
+                Shipment <span class="text-[#43A047]">Dispatch</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                Fulfill pending book orders, generate Steadfast or Pathao consignment IDs, and print packing slips.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'seller_listings' %}"
+               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-boxes-stacked text-xs"></i>
+                <span>Inventory</span>
+            </a>
+            <a href="{% url 'seller_wallet' %}"
+               class="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-semibold rounded-full border border-orange-200 transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-wallet text-xs"></i>
+                <span>My Wallet</span>
+            </a>
+        </div>
+    </div>
+</section>
+<!-- END: Shipments Header -->
+
+<!-- BEGIN: Status Filter Tabs -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-2 box-border">
+    <div class="flex items-center space-x-2 text-xs font-semibold overflow-x-auto pb-2">
+        <a href="{% url 'seller_shipments' %}?status=ALL"
+           class="px-4 py-2.5 rounded-full transition-colors {% if current_status == 'ALL' %}bg-gray-900 text-white{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-gray-50{% endif %}">
+            All Parcels ({{ shipments.count }})
+        </a>
+        <a href="{% url 'seller_shipments' %}?status=WAITING"
+           class="px-4 py-2.5 rounded-full transition-colors {% if current_status == 'WAITING' %}bg-[#FF5A1F] text-white{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-gray-50{% endif %}">
+            ⏳ Waiting Dispatch ({{ waiting_count }})
+        </a>
+        <a href="{% url 'seller_shipments' %}?status=IN_TRANSIT"
+           class="px-4 py-2.5 rounded-full transition-colors {% if current_status == 'IN_TRANSIT' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-gray-50{% endif %}">
+            🚚 In Courier Transit ({{ in_transit_count }})
+        </a>
+        <a href="{% url 'seller_shipments' %}?status=DELIVERED"
+           class="px-4 py-2.5 rounded-full transition-colors {% if current_status == 'DELIVERED' %}bg-[#43A047] text-white{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-gray-50{% endif %}">
+            ✓ Delivered ({{ delivered_count }})
+        </a>
+    </div>
+</section>
+<!-- END: Status Filter Tabs -->
+
+<!-- BEGIN: Shipments List -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-16 box-border">
+    <div class="space-y-6">
+        {% for shipment in shipments %}
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+                <!-- Top Row: Shipment ID, Status, Timestamp -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#FF5A1F]"></span>
+                            <h3 class="font-heading font-extrabold text-base text-gray-900">
+                                Shipment #{{ shipment.id }}
+                            </h3>
+                            <span class="text-xs text-gray-400">• Order #{{ shipment.order.id|stringformat:".8s" }}</span>
+                        </div>
+                        <p class="text-[11px] text-gray-500">
+                            Placed on {{ shipment.created_at|date:"M d, Y H:i" }} | Subtotal: <strong class="text-gray-900 font-mono">${{ shipment.subtotal }}</strong>
+                        </p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 self-start sm:self-auto">
+                        {% if shipment.status == 'WAITING' %}
+                            <span class="px-3 py-1 bg-orange-50 text-[#FF5A1F] border border-orange-200 font-bold rounded-full text-xs">
+                                ⏳ Ready to Pack & Dispatch
+                            </span>
+                        {% elif shipment.status == 'IN_TRANSIT' %}
+                            <span class="px-3 py-1 bg-blue-50 text-blue-600 border border-blue-200 font-bold rounded-full text-xs">
+                                🚚 In Courier Transit
+                            </span>
+                        {% elif shipment.status == 'DELIVERED' %}
+                            <span class="px-3 py-1 bg-green-50 text-[#43A047] border border-green-200 font-bold rounded-full text-xs">
+                                ✓ Handed Over / Delivered
+                            </span>
+                        {% else %}
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 font-bold rounded-full text-xs">
+                                {{ shipment.get_status_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Middle Content: Two Columns (Books inside + Delivery Address) -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <!-- Left: Books List (7 cols) -->
+                    <div class="md:col-span-7 space-y-3">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Items in Parcel</h4>
+                        <div class="divide-y divide-gray-100">
+                            {% for item in shipment.items.all %}
+                                <div class="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-14 bg-gradient-to-b from-slate-100 to-slate-200 rounded flex-shrink-0 flex items-center justify-center p-1 border border-gray-100">
+                                            <i class="fa-solid fa-book-open text-xs text-[#FF5A1F]"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-xs sm:text-sm text-gray-900 line-clamp-1">{{ item.listing.book.title }}</h5>
+                                            <p class="text-[10px] text-gray-400 font-mono">ISBN-{{ item.listing.book.isbn_10|default:item.listing.book.isbn_13 }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="font-mono font-bold text-xs text-green-600">${{ item.price_at_purchase }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Right: Buyer Address Snapshot (5 cols) -->
+                    <div class="md:col-span-5 bg-gray-50 rounded-2xl p-4 space-y-2 text-xs">
+                        <h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-[#FF5A1F]"></i>
+                            <span>Recipient & Address</span>
+                        </h4>
+                        <div class="text-gray-700 leading-relaxed text-xs">
+                            <p class="font-bold text-gray-900">{{ shipment.order.shipping_address_snapshot.full_name|default:shipment.order.buyer.email }}</p>
+                            <p>{{ shipment.order.shipping_address_snapshot.street_address }}</p>
+                            <p>{{ shipment.order.shipping_address_snapshot.city }}, {{ shipment.order.shipping_address_snapshot.district }}</p>
+                            {% if shipment.order.shipping_address_snapshot.phone_number %}
+                                <p class="pt-1 font-semibold text-gray-900">Phone: {{ shipment.order.shipping_address_snapshot.phone_number }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Action Row -->
+                <div class="pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    {% if shipment.status == 'WAITING' %}
+                        <!-- Dispatch Form -->
+                        <form method="POST" action="{% url 'seller_shipments' %}" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                            {% csrf_token %}
+                            <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
+                            <select name="courier_name" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:border-[#FF5A1F]">
+                                <option value="Steadfast Courier">Steadfast Courier (Default)</option>
+                                <option value="Pathao Courier">Pathao Courier</option>
+                                <option value="RedX Logistics">RedX Logistics</option>
+                            </select>
+                            <button type="submit" class="px-5 py-2.5 bg-[#43A047] hover:bg-green-700 text-white font-bold text-xs rounded-xl shadow-md shadow-green-600/20 transition-all flex items-center gap-1.5">
+                                <i class="fa-solid fa-truck text-xs"></i>
+                                <span>Generate Consignment & Dispatch</span>
+                            </button>
+                        </form>
+                    {% else %}
+                        <!-- Tracking Info & Public Tracking Link -->
+                        <div class="flex items-center space-x-2 text-xs">
+                            <span class="text-gray-400">Courier:</span>
+                            <span class="font-bold text-gray-800">{{ shipment.courier_name|default:"Steadfast Courier" }}</span>
+                            <span class="text-gray-300">|</span>
+                            <span class="text-gray-400">Tracking:</span>
+                            <a href="{% url 'parcel_tracking_detail' shipment.tracking_number %}" class="font-mono font-bold text-[#FF5A1F] hover:underline flex items-center gap-1">
+                                <span>{{ shipment.tracking_number }}</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <!-- Print Shipping Label -->
+                    <button onclick="window.print()" class="px-4 py-2 border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors self-end sm:self-auto">
+                        <i class="fa-solid fa-print text-xs"></i>
+                        <span>Print Packing Slip</span>
+                    </button>
+                </div>
+            </div>
+        {% empty %}
+            <div class="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm max-w-md mx-auto space-y-3">
+                <div class="w-12 h-12 bg-green-50 text-[#43A047] rounded-full flex items-center justify-center mx-auto text-xl">
+                    <i class="fa-solid fa-boxes-packing"></i>
+                </div>
+                <h4 class="font-heading font-extrabold text-base text-gray-800">All Parcels Dispatched</h4>
+                <p class="text-xs text-gray-400">You don't have any book shipments in this status at the moment.</p>
+                <a href="{% url 'seller_listings' %}" class="inline-block text-xs font-bold text-[#FF5A1F] hover:underline pt-1">
+                    Manage your book inventory →
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+<!-- END: Shipments List -->
+
+<!-- Reusable 50% Sale Ribbon Banner from Components -->
+{% include "components/sale_ribbon.html" %}
+
+{% endblock %}

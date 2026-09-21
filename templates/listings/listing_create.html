@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+
+{% block title %}Sell a Book - Create Listing | eB Online Bookshop{% endblock %}
+
+{% block content %}
+<!-- BEGIN: Breadcrumb Navigation -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
+    <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
+        <a href="{% url 'home' %}" class="hover:text-gray-700 transition-colors">Home</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <a href="{% url 'seller_listings' %}" class="hover:text-gray-700 transition-colors">Seller Central</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <span class="text-gray-800 font-semibold">List a Book for Sale</span>
+    </nav>
+</section>
+<!-- END: Breadcrumb Navigation -->
+
+<!-- BEGIN: Create Listing Header -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 box-border">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+        <div>
+            <h1 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight">
+                List a Book <span class="text-[#FF5A1F]">for Sale</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                Enter the ISBN to autofill book details, choose the condition, set your price, and reach avid readers.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'seller_listings' %}"
+               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-boxes-stacked text-xs"></i>
+                <span>My Listings</span>
+            </a>
+            <a href="{% url 'seller_wallet' %}"
+               class="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-semibold rounded-full border border-orange-200 transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-wallet text-xs"></i>
+                <span>My Wallet</span>
+            </a>
+        </div>
+    </div>
+</section>
+<!-- END: Create Listing Header -->
+
+<!-- BEGIN: Main Form Section -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-16 box-border">
+    <form method="POST" action="{% url 'sell_book' %}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {% csrf_token %}
+
+        <!-- Left Column: Form Fields (8 cols) -->
+        <div class="lg:col-span-8 space-y-6">
+
+            <!-- Card 1: Fast ISBN Auto-Lookup -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
+                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                    <span class="w-8 h-8 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-barcode"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">ISBN Quick Lookup</h3>
+                        <p class="text-xs text-gray-400">Scan or type the 10 or 13-digit ISBN barcode on the back cover</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        <input
+                            type="text"
+                            id="isbn-input"
+                            name="isbn"
+                            placeholder="e.g. 9781302365489 or 1302365489"
+                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-mono text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
+                        >
+                    </div>
+                    <button
+                        type="button"
+                        id="lookup-btn"
+                        class="px-6 py-3 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 flex-shrink-0"
+                    >
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i>
+                        <span>Autofill Details</span>
+                    </button>
+                </div>
+                <div id="lookup-status" class="text-[11px] text-gray-400 italic hidden"></div>
+            </div>
+
+            <!-- Card 2: Book Metadata -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                    <span class="w-8 h-8 rounded-xl bg-green-50 text-[#43A047] flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-book-open"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Book Information</h3>
+                        <p class="text-xs text-gray-400">Title, Author, and Edition specifications</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Book Title -->
+                    <div class="space-y-1.5 sm:col-span-2">
+                        <label class="text-xs font-bold text-gray-700">Book Title *</label>
+                        <input
+                            type="text"
+                            id="book-title"
+                            name="title"
+                            required
+                            placeholder="e.g. The Creative Spark: Unleash Thought"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
+                        >
+                    </div>
+
+                    <!-- Author -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-gray-700">Author / Writer *</label>
+                        <input
+                            type="text"
+                            id="book-author"
+                            name="author"
+                            required
+                            placeholder="e.g. Vanessa Howell"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
+                        >
+                    </div>
+
+                    <!-- Category -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-gray-700">Category / Genre *</label>
+                        <select
+                            id="book-category"
+                            name="category_id"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
+                        >
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Edition Year -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-gray-700">Publication / Print Year</label>
+                        <input
+                            type="number"
+                            id="book-year"
+                            name="edition_year"
+                            placeholder="2022"
+                            min="1800"
+                            max="2030"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
+                        >
+                    </div>
+
+                    <!-- Features Toggles -->
+                    <div class="sm:col-span-2 pt-2 border-t border-gray-100 flex flex-wrap gap-4 text-xs">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="is_hardcover" class="rounded text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                            <span class="font-medium text-gray-700">Hardcover Edition</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="has_dust_jacket" class="rounded text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                            <span class="font-medium text-gray-700">Includes Original Dust Jacket</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="is_signed_by_author" class="rounded text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                            <span class="font-medium text-gray-700">Signed by Author</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Physical Condition Grading -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                    <span class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-stamp"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Condition Grading</h3>
+                        <p class="text-xs text-gray-400">Accurate grading builds trust and eliminates buyer disputes</p>
+                    </div>
+                </div>
+
+                <!-- Condition Radio Selector Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="relative border border-gray-200 rounded-2xl p-4 flex items-start space-x-3 cursor-pointer hover:border-[#FF5A1F] transition-all has-[:checked]:border-[#FF5A1F] has-[:checked]:bg-orange-50/30">
+                        <input type="radio" name="condition" value="LIKE_NEW" class="mt-1 text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                        <div>
+                            <span class="font-bold text-xs text-gray-900 block">Like New</span>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Minimal signs of wear, crisp pages, tight spine, no marks.</p>
+                        </div>
+                    </label>
+
+                    <label class="relative border border-gray-200 rounded-2xl p-4 flex items-start space-x-3 cursor-pointer hover:border-[#FF5A1F] transition-all has-[:checked]:border-[#FF5A1F] has-[:checked]:bg-orange-50/30">
+                        <input type="radio" name="condition" value="VERY_GOOD" class="mt-1 text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                        <div>
+                            <span class="font-bold text-xs text-gray-900 block">Very Good</span>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Clean pages, gentle spine crease, no major highlighting or tears.</p>
+                        </div>
+                    </label>
+
+                    <label class="relative border-2 border-[#FF5A1F] bg-orange-50/30 rounded-2xl p-4 flex items-start space-x-3 cursor-pointer transition-all has-[:checked]:border-[#FF5A1F] has-[:checked]:bg-orange-50/30">
+                        <input type="radio" name="condition" value="GOOD" checked class="mt-1 text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                        <div>
+                            <span class="font-bold text-xs text-gray-900 block">Good (Standard Used)</span>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Typical secondhand wear, minor yellowing, intact binding and cover.</p>
+                        </div>
+                    </label>
+
+                    <label class="relative border border-gray-200 rounded-2xl p-4 flex items-start space-x-3 cursor-pointer hover:border-[#FF5A1F] transition-all has-[:checked]:border-[#FF5A1F] has-[:checked]:bg-orange-50/30">
+                        <input type="radio" name="condition" value="ACCEPTABLE" class="mt-1 text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                        <div>
+                            <span class="font-bold text-xs text-gray-900 block">Acceptable</span>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Readable complete text, noticeable spine or cover wear, shelf wear.</p>
+                        </div>
+                    </label>
+
+                    <label class="relative border border-gray-200 rounded-2xl p-4 flex items-start space-x-3 cursor-pointer hover:border-[#FF5A1F] transition-all has-[:checked]:border-[#FF5A1F] has-[:checked]:bg-orange-50/30 sm:col-span-2">
+                        <input type="radio" name="condition" value="COLLECTIBLE" class="mt-1 text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-xs text-gray-900">Collectible / Rare Vintage</span>
+                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-bold rounded">Premium</span>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-0.5">First edition, out-of-print, signed copy, or antique historical interest.</p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Condition Notes -->
+                <div class="space-y-1.5 pt-2">
+                    <label class="text-xs font-bold text-gray-700">Specific Wear Notes / Defects</label>
+                    <textarea
+                        name="condition_notes"
+                        rows="2"
+                        placeholder="Mention any pencil markings, slight foxing on page edges, or dog-eared pages..."
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Card 4: Photos Upload -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
+                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                    <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-camera"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Listing Photos</h3>
+                        <p class="text-xs text-gray-400">Upload clear pictures of the front cover, spine, and sample inner page</p>
+                    </div>
+                </div>
+
+                <div class="border-2 border-dashed border-gray-200 hover:border-[#FF5A1F] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-gray-50/50">
+                    <input type="file" name="photos" id="photos-input" multiple accept="image/*" class="hidden">
+                    <label for="photos-input" class="cursor-pointer space-y-2 block">
+                        <div class="w-12 h-12 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center mx-auto text-xl">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <p class="text-xs font-bold text-gray-800">Click or drag & drop book photos here</p>
+                        <p class="text-[10px] text-gray-400">PNG, JPG or WebP up to 5MB each (Max 4 images)</p>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Pricing & Publish CTA (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+
+            <!-- Pricing Summary Card -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6 sticky top-6">
+                <div class="pb-3 border-b border-gray-100">
+                    <h3 class="font-heading font-extrabold text-lg text-gray-900">Pricing & Payout</h3>
+                    <p class="text-xs text-gray-400">Set competitive pricing for faster sales</p>
+                </div>
+
+                <!-- Your Listing Price -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-700">Your Selling Price ($) *</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500 font-mono">$</span>
+                        <input
+                            type="number"
+                            id="price-input"
+                            name="price"
+                            step="0.01"
+                            min="0.50"
+                            required
+                            placeholder="4.99"
+                            class="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base font-bold text-gray-900 font-mono focus:outline-none focus:border-[#FF5A1F]"
+                        >
+                    </div>
+                </div>
+
+                <!-- Original MRP -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-700">Original Cover Price / MRP ($)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400 font-mono">$</span>
+                        <input
+                            type="number"
+                            id="mrp-input"
+                            name="original_mrp"
+                            step="0.01"
+                            min="0.50"
+                            placeholder="9.99"
+                            class="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 font-mono focus:outline-none focus:border-[#FF5A1F]"
+                        >
+                    </div>
+                    <p class="text-[10px] text-gray-400">Used to display discount badges on the storefront.</p>
+                </div>
+
+                <!-- Fee & Estimated Payout Breakdown -->
+                <div class="pt-4 border-t border-gray-100 space-y-2 text-xs">
+                    <div class="flex items-center justify-between text-gray-600">
+                        <span>Platform Commission (10%)</span>
+                        <span id="fee-calc" class="font-mono text-gray-800">$0.50</span>
+                    </div>
+                    <div class="flex items-center justify-between text-gray-600">
+                        <span>Payment Gateway Fee</span>
+                        <span class="font-mono text-[#43A047]">FREE</span>
+                    </div>
+                    <div class="pt-2 border-t border-gray-100 flex items-center justify-between">
+                        <span class="font-bold text-gray-900">Your Net Payout</span>
+                        <span id="net-calc" class="font-heading font-extrabold text-xl text-green-600 font-mono">$4.49</span>
+                    </div>
+                </div>
+
+                <!-- Publish Button -->
+                <button
+                    type="submit"
+                    class="w-full py-4 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-sm rounded-full shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5"
+                >
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Publish Listing</span>
+                </button>
+
+                <!-- Escrow Protection info -->
+                <div class="pt-2 text-center text-gray-400 text-[11px] space-y-1">
+                    <p class="flex items-center justify-center gap-1.5 text-gray-500 font-medium">
+                        <i class="fa-solid fa-shield-check text-[#43A047]"></i>
+                        <span>Guaranteed Seller Payout</span>
+                    </p>
+                    <p class="text-[10px]">Funds automatically released to your wallet once the package is delivered.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+</section>
+<!-- END: Main Form Section -->
+
+<!-- Reusable 50% Sale Ribbon Banner from Components -->
+{% include "components/sale_ribbon.html" %}
+
+<script>
+    // Live Price Fee Calculator
+    const priceInput = document.getElementById('price-input');
+    const feeCalc = document.getElementById('fee-calc');
+    const netCalc = document.getElementById('net-calc');
+
+    function updatePayout() {
+        const val = parseFloat(priceInput.value) || 0;
+        const fee = (val * 0.10).toFixed(2);
+        const net = (val * 0.90).toFixed(2);
+        feeCalc.textContent = '$' + fee;
+        netCalc.textContent = '$' + net;
+    }
+    if (priceInput) {
+        priceInput.addEventListener('input', updatePayout);
+    }
+
+    // ISBN Autofill via AJAX
+    const lookupBtn = document.getElementById('lookup-btn');
+    const isbnInput = document.getElementById('isbn-input');
+    const statusDiv = document.getElementById('lookup-status');
+
+    if (lookupBtn && isbnInput) {
+        lookupBtn.addEventListener('click', function() {
+            const isbn = isbnInput.value.trim();
+            if (!isbn) {
+                alert('Please enter an ISBN number first.');
+                return;
+            }
+            lookupBtn.disabled = true;
+            lookupBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i><span>Searching...</span>';
+            statusDiv.classList.remove('hidden');
+            statusDiv.textContent = 'Querying catalogue...';
+
+            fetch('{% url "isbn_lookup" %}?isbn=' + encodeURIComponent(isbn))
+                .then(res => res.json())
+                .then(data => {
+                    lookupBtn.disabled = false;
+                    lookupBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i><span>Autofill Details</span>';
+                    if (data.found) {
+                        statusDiv.textContent = '✓ Found: ' + data.title;
+                        statusDiv.className = 'text-[11px] text-green-600 font-semibold';
+                        document.getElementById('book-title').value = data.title;
+                        if (data.author) document.getElementById('book-author').value = data.author;
+                        if (data.category_id) document.getElementById('book-category').value = data.category_id;
+                        if (data.publication_year) document.getElementById('book-year').value = data.publication_year;
+                    } else {
+                        statusDiv.textContent = 'No automatic match found for this ISBN. You can fill the details manually below.';
+                        statusDiv.className = 'text-[11px] text-amber-600';
+                    }
+                })
+                .catch(err => {
+                    lookupBtn.disabled = false;
+                    lookupBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i><span>Autofill Details</span>';
+                    statusDiv.textContent = 'Lookup service unavailable. Enter details manually.';
+                    statusDiv.className = 'text-[11px] text-gray-400';
+                });
+        });
+    }
+</script>
+{% endblock %}

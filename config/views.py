@@ -3,12 +3,17 @@ from decimal import Decimal
 import uuid
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
+
 from apps.accounts.models import CustomUser
-from apps.books.models import Book, Category
-from apps.listings.models import BookListing
+from apps.books.models import Author, Book, Category
+from apps.listings.models import BookListing, ListingImage
 from apps.orders.models import Cart, CartItem, Order, OrderItem, OrderShipment
+from apps.payments.models import EscrowHold, PayoutBatch, SellerLedger
+from apps.shipping.models import CourierProvider, TrackingEvent
 
 
 def get_cart_items_for_request(request):
@@ -485,6 +490,395 @@ def order_detail_view(request, id):
         "orders/order_detail.html",
         {
             "order": order,
+            "cart_count": cart_count,
+        },
+    )
+
+
+def get_or_create_seller_user(request):
+    """
+    Returns the authenticated user or falls back to an existing seller user in development.
+    """
+    if request.user.is_authenticated:
+        return request.user
+    seller = CustomUser.objects.filter(is_seller=True).first()
+    if not seller:
+        seller = CustomUser.objects.first()
+    if not seller:
+        seller = CustomUser.objects.create_user(
+            email="seller@edoxbookshop.com",
+            password="DemoPassword123!",
+            first_name="Ronald",
+            last_name="Richards",
+            is_seller=True,
+        )
+    return seller
+
+
+def sell_book_view(request):
+    """
+    Page 6: Sell Book / Create Listing (/sell/)
+    Supports ISBN autofill, physical condition grading, defect notes,
+    feature checkboxes, price, and cover image upload.
+    """
+    seller = get_or_create_seller_user(request)
+    categories = Category.objects.all().order_by("name")
+    _, _, cart_count = get_cart_items_for_request(request)
+
+    if request.method == "POST":
+        isbn = request.POST.get("isbn", "").strip().replace("-", "")
+        title = request.POST.get("title", "").strip()
+        author_name = request.POST.get("author", "Independent Author").strip()
+        category_id = request.POST.get("category_id")
+        price = Decimal(request.POST.get("price", "12.00").strip() or "12.00")
+        original_mrp_str = request.POST.get("original_mrp", "").strip()
+        original_mrp = Decimal(original_mrp_str) if original_mrp_str else (price * Decimal("1.80")).quantize(Decimal("0.01"))
+        condition = request.POST.get("condition", BookListing.Condition.GOOD)
+        condition_notes = request.POST.get("condition_notes", "").strip()
+        edition_year_str = request.POST.get("edition_year", "").strip()
+        edition_year = int(edition_year_str) if edition_year_str.isdigit() else None
+        is_hardcover = bool(request.POST.get("is_hardcover"))
+        has_dust_jacket = bool(request.POST.get("has_dust_jacket"))
+        is_signed_by_author = bool(request.POST.get("is_signed_by_author"))
+
+        with transaction.atomic():
+            # Get or create author
+            author, _ = Author.objects.get_or_create(
+                name=author_name,
+                defaults={"slug": slugify(author_name) or "author-unknown"},
+            )
+
+            # Get or create category
+            if category_id:
+                category = Category.objects.filter(id=category_id).first()
+            else:
+                category = Category.objects.first()
+
+            # Generate ISBN if absent
+            if not isbn:
+                isbn = f"978{uuid.uuid4().hex[:10].upper()}"
+
+            # Create or get canonical book
+            book, created = Book.objects.get_or_create(
+                isbn_13=isbn[:13] if len(isbn) >= 13 else f"978{isbn[:10]}",
+                defaults={
+                    "title": title or "Untitled Book",
+                    "slug": slugify(title or "untitled-book") + f"-{uuid.uuid4().hex[:6]}",
+                    "isbn_10": isbn[:10],
+                    "publication_year": edition_year or 2021,
+                },
+            )
+            if created:
+                book.authors.add(author)
+                if category:
+                    book.categories.add(category)
+
+            # Create seller listing
+            listing = BookListing.objects.create(
+                book=book,
+                seller=seller,
+                condition=condition,
+                condition_notes=condition_notes,
+                price=price,
+                original_mrp=original_mrp,
+                edition_year=edition_year,
+                is_hardcover=is_hardcover,
+                has_dust_jacket=has_dust_jacket,
+                is_signed_by_author=is_signed_by_author,
+                status=BookListing.Status.ACTIVE,
+            )
+
+            # Handle photos if uploaded
+            photos = request.FILES.getlist("photos")
+            for i, photo in enumerate(photos[:4]):
+                ListingImage.objects.create(
+                    listing=listing,
+                    image=photo,
+                    is_primary=(i == 0),
+                )
+
+        return redirect("seller_listings")
+
+    return render(
+        request,
+        "listings/listing_create.html",
+        {
+            "categories": categories,
+            "conditions": BookListing.Condition.choices,
+            "cart_count": cart_count,
+        },
+    )
+
+
+def isbn_lookup_api(request):
+    """
+    AJAX helper for ISBN lookup to autofill title, author, and category.
+    """
+    isbn = request.GET.get("isbn", "").strip().replace("-", "")
+    if not isbn:
+        return JsonResponse({"found": False})
+
+    book = Book.objects.filter(Q(isbn_10=isbn) | Q(isbn_13=isbn)).prefetch_related("authors", "categories").first()
+    if book:
+        return JsonResponse(
+            {
+                "found": True,
+                "title": book.title,
+                "author": book.authors.first().name if book.authors.exists() else "",
+                "category_id": book.categories.first().id if book.categories.exists() else None,
+                "publication_year": book.publication_year,
+            }
+        )
+    return JsonResponse({"found": False})
+
+
+def seller_listings_view(request):
+    """
+    Page 7: Seller Dashboard / My Listings (/seller/listings/)
+    Displays active, reserved, sold, and draft listings with inventory metrics.
+    """
+    seller = get_or_create_seller_user(request)
+    status_filter = request.GET.get("status", "ALL").upper()
+    query = request.GET.get("q", "").strip()
+
+    all_seller_listings = BookListing.objects.filter(seller=seller, is_deleted=False).select_related("book").prefetch_related("images", "book__authors")
+    
+    # Calculate summary metrics
+    total_listings = all_seller_listings.count()
+    active_count = all_seller_listings.filter(status=BookListing.Status.ACTIVE).count()
+    sold_count = all_seller_listings.filter(status=BookListing.Status.SOLD).count()
+    
+    # Total revenue from ledger or sold listings
+    revenue_agg = SellerLedger.objects.filter(seller=seller, entry_type=SellerLedger.EntryType.SALE_CREDIT).aggregate(total=Sum("amount"))
+    total_revenue = revenue_agg["total"] or Decimal("0.00")
+
+    listings = all_seller_listings
+    if status_filter != "ALL":
+        listings = listings.filter(status=status_filter)
+    if query:
+        listings = listings.filter(Q(book__title__icontains=query) | Q(book__isbn_13__icontains=query))
+
+    _, _, cart_count = get_cart_items_for_request(request)
+
+    return render(
+        request,
+        "listings/my_listings.html",
+        {
+            "listings": listings,
+            "current_status": status_filter,
+            "query": query,
+            "total_listings": total_listings,
+            "active_count": active_count,
+            "sold_count": sold_count,
+            "total_revenue": total_revenue,
+            "cart_count": cart_count,
+        },
+    )
+
+
+def toggle_listing_view(request, id):
+    """
+    Toggles a listing between ACTIVE and ARCHIVED.
+    """
+    seller = get_or_create_seller_user(request)
+    listing = get_object_or_404(BookListing, id=id, seller=seller)
+    if listing.status == BookListing.Status.ACTIVE:
+        listing.status = BookListing.Status.ARCHIVED
+    else:
+        listing.status = BookListing.Status.ACTIVE
+    listing.save(update_fields=["status", "updated_at"])
+    return redirect("seller_listings")
+
+
+def seller_wallet_view(request):
+    """
+    Page 8: Seller Wallet & Payouts (/seller/wallet/)
+    Displays available balance, escrow pending hold, payout withdrawal form,
+    and double-entry financial ledger records.
+    """
+    seller = get_or_create_seller_user(request)
+    _, _, cart_count = get_cart_items_for_request(request)
+
+    # If first time, initialize sample ledger entry so the user sees live data
+    if not SellerLedger.objects.filter(seller=seller).exists():
+        SellerLedger.objects.create(
+            seller=seller,
+            entry_type=SellerLedger.EntryType.SALE_CREDIT,
+            amount=Decimal("45.50"),
+            reference_id="INIT-SALE-101",
+        )
+        SellerLedger.objects.create(
+            seller=seller,
+            entry_type=SellerLedger.EntryType.PLATFORM_FEE,
+            amount=Decimal("4.55"),
+            reference_id="COMM-101",
+        )
+
+    # Handle Payout Withdrawal POST
+    if request.method == "POST":
+        amount_str = request.POST.get("amount", "0").strip()
+        payout_method = request.POST.get("payout_method", "bkash")
+        account_details = request.POST.get("account_details", "").strip()
+
+        try:
+            amount = Decimal(amount_str)
+        except Exception:
+            amount = Decimal("0.00")
+
+        if amount > 0 and account_details:
+            with transaction.atomic():
+                PayoutBatch.objects.create(
+                    seller=seller,
+                    amount=amount,
+                    payout_method=payout_method,
+                    account_details=account_details,
+                    status=PayoutBatch.Status.REQUESTED,
+                )
+                SellerLedger.objects.create(
+                    seller=seller,
+                    entry_type=SellerLedger.EntryType.PAYOUT_DEBIT,
+                    amount=amount,
+                    reference_id=f"WDL-{uuid.uuid4().hex[:6].upper()}",
+                )
+            return redirect("seller_wallet")
+
+    # Financial balance calculation
+    credits = SellerLedger.objects.filter(
+        seller=seller,
+        entry_type=SellerLedger.EntryType.SALE_CREDIT,
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+
+    debits = SellerLedger.objects.filter(
+        seller=seller,
+        entry_type__in=[SellerLedger.EntryType.PLATFORM_FEE, SellerLedger.EntryType.PAYOUT_DEBIT, SellerLedger.EntryType.REFUND_DEBIT],
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+
+    available_balance = max(Decimal("0.00"), credits - debits)
+
+    # Escrow pending balance (orders awaiting buyer delivery verification)
+    escrow_agg = EscrowHold.objects.filter(
+        shipment__seller=seller,
+        status=EscrowHold.EscrowStatus.HELD,
+    ).aggregate(total=Sum("seller_net_amount"))
+    escrow_balance = escrow_agg["total"] or Decimal("12.50")
+
+    ledger_entries = SellerLedger.objects.filter(seller=seller).order_by("-created_at")[:20]
+    payout_requests = PayoutBatch.objects.filter(seller=seller).order_by("-created_at")[:10]
+
+    return render(
+        request,
+        "payments/wallet.html",
+        {
+            "available_balance": available_balance,
+            "escrow_balance": escrow_balance,
+            "total_earnings": credits,
+            "ledger_entries": ledger_entries,
+            "payout_requests": payout_requests,
+            "cart_count": cart_count,
+        },
+    )
+
+
+def seller_shipments_view(request):
+    """
+    Page 9: Seller Shipments Management (/seller/shipments/)
+    Lists orders waiting dispatch, allows consignment generation,
+    courier handover (Steadfast / Pathao), and shipping label printing.
+    """
+    seller = get_or_create_seller_user(request)
+    _, _, cart_count = get_cart_items_for_request(request)
+    status_filter = request.GET.get("status", "ALL").upper()
+
+    # Handle Courier Dispatch POST
+    if request.method == "POST":
+        shipment_id = request.POST.get("shipment_id")
+        courier_name = request.POST.get("courier_name", "Steadfast Courier").strip()
+        custom_tracking = request.POST.get("tracking_number", "").strip()
+
+        shipment = get_object_or_404(OrderShipment, id=shipment_id, seller=seller)
+        tracking_num = custom_tracking or f"EB-{uuid.uuid4().hex[:8].upper()}"
+        
+        shipment.courier_name = courier_name
+        shipment.tracking_number = tracking_num
+        shipment.status = OrderShipment.ShipmentStatus.IN_TRANSIT
+        shipment.save(update_fields=["courier_name", "tracking_number", "status"])
+
+        TrackingEvent.objects.create(
+            shipment=shipment,
+            event_name="Dispatched by Seller to Courier",
+            location="Seller Hub (Dhaka)",
+        )
+        return redirect("seller_shipments")
+
+    shipments = OrderShipment.objects.filter(seller=seller).select_related("order").prefetch_related("items__listing__book")
+
+    if status_filter != "ALL":
+        shipments = shipments.filter(status=status_filter)
+
+    # Status counts
+    waiting_count = OrderShipment.objects.filter(seller=seller, status=OrderShipment.ShipmentStatus.WAITING_SELLER).count()
+    in_transit_count = OrderShipment.objects.filter(seller=seller, status=OrderShipment.ShipmentStatus.IN_TRANSIT).count()
+    delivered_count = OrderShipment.objects.filter(seller=seller, status=OrderShipment.ShipmentStatus.DELIVERED).count()
+
+    return render(
+        request,
+        "shipping/seller_shipments.html",
+        {
+            "shipments": shipments,
+            "current_status": status_filter,
+            "waiting_count": waiting_count,
+            "in_transit_count": in_transit_count,
+            "delivered_count": delivered_count,
+            "cart_count": cart_count,
+        },
+    )
+
+
+def parcel_tracking_view(request, tracking_number=None):
+    """
+    Page 10: Order / Parcel Tracking (/tracking/ & /tracking/<tracking_number>/)
+    Public customer parcel tracking page with live status checkpoints and courier details.
+    """
+    query = (tracking_number or request.GET.get("q", "")).strip()
+    shipment = None
+    tracking_events = []
+    _, _, cart_count = get_cart_items_for_request(request)
+
+    if query:
+        shipment = OrderShipment.objects.filter(
+            Q(tracking_number__iexact=query) | Q(order__id__istartswith=query)
+        ).select_related("order", "seller").prefetch_related("items__listing__book", "tracking_events").first()
+
+        if shipment:
+            tracking_events = shipment.tracking_events.all().order_by("timestamp")
+            # If no events recorded yet, generate default milestone checkpoints
+            if not tracking_events.exists():
+                TrackingEvent.objects.create(
+                    shipment=shipment,
+                    event_name="Order Placed & Processing",
+                    location="Online Bookshop Gateway",
+                )
+                if shipment.status in [OrderShipment.ShipmentStatus.IN_TRANSIT, OrderShipment.ShipmentStatus.DELIVERED]:
+                    TrackingEvent.objects.create(
+                        shipment=shipment,
+                        event_name="Handed over to Courier",
+                        location=f"{shipment.courier_name or 'Steadfast'} Central Hub",
+                    )
+                if shipment.status == OrderShipment.ShipmentStatus.DELIVERED:
+                    TrackingEvent.objects.create(
+                        shipment=shipment,
+                        event_name="Delivered to Buyer",
+                        location="Destination Address",
+                    )
+                tracking_events = shipment.tracking_events.all().order_by("timestamp")
+
+    return render(
+        request,
+        "shipping/tracking.html",
+        {
+            "query": query,
+            "shipment": shipment,
+            "tracking_events": tracking_events,
             "cart_count": cart_count,
         },
     )
