@@ -3,28 +3,34 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-from config.views import (
-    add_to_cart_view,
+# Web Frontend Views (Modular App Architecture)
+from apps.accounts.web_views import (
     address_action_view,
-    book_detail_view,
-    cart_view,
-    checkout_view,
-    home_view,
-    isbn_lookup_api,
     login_register_view,
     logout_view,
-    order_detail_view,
-    parcel_tracking_view,
-    remove_from_cart_view,
-    sell_book_view,
     seller_apply_view,
-    seller_listings_view,
-    seller_shipments_view,
-    seller_wallet_view,
-    store_view,
-    toggle_listing_view,
     user_profile_view,
 )
+from apps.books.web_views import (
+    book_detail_view,
+    home_view,
+    store_view,
+)
+from apps.listings.web_views import (
+    isbn_lookup_api,
+    sell_book_view,
+    seller_listings_view,
+    toggle_listing_view,
+)
+from apps.orders.web_views import (
+    add_to_cart_view,
+    cart_view,
+    checkout_view,
+    order_detail_view,
+    remove_from_cart_view,
+)
+from apps.payments.web_views import seller_wallet_view
+from apps.shipping.web_views import parcel_tracking_view, seller_shipments_view
 
 urlpatterns = [
     path("", home_view, name="home"),
