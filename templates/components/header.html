@@ -78,8 +78,10 @@
             <span>Track Order</span>
         </a>
     </nav>
+
     <!-- Right Action Items -->
-    <div class="flex items-center space-x-3.5">
+    <div class="flex items-center space-x-3 sm:space-x-4">
+        <!-- Cart Shopping Icon -->
         <a href="{% url 'cart' %}" aria-label="Cart"
             class="text-gray-600 hover:text-gray-900 transition-colors text-base relative p-2 rounded-xl hover:bg-gray-100" title="View Cart">
             <i class="fa-solid fa-cart-shopping"></i>
@@ -88,7 +90,59 @@
                 {{ cart_count|default:"0" }}
             </span>
         </a>
-        
+
+        <!-- Account & Auth Dropdown / Sign In -->
+        {% if request.user.is_authenticated %}
+        <div class="relative group cursor-pointer">
+            <button type="button" class="flex items-center space-x-2 py-1 px-2 rounded-2xl hover:bg-gray-100 transition-all">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#FF5A1F] to-amber-500 text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                    {{ request.user.first_name|default:request.user.email|slice:":1"|upper }}
+                </div>
+                <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 group-hover:translate-y-0.5 transition-transform"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="absolute right-0 top-full hidden group-hover:block bg-white border border-gray-100 rounded-2xl shadow-xl py-3 px-3 min-w-[220px] z-50 space-y-1">
+                <div class="px-3 py-2 border-b border-gray-100 mb-1">
+                    <p class="text-xs font-bold text-gray-900 truncate">{{ request.user.first_name|default:"" }} {{ request.user.last_name|default:"" }}</p>
+                    <p class="text-[10px] text-gray-500 truncate">{{ request.user.email }}</p>
+                </div>
+
+                <a href="{% url 'profile' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                    <i class="fa-regular fa-user w-4 text-gray-400"></i>
+                    <span>My Profile</span>
+                </a>
+                <a href="{% url 'profile' %}?tab=addresses" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                    <i class="fa-solid fa-location-dot w-4 text-gray-400"></i>
+                    <span>Saved Addresses</span>
+                </a>
+                <a href="{% url 'profile' %}?tab=orders" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-all">
+                    <i class="fa-solid fa-box-open w-4 text-gray-400"></i>
+                    <span>My Orders</span>
+                </a>
+
+                {% if not request.user.is_seller %}
+                <a href="{% url 'seller_apply' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-[#43A047] hover:bg-green-50 transition-all">
+                    <i class="fa-solid fa-bolt w-4"></i>
+                    <span>Become a Seller</span>
+                </a>
+                {% endif %}
+
+                <div class="pt-1.5 mt-1 border-t border-gray-100">
+                    <a href="{% url 'logout' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-all">
+                        <i class="fa-solid fa-arrow-right-from-bracket w-4"></i>
+                        <span>Sign Out</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <a href="{% url 'login' %}" class="flex items-center space-x-1.5 text-xs font-bold text-gray-700 hover:text-[#FF5A1F] px-3 py-2 rounded-xl hover:bg-gray-50 transition-all">
+            <i class="fa-regular fa-user text-sm"></i>
+            <span>Sign In</span>
+        </a>
+        {% endif %}
+
         <!-- Primary Sell Book Action Button -->
         <a class="flex items-center space-x-2 bg-[#FF5A1F] text-white rounded-full px-4 py-2 text-sm font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
             href="{% url 'sell_book' %}">

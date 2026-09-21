@@ -5,20 +5,25 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from config.views import (
     add_to_cart_view,
+    address_action_view,
     book_detail_view,
     cart_view,
     checkout_view,
     home_view,
     isbn_lookup_api,
+    login_register_view,
+    logout_view,
     order_detail_view,
     parcel_tracking_view,
     remove_from_cart_view,
     sell_book_view,
+    seller_apply_view,
     seller_listings_view,
     seller_shipments_view,
     seller_wallet_view,
     store_view,
     toggle_listing_view,
+    user_profile_view,
 )
 
 urlpatterns = [
@@ -40,6 +45,14 @@ urlpatterns = [
     path("seller/shipments/", seller_shipments_view, name="seller_shipments"),
     path("tracking/", parcel_tracking_view, name="parcel_tracking"),
     path("tracking/<str:tracking_number>/", parcel_tracking_view, name="parcel_tracking_detail"),
+
+    # User Authentication & Profile (Pages 11 - 13)
+    path("login/", login_register_view, name="login"),
+    path("register/", login_register_view, name="register"),
+    path("logout/", logout_view, name="logout"),
+    path("profile/", user_profile_view, name="profile"),
+    path("profile/addresses/<int:id>/<str:action>/", address_action_view, name="address_action"),
+    path("seller/apply/", seller_apply_view, name="seller_apply"),
 
     path("admin/", admin.site.urls),
     
