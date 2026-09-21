@@ -242,13 +242,45 @@
                     </div>
                 </div>
 
-                <!-- Become a Seller Toggle Card -->
-                <div class="p-3.5 bg-green-50/70 border border-green-200/80 rounded-2xl flex items-start space-x-3 cursor-pointer">
-                    <input type="checkbox" id="becomeSellerCheck" name="become_seller" class="w-4 h-4 rounded text-[#43A047] focus:ring-[#43A047] border-gray-300 mt-0.5">
-                    <label for="becomeSellerCheck" class="cursor-pointer">
-                        <span class="text-xs font-bold text-gray-900 block">I want to sell books too</span>
-                        <span class="text-[11px] text-gray-600 block">Enroll into seller program to start listing books and earning payouts.</span>
-                    </label>
+                <!-- Account Type Selector (Buyer vs Seller) -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-2">Select Account Type</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Buyer Option Card -->
+                        <label id="cardBuyer" class="p-3.5 rounded-2xl border-2 border-[#43A047] bg-green-50/50 cursor-pointer flex flex-col justify-between transition-all">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-bag-shopping text-sm text-[#43A047]"></i>
+                                    <span class="text-xs font-bold text-gray-900">Buyer</span>
+                                </div>
+                                <input type="radio" name="account_type" value="buyer" checked onchange="toggleAccountType('buyer')" class="text-[#43A047] focus:ring-[#43A047]">
+                            </div>
+                            <span class="text-[10px] text-gray-600 leading-tight">Buy, read & track pre-loved books</span>
+                        </label>
+
+                        <!-- Seller Option Card -->
+                        <label id="cardSeller" class="p-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50/50 hover:border-orange-300 cursor-pointer flex flex-col justify-between transition-all">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-store text-sm text-[#FF5A1F]"></i>
+                                    <span class="text-xs font-bold text-gray-900">Seller</span>
+                                </div>
+                                <input type="radio" name="account_type" value="seller" onchange="toggleAccountType('seller')" class="text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                            </div>
+                            <span class="text-[10px] text-gray-600 leading-tight">Sell books, list stock & earn payouts</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seller Store Name (Hidden unless Seller is chosen) -->
+                <div id="sellerStoreNameField" class="hidden space-y-1.5 bg-orange-50/60 p-3.5 rounded-2xl border border-orange-200/70">
+                    <label class="block text-xs font-bold text-gray-800">Store / Merchant Name</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-shop absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        <input type="text" name="store_name" placeholder="e.g., Banani Rare Book Vault"
+                            class="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF5A1F]">
+                    </div>
+                    <span class="text-[10px] text-gray-500 block">Your public storefront name visible to buyers.</span>
                 </div>
 
                 <button type="submit"
@@ -304,6 +336,22 @@ function demoLogin(email, password) {
     loginForm.querySelector('input[name="email"]').value = email;
     loginForm.querySelector('input[name="password"]').value = password;
     loginForm.submit();
+}
+
+function toggleAccountType(type) {
+    const cardBuyer = document.getElementById('cardBuyer');
+    const cardSeller = document.getElementById('cardSeller');
+    const storeField = document.getElementById('sellerStoreNameField');
+
+    if (type === 'seller') {
+        cardSeller.className = "p-3.5 rounded-2xl border-2 border-[#FF5A1F] bg-orange-50/50 cursor-pointer flex flex-col justify-between transition-all";
+        cardBuyer.className = "p-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50/50 hover:border-green-300 cursor-pointer flex flex-col justify-between transition-all";
+        storeField.classList.remove('hidden');
+    } else {
+        cardBuyer.className = "p-3.5 rounded-2xl border-2 border-[#43A047] bg-green-50/50 cursor-pointer flex flex-col justify-between transition-all";
+        cardSeller.className = "p-3.5 rounded-2xl border-2 border-gray-200 bg-gray-50/50 hover:border-orange-300 cursor-pointer flex flex-col justify-between transition-all";
+        storeField.classList.add('hidden');
+    }
 }
 </script>
 {% endblock %}

@@ -76,7 +76,7 @@
                             type="text"
                             name="full_name"
                             required
-                            value="{% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}"
+                            value="{% if default_address %}{{ default_address.recipient_name }}{% elif request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}"
                             placeholder="e.g. Rafiqul Islam"
                             class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
                         >
@@ -89,6 +89,7 @@
                             type="tel"
                             name="phone_number"
                             required
+                            value="{% if default_address %}{{ default_address.phone_number }}{% elif request.user.phone_number %}{{ request.user.phone_number }}{% endif %}"
                             placeholder="+880 17XXXXXXXX"
                             class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
                         >
@@ -114,6 +115,7 @@
                             type="text"
                             name="street_address"
                             required
+                            value="{% if default_address %}{{ default_address.street_address }}{% endif %}"
                             placeholder="House #12, Road #4, Dhanmondi"
                             class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
                         >

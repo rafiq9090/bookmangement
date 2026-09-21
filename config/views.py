@@ -384,10 +384,30 @@ def remove_from_cart_view(request, item_id):
     return redirect("cart")
 
 
+def migrate_session_cart_to_user(request, user):
+    """
+    Transfers items from anonymous guest session cart to authenticated user's DB cart.
+    """
+    session_cart_ids = request.session.get("cart_items", [])
+    if session_cart_ids:
+        cart, _ = Cart.objects.get_or_create(user=user)
+        for listing_id in session_cart_ids:
+            listing = BookListing.objects.filter(id=listing_id, status=BookListing.Status.ACTIVE, is_deleted=False).first()
+            if listing:
+                CartItem.objects.get_or_create(cart=cart, listing=listing)
+        request.session["cart_items"] = []
+        request.session.modified = True
+
+
 def checkout_view(request):
     """
     Renders the Checkout page and processes order placement.
+    Requires user account: guests cannot buy books without registering/signing in.
     """
+    if not request.user.is_authenticated:
+        messages.warning(request, "Please create an account or sign in to complete your book purchase.")
+        return redirect("/login/?mode=register&next=/checkout/")
+
     items, subtotal, cart_count = get_cart_items_for_request(request)
     if not items:
         return redirect("cart")
@@ -395,9 +415,12 @@ def checkout_view(request):
     shipping_fee = Decimal("2.00") if subtotal > 0 and subtotal < Decimal("30.00") else Decimal("0.00")
     total = subtotal + shipping_fee
 
+    # Load buyer's default shipping address if saved
+    default_address = Address.objects.filter(user=request.user, is_default=True).first() or Address.objects.filter(user=request.user).first()
+
     if request.method == "POST":
-        full_name = request.POST.get("full_name", "Valued Customer").strip()
-        phone_number = request.POST.get("phone_number", "").strip()
+        full_name = request.POST.get("full_name", f"{request.user.first_name} {request.user.last_name}".strip() or "Valued Customer").strip()
+        phone_number = request.POST.get("phone_number", request.user.phone_number or "").strip()
         street_address = request.POST.get("street_address", "").strip()
         city = request.POST.get("city", "Dhaka").strip()
         district = request.POST.get("district", "Dhaka").strip()
@@ -414,14 +437,7 @@ def checkout_view(request):
             "payment_method": payment_method,
         }
 
-        if request.user.is_authenticated:
-            buyer = request.user
-        else:
-            email = request.POST.get("email", "").strip() or "customer@edoxbookshop.com"
-            buyer, _ = CustomUser.objects.get_or_create(
-                email=email,
-                defaults={"first_name": full_name},
-            )
+        buyer = request.user
 
         with transaction.atomic():
             order = Order.objects.create(
@@ -473,6 +489,7 @@ def checkout_view(request):
             "shipping_fee": shipping_fee,
             "total": total,
             "cart_count": cart_count,
+            "default_address": default_address,
         },
     )
 
@@ -894,7 +911,7 @@ def parcel_tracking_view(request, tracking_number=None):
 def login_register_view(request):
     """
     Page 11: Login & Register Page (/login/ & /register/)
-    Supports dual-mode tab switching, session authentication, and account creation.
+    Supports dual-mode tab switching, buyer/seller account creation, session auth, and cart migration.
     """
     mode = request.GET.get("mode", "login").lower()
     if request.path.rstrip("/") == "/register":
@@ -913,6 +930,7 @@ def login_register_view(request):
             user = authenticate(request, username=email, password=password)
             if user is not None:
                 login(request, user)
+                migrate_session_cart_to_user(request, user)
                 messages.success(request, f"Welcome back, {user.first_name or user.email}!")
                 return redirect(next_url)
             else:
@@ -926,7 +944,9 @@ def login_register_view(request):
             phone_number = request.POST.get("phone_number", "").strip()
             password = request.POST.get("password", "")
             confirm_password = request.POST.get("confirm_password", "")
-            become_seller = bool(request.POST.get("become_seller"))
+            account_type = request.POST.get("account_type", "buyer")
+            store_name = request.POST.get("store_name", "").strip()
+            is_seller = (account_type == "seller" or bool(request.POST.get("become_seller")))
 
             if not email or not password:
                 messages.error(request, "Email and password are required.")
@@ -947,13 +967,25 @@ def login_register_view(request):
                     first_name=first_name,
                     last_name=last_name,
                     phone_number=phone_number,
-                    is_seller=become_seller,
+                    is_seller=is_seller,
                 )
                 login(request, user)
-                messages.success(request, f"Welcome to e-Book, {user.first_name or 'Friend'}! Your account has been created.")
-                if become_seller:
+                migrate_session_cart_to_user(request, user)
+
+                if is_seller:
+                    if store_name:
+                        SellerProfile.objects.get_or_create(
+                            user=user,
+                            defaults={
+                                "store_name": store_name,
+                                "kyc_status": SellerProfile.KycStatus.PENDING,
+                            },
+                        )
+                    messages.success(request, f"Welcome, {user.first_name or 'Seller'}! Your seller account is active. Complete your store profile below.")
                     return redirect("seller_apply")
-                return redirect(next_url)
+                else:
+                    messages.success(request, f"Welcome to e-Book, {user.first_name or 'Friend'}! Your buyer account is ready.")
+                    return redirect(next_url)
 
     return render(
         request,
