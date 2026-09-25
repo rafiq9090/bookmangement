@@ -11,7 +11,7 @@
             <i class="fa-solid fa-sack-dollar text-2xl text-[#FF5A1F] flex-shrink-0"></i>
             <div>
                 <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Gross Sales (GMV)</p>
-                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">${{ total_gmv|floatformat:2 }}</h3>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">৳{{ total_gmv|floatformat:2 }}</h3>
                 <p class="text-[10px] text-emerald-600 font-semibold mt-0.5">{{ total_orders_count }} total orders placed</p>
             </div>
         </div>
@@ -21,7 +21,7 @@
             <i class="fa-solid fa-chart-pie text-2xl text-[#FF5A1F] flex-shrink-0"></i>
             <div>
                 <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Platform Commission</p>
-                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">${{ platform_revenue|floatformat:2 }}</h3>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">৳{{ platform_revenue|floatformat:2 }}</h3>
                 <p class="text-[10px] text-[#FF5A1F] font-semibold mt-0.5">15% fee on seller transactions</p>
             </div>
         </div>
@@ -31,7 +31,7 @@
             <i class="fa-solid fa-vault text-2xl text-[#FF5A1F] flex-shrink-0"></i>
             <div>
                 <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Escrow in Custody</p>
-                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">${{ escrow_held|floatformat:2 }}</h3>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">৳{{ escrow_held|floatformat:2 }}</h3>
                 <p class="text-[10px] text-blue-600 font-semibold mt-0.5">Protected buyer funds held</p>
             </div>
         </div>
@@ -41,7 +41,7 @@
             <i class="fa-solid fa-money-bill-transfer text-2xl text-[#FF5A1F] flex-shrink-0"></i>
             <div>
                 <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">Disbursed Payouts</p>
-                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">${{ total_payouts|floatformat:2 }}</h3>
+                <h3 class="font-heading font-black text-xl sm:text-2xl text-gray-900">৳{{ total_payouts|floatformat:2 }}</h3>
                 <p class="text-[10px] text-purple-600 font-semibold mt-0.5">Paid out to verified sellers</p>
             </div>
         </div>
@@ -152,7 +152,7 @@
                                 </span>
                             </div>
                             <p class="text-[11px] text-gray-500 mt-0.5">
-                                Buyer: {{ order.buyer.email }} • Total: <span class="font-bold text-gray-900">${{ order.total_amount }}</span>
+                                Buyer: {{ order.buyer.email }} • Total: <span class="font-bold text-gray-900">৳{{ order.total_amount }}</span>
                             </p>
                         </div>
                         <a href="{% url 'order_detail' order.id %}" target="_blank"
@@ -335,7 +335,7 @@
                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">{{ pb.status }}</span>
                                 {% endif %}
                             </td>
-                            <td class="py-3 px-3 font-black text-gray-900">${{ pb.amount|floatformat:2 }}</td>
+                            <td class="py-3 px-3 font-black text-gray-900">৳{{ pb.amount|floatformat:2 }}</td>
                             <td class="py-3 px-3 text-right">
                                 {% if pb.status != 'COMPLETED' %}
                                 <form method="POST" action="{% url 'platform_admin_dashboard' %}">
@@ -409,7 +409,7 @@
                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">{{ eh.status }}</span>
                                 {% endif %}
                             </td>
-                            <td class="py-3 px-3 font-black text-gray-900">${{ eh.seller_net_amount|floatformat:2 }}
+                            <td class="py-3 px-3 font-black text-gray-900">৳{{ eh.seller_net_amount|floatformat:2 }}
                             </td>
                             <td class="py-3 px-3 text-right">
                                 {% if eh.status == 'HELD' %}
@@ -518,7 +518,7 @@
                                     {{ o.get_status_display }}
                                 </span>
                             </td>
-                            <td class="py-3 px-4 font-black text-gray-900">${{ o.total_amount }}</td>
+                            <td class="py-3 px-4 font-black text-gray-900">৳{{ o.total_amount }}</td>
                             <td class="py-3 px-4 text-right">
                                 <a href="{% url 'order_detail' o.id %}" target="_blank"
                                     class="px-2.5 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[11px] transition-colors">
@@ -625,7 +625,7 @@
                                     {{ ml.status }}
                                 </span>
                             </td>
-                            <td class="py-3 px-4 font-black text-gray-900">${{ ml.price }}</td>
+                            <td class="py-3 px-4 font-black text-gray-900">৳{{ ml.price }}</td>
                             <td class="py-3 px-4 text-right">
                                 <form method="POST" action="{% url 'platform_admin_dashboard' %}">
                                     {% csrf_token %}

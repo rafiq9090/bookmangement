@@ -65,7 +65,7 @@ class Order(models.Model):
         verbose_name_plural = "Orders"
 
     def __str__(self) -> str:
-        return f"Order #{str(self.id)[:8]} - {self.buyer.email} (${self.total_amount})"
+        return f"Order #{str(self.id)[:8]} - {self.buyer.email} (৳{self.total_amount})"
 
 
 class OrderShipment(models.Model):
@@ -121,4 +121,4 @@ class OrderItem(models.Model):
         verbose_name_plural = "Order Items"
 
     def __str__(self) -> str:
-        return f"{self.listing.book.title} (${self.price_at_purchase})"
+        return f"{self.listing.book.title} (৳{self.price_at_purchase})"

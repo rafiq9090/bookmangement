@@ -142,11 +142,11 @@
             <!-- Price & Discount -->
             <div class="flex items-baseline space-x-3 pt-2 pb-2 border-y border-gray-100">
                 <span class="text-3xl sm:text-4xl font-extrabold text-[#FF5A1F] font-heading font-mono">
-                    ${{ listing.price|default:"3.36" }}
+                    ৳{{ listing.price|default:"3.36" }}
                 </span>
                 {% if listing.original_mrp %}
                 <span class="text-base sm:text-lg text-rose-400 line-through">
-                    ${{ listing.original_mrp }}
+                    ৳{{ listing.original_mrp }}
                 </span>
                 <span
                     class="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold text-xs border border-rose-200">
@@ -385,7 +385,7 @@
                                 <p class="text-[11px] text-gray-400">Sold by {{ ol.seller.email }}</p>
                             </div>
                             <div class="flex items-center gap-4">
-                                <span class="font-extrabold text-[#FF5A1F] font-mono text-sm">${{ ol.price }}</span>
+                                <span class="font-extrabold text-[#FF5A1F] font-mono text-sm">৳{{ ol.price }}</span>
                                 <a href="{% url 'add_to_cart' ol.id %}"
                                     class="px-3 py-1.5 bg-gray-900 hover:bg-black text-white rounded-lg font-semibold text-[11px] transition-colors">
                                     Add to Cart
@@ -675,9 +675,9 @@
             <!-- Price -->
             <div class="flex items-center space-x-2 text-xs font-bold mb-3 mt-auto">
                 {% if rel.original_mrp %}
-                <span class="text-rose-400 line-through text-[11px]">${{ rel.original_mrp }}</span>
+                <span class="text-rose-400 line-through text-[11px]">৳{{ rel.original_mrp }}</span>
                 {% endif %}
-                <span class="text-[#FF5A1F] font-extrabold text-sm font-mono">${{ rel.price }}</span>
+                <span class="text-[#FF5A1F] font-extrabold text-sm font-mono">৳{{ rel.price }}</span>
             </div>
 
             <!-- Action Button -->

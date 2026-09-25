@@ -101,7 +101,7 @@ def platform_admin_dashboard_view(request):
             payout = get_object_or_404(PayoutBatch, id=batch_id)
             payout.status = PayoutBatch.Status.COMPLETED
             payout.save(update_fields=["status"])
-            messages.success(request, f"Payout of ${payout.amount} via {payout.payout_method} to {payout.seller.email} marked as COMPLETED.")
+            messages.success(request, f"Payout of ৳{payout.amount} via {payout.payout_method} to {payout.seller.email} marked as COMPLETED.")
             return redirect("/admin/dashboard/?tab=payouts")
 
         # 4. Release Escrow Hold to Seller
@@ -110,7 +110,7 @@ def platform_admin_dashboard_view(request):
             escrow = get_object_or_404(EscrowHold, id=escrow_id)
             escrow.status = EscrowHold.EscrowStatus.RELEASED
             escrow.save(update_fields=["status"])
-            messages.success(request, f"Escrow Hold #${str(escrow.id)[:8]} (${escrow.seller_net_amount}) released to {escrow.shipment.seller.email}.")
+            messages.success(request, f"Escrow Hold #${str(escrow.id)[:8]} (৳{escrow.seller_net_amount}) released to {escrow.shipment.seller.email}.")
             return redirect("/admin/dashboard/?tab=payouts")
 
         # 5. Moderate Book Listing (Toggle Status / Delete)

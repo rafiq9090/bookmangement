@@ -113,7 +113,7 @@
                                 </div>
                                 <div class="text-right flex-shrink-0">
                                     <p class="font-extrabold text-sm text-[#FF5A1F] font-heading font-mono">
-                                        ${{ item.price_at_purchase }}
+                                        ৳{{ item.price_at_purchase }}
                                     </p>
                                     <span class="text-[10px] text-gray-400">Qty: 1</span>
                                 </div>
@@ -194,14 +194,14 @@
                 <div class="space-y-2.5 text-xs sm:text-sm">
                     <div class="flex items-center justify-between text-gray-600">
                         <span>Items Subtotal</span>
-                        <span class="font-bold text-gray-900 font-mono">${{ order.total_amount }}</span>
+                        <span class="font-bold text-gray-900 font-mono">৳{{ order.total_amount }}</span>
                     </div>
                     <div class="flex items-center justify-between text-gray-600">
                         <span>Delivery Fee</span>
                         {% if order.shipping_total == 0 %}
                             <span class="font-bold text-[#FF5A1F]">FREE</span>
                         {% else %}
-                            <span class="font-bold text-gray-900 font-mono">${{ order.shipping_total }}</span>
+                            <span class="font-bold text-gray-900 font-mono">৳{{ order.shipping_total }}</span>
                         {% endif %}
                     </div>
                     <div class="flex items-center justify-between text-gray-600">
@@ -210,7 +210,7 @@
                     </div>
                     <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
                         <span class="font-bold text-gray-900">Total Paid</span>
-                        <span class="font-heading font-extrabold text-2xl text-[#FF5A1F] font-mono">${{ order.total_amount }}</span>
+                        <span class="font-heading font-extrabold text-2xl text-[#FF5A1F] font-mono">৳{{ order.total_amount }}</span>
                     </div>
                 </div>
 

@@ -368,7 +368,7 @@ def seller_dashboard_view(request, tab=None):
                         amount=amount,
                         reference_id=f"WDL-{uuid.uuid4().hex[:6].upper()}",
                     )
-                messages.success(request, f"Payout request for ${amount} submitted successfully via {payout_method}.")
+                messages.success(request, f"Payout request for ৳{amount} submitted successfully via {payout_method}.")
             else:
                 messages.error(request, "Please enter a valid amount and account details for payout.")
             return redirect("/seller/dashboard/?tab=wallet")
@@ -405,7 +405,7 @@ def seller_dashboard_view(request, tab=None):
                 if new_price > 0:
                     listing.price = new_price
                     listing.save(update_fields=["price", "updated_at"])
-                    messages.success(request, f"Price for '{listing.book.title}' updated to ${new_price}.")
+                    messages.success(request, f"Price for '{listing.book.title}' updated to ৳{new_price}.")
             except Exception:
                 messages.error(request, "Invalid price entered.")
             return redirect("/seller/dashboard/?tab=listings")

@@ -407,7 +407,7 @@
                                     {% if ord.status == 'PAID' %}bg-green-100 text-[#43A047]{% else %}bg-amber-100 text-amber-700{% endif %}">
                                     {{ ord.get_status_display }}
                                 </span>
-                                <span class="font-black text-sm text-gray-900">${{ ord.total_amount }}</span>
+                                <span class="font-black text-sm text-gray-900">৳{{ ord.total_amount }}</span>
                             </div>
                         </div>
 

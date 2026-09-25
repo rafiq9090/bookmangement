@@ -55,7 +55,7 @@
             </div>
             <div>
                 <h3 class="font-heading font-extrabold text-3xl sm:text-4xl text-[#43A047] font-mono">
-                    ${{ available_balance }}
+                    ৳{{ available_balance }}
                 </h3>
                 <p class="text-[11px] text-gray-400 mt-1">Ready for instant withdrawal anytime</p>
             </div>
@@ -71,7 +71,7 @@
             </div>
             <div>
                 <h3 class="font-heading font-extrabold text-3xl sm:text-4xl text-[#FF5A1F] font-mono">
-                    ${{ escrow_balance }}
+                    ৳{{ escrow_balance }}
                 </h3>
                 <p class="text-[11px] text-gray-400 mt-1">Released automatically upon buyer delivery confirmation</p>
             </div>
@@ -87,7 +87,7 @@
             </div>
             <div>
                 <h3 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 font-mono">
-                    ${{ total_earnings }}
+                    ৳{{ total_earnings }}
                 </h3>
                 <p class="text-[11px] text-gray-400 mt-1">Total value of all completed sales</p>
             </div>
@@ -155,9 +155,9 @@
                                     </td>
                                     <td class="py-3.5 px-6 text-right font-mono font-bold text-sm">
                                         {% if entry.entry_type == 'SALE_CREDIT' %}
-                                            <span class="text-[#43A047]">+${{ entry.amount }}</span>
+                                            <span class="text-[#43A047]">+৳{{ entry.amount }}</span>
                                         {% else %}
-                                            <span class="text-rose-600">-${{ entry.amount }}</span>
+                                            <span class="text-rose-600">-৳{{ entry.amount }}</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -191,7 +191,7 @@
                                 <p class="text-[10px] text-gray-400 mt-0.5">Requested on {{ req.created_at|date:"M d, Y" }}</p>
                             </div>
                             <div class="text-right">
-                                <span class="font-mono font-bold text-sm text-gray-900">${{ req.amount }}</span>
+                                <span class="font-mono font-bold text-sm text-gray-900">৳{{ req.amount }}</span>
                                 <span class="block text-[9px] font-bold mt-0.5 {% if req.status == 'COMPLETED' %}text-[#43A047]{% elif req.status == 'PROCESSING' %}text-blue-600{% else %}text-amber-600{% endif %}">
                                     ● {{ req.get_status_display }}
                                 </span>
@@ -219,17 +219,17 @@
                     <!-- Amount Input -->
                     <div class="space-y-1.5">
                         <div class="flex items-center justify-between">
-                            <label class="text-xs font-bold text-gray-700">Withdrawal Amount ($)</label>
+                            <label class="text-xs font-bold text-gray-700">Withdrawal Amount (৳)</label>
                             <button
                                 type="button"
                                 onclick="document.getElementById('wd-amount').value = '{{ available_balance }}'"
                                 class="text-[11px] font-bold text-[#FF5A1F] hover:underline"
                             >
-                                Max (${{ available_balance }})
+                                Max (৳{{ available_balance }})
                             </button>
                         </div>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono font-bold text-gray-500 text-sm">$</span>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono font-bold text-gray-500 text-sm">৳</span>
                             <input
                                 type="number"
                                 id="wd-amount"

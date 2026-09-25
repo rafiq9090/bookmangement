@@ -150,20 +150,24 @@
                     </div>
                 </div>
 
-                <!-- Section 2: Identity Verification -->
+                <!-- Section 2: Identity Verification (Optional) -->
                 <div class="pt-4 border-t border-gray-100 space-y-4">
-                    <div class="flex items-center space-x-2">
-                        <i class="fa-solid fa-id-card text-[#FF5A1F] text-xs"></i>
-                        <h4 class="font-bold text-xs text-gray-900 uppercase tracking-wider">2. Identity (KYC)</h4>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-id-card text-[#FF5A1F] text-xs"></i>
+                            <h4 class="font-bold text-xs text-gray-900 uppercase tracking-wider">2. Identity Verification (KYC)</h4>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Optional</span>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">
-                            National ID (NID) / Passport <span class="text-red-500">*</span>
+                            National ID (NID) / Passport <span class="text-gray-400 font-normal">(Optional)</span>
                         </label>
-                        <input type="text" name="national_id_number" required value="{{ seller_profile.national_id_number|default:'' }}"
-                            placeholder="10 or 17 digit NID number"
+                        <input type="text" name="national_id_number" value="{{ seller_profile.national_id_number|default:'' }}"
+                            placeholder="Optional: 10 or 17 digit NID number (can verify later)"
                             class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all">
+                        <p class="text-[11px] text-gray-400 mt-1">You can begin listing and selling books without KYC. Identity verification can be submitted anytime.</p>
                     </div>
                 </div>
 

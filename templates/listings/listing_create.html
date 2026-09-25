@@ -329,9 +329,9 @@
 
                 <!-- Your Listing Price -->
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-gray-700">Your Selling Price ($) *</label>
+                    <label class="text-xs font-bold text-gray-700">Your Selling Price (৳) *</label>
                     <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500 font-mono">$</span>
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500 font-mono">৳</span>
                         <input
                             type="number"
                             id="price-input"
@@ -347,9 +347,9 @@
 
                 <!-- Original MRP -->
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-gray-700">Original Cover Price / MRP ($)</label>
+                    <label class="text-xs font-bold text-gray-700">Original Cover Price / MRP (৳)</label>
                     <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400 font-mono">$</span>
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400 font-mono">৳</span>
                         <input
                             type="number"
                             id="mrp-input"
@@ -367,7 +367,7 @@
                 <div class="pt-4 border-t border-gray-100 space-y-2 text-xs">
                     <div class="flex items-center justify-between text-gray-600">
                         <span>Platform Commission (10%)</span>
-                        <span id="fee-calc" class="font-mono text-gray-800">$0.50</span>
+                        <span id="fee-calc" class="font-mono text-gray-800">৳0.50</span>
                     </div>
                     <div class="flex items-center justify-between text-gray-600">
                         <span>Payment Gateway Fee</span>
@@ -375,7 +375,7 @@
                     </div>
                     <div class="pt-2 border-t border-gray-100 flex items-center justify-between">
                         <span class="font-bold text-gray-900">Your Net Payout</span>
-                        <span id="net-calc" class="font-heading font-extrabold text-xl text-green-600 font-mono">$4.49</span>
+                        <span id="net-calc" class="font-heading font-extrabold text-xl text-green-600 font-mono">৳4.49</span>
                     </div>
                 </div>
 
@@ -417,8 +417,8 @@
         const val = parseFloat(priceInput.value) || 0;
         const fee = (val * 0.10).toFixed(2);
         const net = (val * 0.90).toFixed(2);
-        feeCalc.textContent = '$' + fee;
-        netCalc.textContent = '$' + net;
+        feeCalc.textContent = '৳' + fee;
+        netCalc.textContent = '৳' + net;
     }
     if (priceInput) {
         priceInput.addEventListener('input', updatePayout);

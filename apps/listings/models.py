@@ -88,7 +88,7 @@ class BookListing(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"[{self.get_condition_display()}] {self.book.title} - ${self.price} by {self.seller.email}"
+        return f"[{self.get_condition_display()}] {self.book.title} - ৳{self.price} by {self.seller.email}"
 
     def soft_delete(self) -> None:
         self.is_deleted = True

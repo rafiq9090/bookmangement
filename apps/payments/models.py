@@ -31,7 +31,7 @@ class Payment(models.Model):
         verbose_name_plural = "Payments"
 
     def __str__(self) -> str:
-        return f"Payment {self.transaction_id} ({self.status}) - ${self.amount}"
+        return f"Payment {self.transaction_id} ({self.status}) - ৳{self.amount}"
 
 
 class EscrowHold(models.Model):
@@ -65,7 +65,7 @@ class EscrowHold(models.Model):
         verbose_name_plural = "Escrow Holds"
 
     def __str__(self) -> str:
-        return f"Escrow #{self.id} for Shipment #{self.shipment_id} - ${self.seller_net_amount}"
+        return f"Escrow #{self.id} for Shipment #{self.shipment_id} - ৳{self.seller_net_amount}"
 
 
 class SellerLedger(models.Model):
@@ -93,7 +93,7 @@ class SellerLedger(models.Model):
         verbose_name_plural = "Seller Ledgers"
 
     def __str__(self) -> str:
-        return f"{self.seller.email} | {self.entry_type} | ${self.amount}"
+        return f"{self.seller.email} | {self.entry_type} | ৳{self.amount}"
 
 
 class PayoutBatch(models.Model):

@@ -90,7 +90,7 @@
             </div>
             <div>
                 <p class="text-xs text-gray-400 font-medium">Sales Revenue</p>
-                <h3 class="font-heading font-extrabold text-xl sm:text-2xl text-amber-600 font-mono">${{ total_revenue }}</h3>
+                <h3 class="font-heading font-extrabold text-xl sm:text-2xl text-amber-600 font-mono">৳{{ total_revenue }}</h3>
             </div>
         </div>
     </div>
@@ -193,9 +193,9 @@
                             <!-- Price -->
                             <td class="py-4 px-4">
                                 <div class="font-mono">
-                                    <span class="font-extrabold text-sm text-green-600">${{ listing.price }}</span>
+                                    <span class="font-extrabold text-sm text-green-600">৳{{ listing.price }}</span>
                                     {% if listing.original_mrp %}
-                                        <span class="text-[10px] text-gray-400 line-through block">${{ listing.original_mrp }}</span>
+                                        <span class="text-[10px] text-gray-400 line-through block">৳{{ listing.original_mrp }}</span>
                                     {% endif %}
                                 </div>
                             </td>

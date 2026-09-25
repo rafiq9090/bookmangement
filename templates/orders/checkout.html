@@ -235,7 +235,7 @@
                             <h4 class="text-xs font-bold text-gray-900 truncate">{{ it.listing.book.title }}</h4>
                             <p class="text-[10px] text-gray-400">Qty: {{ it.quantity }}</p>
                         </div>
-                        <span class="text-xs font-bold text-[#FF5A1F] font-mono">${{ it.total }}</span>
+                        <span class="text-xs font-bold text-[#FF5A1F] font-mono">৳{{ it.total }}</span>
                     </div>
                     {% endfor %}
                 </div>
@@ -244,14 +244,14 @@
                 <div class="pt-4 border-t border-gray-100 space-y-2.5 text-xs sm:text-sm">
                     <div class="flex items-center justify-between text-gray-600">
                         <span>Items Total</span>
-                        <span class="font-bold text-gray-900 font-mono">${{ subtotal }}</span>
+                        <span class="font-bold text-gray-900 font-mono">৳{{ subtotal }}</span>
                     </div>
                     <div class="flex items-center justify-between text-gray-600">
                         <span>Courier Shipping</span>
                         {% if shipping_fee == 0 %}
                         <span class="font-bold text-[#FF5A1F]">FREE</span>
                         {% else %}
-                        <span class="font-bold text-gray-900 font-mono">${{ shipping_fee }}</span>
+                        <span class="font-bold text-gray-900 font-mono">৳{{ shipping_fee }}</span>
                         {% endif %}
                     </div>
                     <div class="flex items-center justify-between text-gray-600">
@@ -267,7 +267,7 @@
                         <p class="text-[10px] text-gray-400">Tax inclusive</p>
                     </div>
                     <span class="text-2xl sm:text-3xl font-heading font-extrabold text-[#FF5A1F] font-mono">
-                        ${{ total }}
+                        ৳{{ total }}
                     </span>
                 </div>
 

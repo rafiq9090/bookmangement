@@ -277,8 +277,8 @@ def seller_apply_view(request):
         payout_method = request.POST.get("payout_method", "BKASH").upper()
         payout_account_details = request.POST.get("payout_account_details", "").strip()
 
-        if not store_name or not national_id_number or not payout_account_details:
-            messages.error(request, "Please fill in all required fields.")
+        if not store_name or not payout_account_details:
+            messages.error(request, "Please enter your Store Name and Payout Account details.")
         elif SellerProfile.objects.filter(store_name__iexact=store_name).exclude(user=user).exists():
             messages.error(request, f"The store name '{store_name}' is already taken. Please choose another.")
         else:
@@ -288,7 +288,8 @@ def seller_apply_view(request):
                 existing_profile.national_id_number = national_id_number
                 existing_profile.payout_method = payout_method
                 existing_profile.payout_account_details = payout_account_details
-                existing_profile.kyc_status = SellerProfile.KycStatus.PENDING
+                if national_id_number and existing_profile.kyc_status == SellerProfile.KycStatus.UNVERIFIED:
+                    existing_profile.kyc_status = SellerProfile.KycStatus.PENDING
                 existing_profile.save()
                 profile = existing_profile
             else:
@@ -301,7 +302,10 @@ def seller_apply_view(request):
                     bio=bio,
                 )
 
-            messages.success(request, f"Congratulations! Your store '{profile.store_name}' application has been submitted for verification.")
+            if national_id_number:
+                messages.success(request, f"Congratulations! Your store '{profile.store_name}' has been updated and your KYC identity verification is submitted for review.")
+            else:
+                messages.success(request, f"Congratulations! Your store '{profile.store_name}' is ready. You can start listing books immediately!")
             return redirect("seller_listings")
 
     return render(
