@@ -35,3 +35,5 @@ celerybeat.pid
 # Scratch & Logs
 *.log
 ~$*
+*.docx
+*.doc
