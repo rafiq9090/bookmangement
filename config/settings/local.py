@@ -18,3 +18,5 @@ if not use_postgres:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+    if "django.contrib.postgres" in INSTALLED_APPS:
+        INSTALLED_APPS.remove("django.contrib.postgres")
