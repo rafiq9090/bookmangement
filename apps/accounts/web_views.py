@@ -116,17 +116,11 @@ def user_profile_view(request):
     Page 12: User Profile & Addresses (/profile/)
     Displays user info, addresses, recent orders, and security options.
     """
-    if request.user.is_authenticated:
-        user = request.user
-    else:
-        user = CustomUser.objects.first()
-        if not user:
-            user = CustomUser.objects.create_user(
-                email="customer@edoxbookshop.com",
-                password="DemoPassword123!",
-                first_name="Leslie",
-                last_name="Alexander",
-            )
+    if not request.user.is_authenticated:
+        messages.info(request, "Please sign in to view your profile.")
+        return redirect("/login/?next=/profile/")
+
+    user = request.user
 
     active_tab = request.GET.get("tab", "info")
     _, _, cart_count = get_cart_items_for_request(request)
@@ -181,6 +175,33 @@ def user_profile_view(request):
                     is_default=is_default,
                 )
                 messages.success(request, "Delivery address added successfully.")
+            active_tab = "addresses"
+            return redirect(f"/profile/?tab=addresses")
+
+        elif form_type == "edit_address":
+            address_id = request.POST.get("address_id")
+            address = get_object_or_404(Address, id=address_id, user=user)
+            recipient_name = request.POST.get("recipient_name", "").strip()
+            phone_number = request.POST.get("phone_number", "").strip()
+            street_address = request.POST.get("street_address", "").strip()
+            city = request.POST.get("city", "").strip()
+            state_division = request.POST.get("state_division", "").strip()
+            postal_code = request.POST.get("postal_code", "").strip()
+            is_default = bool(request.POST.get("is_default"))
+
+            if recipient_name and street_address and city:
+                address.recipient_name = recipient_name
+                address.phone_number = phone_number
+                address.street_address = street_address
+                address.city = city
+                address.state_division = state_division
+                address.postal_code = postal_code
+                if is_default:
+                    address.is_default = True
+                address.save()
+                messages.success(request, "Delivery address updated successfully.")
+            else:
+                messages.error(request, "Please fill in recipient name, street address, and city.")
             active_tab = "addresses"
             return redirect(f"/profile/?tab=addresses")
 
@@ -239,10 +260,10 @@ def address_action_view(request, id, action):
     """
     Sets default or deletes an address.
     """
-    if request.user.is_authenticated:
-        user = request.user
-    else:
-        user = CustomUser.objects.first()
+    if not request.user.is_authenticated:
+        return redirect("/login/?next=/profile/")
+
+    user = request.user
 
     address = get_object_or_404(Address, id=id, user=user)
 
@@ -262,10 +283,11 @@ def seller_apply_view(request):
     Page 13: Become a Seller Application (/seller/apply/)
     Onboarding landing page with perks and application form for verified sellers.
     """
-    if request.user.is_authenticated:
-        user = request.user
-    else:
-        user = CustomUser.objects.filter(is_seller=False).first() or CustomUser.objects.first()
+    if not request.user.is_authenticated:
+        messages.info(request, "Please create an account or sign in before applying to become a seller.")
+        return redirect("/login/?next=/seller/apply/")
+
+    user = request.user
 
     _, _, cart_count = get_cart_items_for_request(request)
     existing_profile = getattr(user, "seller_profile", None)

@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Messages & Order Inquiries - Book ReSeller{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 font-heading flex items-center gap-3">
+                <i class="fa-solid fa-comments text-[#FF5A1F]"></i>
+                <span>Messages & Inquiries</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                Chat with buyers and sellers, confirm order requests, and manage purchases before checkout.
+            </p>
+        </div>
+        <a href="{% url 'store' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs rounded-xl transition-colors self-start sm:self-auto">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Browse Books</span>
+        </a>
+    </div>
+
+    <!-- Notification Messages -->
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-3 border shadow-xs {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% elif message.tags == 'success' %}fa-circle-check text-emerald-500{% else %}fa-circle-info text-amber-500{% endif %} text-base"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Inbox Layout with Tabs -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-100 bg-gray-50/60 p-2 gap-2 text-xs sm:text-sm font-bold">
+            <button type="button" onclick="switchInboxTab('buyer')" id="inboxTab-buyer"
+                class="inbox-tab-btn flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer {% if active_tab == 'buyer' %}bg-white text-gray-900 shadow-xs border border-gray-200/60{% else %}text-gray-500 hover:text-gray-800 hover:bg-white/50{% endif %}">
+                <i class="fa-solid fa-bag-shopping text-[#FF5A1F]"></i>
+                <span>My Buying Inquiries</span>
+                {% if buyer_threads %}
+                <span class="ml-1 px-2 py-0.5 text-[10px] rounded-full bg-orange-100 text-[#FF5A1F]">{{ buyer_threads|length }}</span>
+                {% endif %}
+            </button>
+            
+            <button type="button" onclick="switchInboxTab('seller')" id="inboxTab-seller"
+                class="inbox-tab-btn flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer {% if active_tab == 'seller' %}bg-white text-gray-900 shadow-xs border border-gray-200/60{% else %}text-gray-500 hover:text-gray-800 hover:bg-white/50{% endif %}">
+                <i class="fa-solid fa-store text-emerald-600"></i>
+                <span>Seller Order Requests</span>
+                {% if seller_threads %}
+                <span class="ml-1 px-2 py-0.5 text-[10px] rounded-full bg-emerald-100 text-emerald-700">{{ seller_threads|length }}</span>
+                {% endif %}
+            </button>
+        </div>
+
+        <!-- BUYER THREADS PANEL -->
+        <div id="inboxContent-buyer" class="{% if active_tab != 'buyer' %}hidden{% endif %} divide-y divide-gray-100">
+            {% for conv in buyer_threads %}
+            <div class="p-4 sm:p-6 hover:bg-orange-50/20 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                
+                <div class="flex items-center gap-4 min-w-0">
+                    <!-- Book Cover -->
+                    <div class="w-14 h-18 sm:w-16 sm:h-20 bg-gray-100 rounded-xl overflow-hidden shadow-xs flex-shrink-0 border border-gray-200/60">
+                        {% if conv.listing.images.first %}
+                        <img src="{{ conv.listing.images.first.image.url }}" alt="{{ conv.listing.book.title }}" class="w-full h-full object-cover">
+                        {% elif conv.listing.book.cover_image %}
+                        <img src="{{ conv.listing.book.cover_image.url }}" alt="{{ conv.listing.book.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-300 text-xl"><i class="fa-solid fa-book"></i></div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Details -->
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <span class="text-xs font-bold text-gray-900 truncate">{{ conv.listing.book.title }}</span>
+                            <span class="text-[11px] font-mono font-bold text-[#FF5A1F]">৳{{ conv.listing.price }}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 flex items-center gap-1.5 mb-1.5">
+                            <i class="fa-solid fa-store text-gray-400 text-[10px]"></i>
+                            <span>Seller: <strong>{{ conv.seller.seller_profile.store_name|default:conv.seller.email }}</strong></span>
+                        </p>
+                        {% if conv.last_msg %}
+                        <p class="text-xs text-gray-600 line-clamp-1 italic bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 inline-block max-w-md">
+                            "{{ conv.last_msg.text }}"
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Status & Action -->
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                    <div class="text-left sm:text-right">
+                        {% if conv.order_status == 'CONFIRMED' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i> Confirmed by Seller
+                        </span>
+                        {% elif conv.order_status == 'DECLINED' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                            <i class="fa-solid fa-circle-xmark text-rose-600"></i> Declined
+                        </span>
+                        {% elif conv.order_status == 'COMPLETED' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                            <i class="fa-solid fa-bag-shopping text-blue-600"></i> Order Placed
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            <i class="fa-solid fa-clock text-amber-600"></i> Awaiting Seller Confirmation
+                        </span>
+                        {% endif %}
+                        <p class="text-[10px] text-gray-400 mt-1">{{ conv.updated_at|timesince }} ago</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'conversation_detail' conv.id %}" class="px-4 py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-comments"></i>
+                            <span>Chat</span>
+                        </a>
+
+                        {% if conv.order_status == 'CONFIRMED' %}
+                        <a href="{% url 'proceed_to_checkout_from_chat' conv.id %}" class="px-4 py-2 bg-[#FF5A1F] hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-orange-500/20 flex items-center gap-1.5 transform hover:-translate-y-0.5">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Buy Now</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% empty %}
+            <div class="py-16 px-4 text-center">
+                <div class="w-16 h-16 rounded-full bg-orange-50 text-[#FF5A1F] flex items-center justify-center mx-auto text-2xl mb-4">
+                    <i class="fa-solid fa-inbox"></i>
+                </div>
+                <h3 class="text-base font-bold text-gray-900">No Buying Inquiries Yet</h3>
+                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 mb-6">
+                    When you find a pre-loved book you want to purchase, click "Contact Seller to Order" on the book's page.
+                </p>
+                <a href="{% url 'store' %}" class="px-5 py-2.5 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                    Explore Store Catalog
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- SELLER THREADS PANEL -->
+        <div id="inboxContent-seller" class="{% if active_tab != 'seller' %}hidden{% endif %} divide-y divide-gray-100">
+            {% for conv in seller_threads %}
+            <div class="p-4 sm:p-6 hover:bg-emerald-50/20 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                
+                <div class="flex items-center gap-4 min-w-0">
+                    <!-- Book Cover -->
+                    <div class="w-14 h-18 sm:w-16 sm:h-20 bg-gray-100 rounded-xl overflow-hidden shadow-xs flex-shrink-0 border border-gray-200/60">
+                        {% if conv.listing.images.first %}
+                        <img src="{{ conv.listing.images.first.image.url }}" alt="{{ conv.listing.book.title }}" class="w-full h-full object-cover">
+                        {% elif conv.listing.book.cover_image %}
+                        <img src="{{ conv.listing.book.cover_image.url }}" alt="{{ conv.listing.book.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-300 text-xl"><i class="fa-solid fa-book"></i></div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Details -->
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <span class="text-xs font-bold text-gray-900 truncate">{{ conv.listing.book.title }}</span>
+                            <span class="text-[11px] font-mono font-bold text-emerald-600">৳{{ conv.listing.price }}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 flex items-center gap-1.5 mb-1.5">
+                            <i class="fa-solid fa-user text-gray-400 text-[10px]"></i>
+                            <span>Buyer: <strong>{{ conv.buyer.get_full_name|default:conv.buyer.email }}</strong></span>
+                        </p>
+                        {% if conv.last_msg %}
+                        <p class="text-xs text-gray-600 line-clamp-1 italic bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 inline-block max-w-md">
+                            "{{ conv.last_msg.text }}"
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Status & Action -->
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                    <div class="text-left sm:text-right">
+                        {% if conv.order_status == 'CONFIRMED' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i> Confirmed
+                        </span>
+                        {% elif conv.order_status == 'DECLINED' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                            <i class="fa-solid fa-circle-xmark text-rose-600"></i> Declined
+                        </span>
+                        {% elif conv.order_status == 'COMPLETED' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                            <i class="fa-solid fa-bag-shopping text-blue-600"></i> Purchased
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 animate-pulse">
+                            <i class="fa-solid fa-hand text-amber-600"></i> Needs Confirmation
+                        </span>
+                        {% endif %}
+                        <p class="text-[10px] text-gray-400 mt-1">{{ conv.updated_at|timesince }} ago</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'conversation_detail' conv.id %}" class="px-4 py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-comments"></i>
+                            <span>Chat</span>
+                        </a>
+
+                        {% if conv.order_status == 'INQUIRY' %}
+                        <form method="POST" action="{% url 'conversation_detail' conv.id %}" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="confirm_order">
+                            <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Confirm Order</span>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% empty %}
+            <div class="py-16 px-4 text-center">
+                <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-2xl mb-4">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <h3 class="text-base font-bold text-gray-900">No Buyer Requests Yet</h3>
+                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 mb-6">
+                    When prospective buyers contact you regarding your listed books, their inquiries will appear here for your confirmation.
+                </p>
+                <a href="{% url 'seller_dashboard' %}" class="px-5 py-2.5 bg-gray-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                    Go to Seller Dashboard
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function switchInboxTab(tabName) {
+    const buyerTab = document.getElementById('inboxTab-buyer');
+    const sellerTab = document.getElementById('inboxTab-seller');
+    const buyerContent = document.getElementById('inboxContent-buyer');
+    const sellerContent = document.getElementById('inboxContent-seller');
+
+    if (tabName === 'buyer') {
+        buyerTab.className = "inbox-tab-btn flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-gray-900 shadow-xs border border-gray-200/60";
+        sellerTab.className = "inbox-tab-btn flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer text-gray-500 hover:text-gray-800 hover:bg-white/50";
+        buyerContent.classList.remove('hidden');
+        sellerContent.classList.add('hidden');
+    } else {
+        sellerTab.className = "inbox-tab-btn flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-gray-900 shadow-xs border border-gray-200/60";
+        buyerTab.className = "inbox-tab-btn flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer text-gray-500 hover:text-gray-800 hover:bg-white/50";
+        sellerContent.classList.remove('hidden');
+        buyerContent.classList.add('hidden');
+    }
+}
+</script>
+{% endblock %}

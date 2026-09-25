@@ -268,12 +268,43 @@ def book_detail_view(request, slug):
     seller verification, author info, database reviews, and related recommendations.
     """
     book = get_object_or_404(
-        Book.objects.prefetch_related("authors", "categories", "listings__seller", "listings__images", "reviews__user"),
+        Book.objects.prefetch_related(
+            "authors",
+            "categories",
+            "listings__seller",
+            "listings__seller__seller_profile",
+            "listings__seller__addresses",
+            "listings__images",
+            "reviews__user",
+        ),
         slug=slug,
     )
 
+    is_seller_of_book = request.user.is_authenticated and book.listings.filter(seller=request.user).exists()
+    user_has_reviewed = request.user.is_authenticated and book.reviews.filter(user=request.user).exists()
+
     # Handle Review submission stored directly in database
     if request.method == "POST":
+        if is_seller_of_book:
+            is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+            if is_ajax:
+                return JsonResponse({
+                    "success": False,
+                    "error": "Sellers cannot review books listed in their own store.",
+                }, status=403)
+            messages.error(request, "Sellers cannot review books listed in their own store.")
+            return redirect(f"/books/{book.slug}/#reviews")
+
+        if user_has_reviewed:
+            is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+            if is_ajax:
+                return JsonResponse({
+                    "success": False,
+                    "error": "You have already submitted a review for this book.",
+                }, status=400)
+            messages.info(request, "You have already submitted a review for this book.")
+            return redirect(f"/books/{book.slug}/#reviews")
+
         name = request.POST.get("name", "").strip()
         headline = request.POST.get("headline", "").strip()
         comment = request.POST.get("comment", "").strip()
@@ -356,6 +387,26 @@ def book_detail_view(request, slug):
 
     _, _, cart_count = get_cart_items_for_request(request)
 
+    buyer_conversation = None
+    confirmed_listing_ids = set()
+    is_primary_own_listing = False
+
+    if request.user.is_authenticated:
+        from apps.messaging.models import Conversation
+        if primary_listing:
+            is_primary_own_listing = (primary_listing.seller_id == request.user.id)
+            buyer_conversation = Conversation.objects.filter(
+                listing=primary_listing,
+                buyer=request.user,
+            ).first()
+        confirmed_listing_ids = set(
+            Conversation.objects.filter(
+                buyer=request.user,
+                listing__book=book,
+                order_status=Conversation.OrderStatus.CONFIRMED,
+            ).values_list("listing_id", flat=True)
+        )
+
     return render(
         request,
         "books/book_detail.html",
@@ -369,6 +420,11 @@ def book_detail_view(request, slug):
             "reviews_count": reviews_count,
             "avg_rating": avg_rating,
             "rating_breakdown": rating_breakdown,
+            "is_seller_of_book": is_seller_of_book,
+            "is_primary_own_listing": is_primary_own_listing,
+            "buyer_conversation": buyer_conversation,
+            "confirmed_listing_ids": confirmed_listing_ids,
+            "user_has_reviewed": user_has_reviewed,
         },
     )
 

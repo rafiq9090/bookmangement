@@ -23,6 +23,7 @@ from apps.books.web_views import (
 )
 from apps.listings.web_views import (
     author_autocomplete_api,
+    edit_listing_view,
     isbn_lookup_api,
     sell_book_view,
     seller_dashboard_view,
@@ -31,10 +32,17 @@ from apps.listings.web_views import (
 )
 from apps.orders.web_views import (
     add_to_cart_view,
+    cancel_order_view,
     cart_view,
     checkout_view,
     order_detail_view,
     remove_from_cart_view,
+)
+from apps.messaging.web_views import (
+    conversation_detail_view,
+    inbox_view,
+    proceed_to_checkout_from_chat,
+    start_inquiry_view,
 )
 from apps.payments.web_views import seller_wallet_view
 from apps.shipping.web_views import parcel_tracking_view, seller_shipments_view
@@ -42,6 +50,10 @@ from apps.shipping.web_views import parcel_tracking_view, seller_shipments_view
 urlpatterns = [
     path("", home_view, name="home"),
     path("store/", store_view, name="store"),
+    path("inbox/", inbox_view, name="inbox"),
+    path("inbox/<int:conversation_id>/", conversation_detail_view, name="conversation_detail"),
+    path("inbox/<int:conversation_id>/checkout/", proceed_to_checkout_from_chat, name="proceed_to_checkout_from_chat"),
+    path("listings/<int:listing_id>/inquire/", start_inquiry_view, name="start_inquiry"),
     path("authors/", authors_list_view, name="authors_list"),
     path("books/<slug:slug>/", book_detail_view, name="book_detail"),
     path("cart/", cart_view, name="cart"),
@@ -49,6 +61,7 @@ urlpatterns = [
     path("cart/remove/<int:item_id>/", remove_from_cart_view, name="remove_from_cart"),
     path("checkout/", checkout_view, name="checkout"),
     path("orders/<uuid:id>/", order_detail_view, name="order_detail"),
+    path("orders/<uuid:id>/cancel/", cancel_order_view, name="cancel_order"),
     
     # Unified Seller Dashboard & Marketplace Flow
     path("seller/dashboard/", seller_dashboard_view, name="seller_dashboard"),
@@ -56,6 +69,7 @@ urlpatterns = [
     path("seller/lookup-isbn/", isbn_lookup_api, name="isbn_lookup"),
     path("seller/authors/suggest/", author_autocomplete_api, name="author_autocomplete"),
     path("seller/listings/", seller_dashboard_view, {"tab": "listings"}, name="seller_listings"),
+    path("seller/listings/<int:id>/edit/", edit_listing_view, name="edit_listing"),
     path("seller/listings/<int:id>/toggle/", toggle_listing_view, name="toggle_listing"),
     path("seller/wallet/", seller_dashboard_view, {"tab": "wallet"}, name="seller_wallet"),
     path("seller/shipments/", seller_dashboard_view, {"tab": "shipments"}, name="seller_shipments"),

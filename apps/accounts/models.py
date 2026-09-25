@@ -45,6 +45,18 @@ class CustomUser(AbstractUser):
         verbose_name = "User"
         verbose_name_plural = "Users"
 
+    @property
+    def contact_phone(self) -> str:
+        if self.phone_number:
+            return self.phone_number
+        try:
+            addr = self.addresses.first()
+            if addr and addr.phone_number:
+                return addr.phone_number
+        except Exception:
+            pass
+        return ""
+
     def __str__(self) -> str:
         return self.email
 

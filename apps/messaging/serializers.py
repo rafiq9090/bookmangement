@@ -29,8 +29,11 @@ class ConversationSerializer(serializers.ModelSerializer):
             "listing_price",
             "buyer_email",
             "seller_store",
+            "order_status",
+            "confirmed_price",
+            "confirmed_at",
             "messages",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "confirmed_at", "created_at", "updated_at")

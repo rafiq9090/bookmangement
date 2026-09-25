@@ -229,6 +229,11 @@
                             <!-- Actions -->
                             <td class="py-4 px-6 text-right">
                                 <div class="flex items-center justify-end space-x-2">
+                                    <a href="{% url 'edit_listing' listing.id %}"
+                                       class="p-2 text-gray-400 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-lg transition-colors"
+                                       title="Edit Listing">
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </a>
                                     <a href="{% url 'book_detail' listing.book.slug %}"
                                        class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                        title="View in Store">

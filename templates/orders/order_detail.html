@@ -15,14 +15,38 @@
 </section>
 <!-- END: Breadcrumb Navigation -->
 
-<!-- BEGIN: Order Confirmation Success Header -->
+<!-- BEGIN: Order Confirmation / Detail Header -->
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-6 box-border">
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-3 border shadow-xs {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% elif message.tags == 'success' %}fa-circle-check text-emerald-500{% else %}fa-circle-info text-amber-500{% endif %} text-base"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="bg-white rounded-3xl p-8 sm:p-12 border border-gray-100 shadow-sm text-center space-y-4 relative overflow-hidden">
-        <!-- Success Icon -->
+        {% if order.status == 'CANCELLED' %}
+        <!-- Cancelled State Header -->
+        <div class="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-md shadow-red-500/10">
+            <i class="fa-solid fa-ban"></i>
+        </div>
+        <div class="space-y-2">
+            <h1 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight">
+                Order Cancelled
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
+                This order was cancelled before dispatch. The books have been restored to the store catalog and held funds have been refunded.
+            </p>
+        </div>
+        {% else %}
+        <!-- Success Placed Header -->
         <div class="w-20 h-20 bg-orange-50 text-[#FF5A1F] rounded-full flex items-center justify-center mx-auto text-3xl shadow-md shadow-orange-500/10">
             <i class="fa-solid fa-check"></i>
         </div>
-        
         <div class="space-y-2">
             <h1 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight">
                 Order Placed Successfully!
@@ -31,6 +55,7 @@
                 Thank you for your purchase. We have received your order and our sellers are preparing your books for dispatch.
             </p>
         </div>
+        {% endif %}
 
         <!-- Order Metadata Pills -->
         <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -42,13 +67,13 @@
                 <span class="text-gray-400">Date:</span>
                 <span class="font-bold text-gray-800 ml-1">{{ order.created_at|date:"M d, Y" }}</span>
             </div>
-            <div class="px-4 py-2 bg-orange-50 rounded-xl border border-orange-100 text-xs text-[#FF5A1F]">
+            <div class="px-4 py-2 {% if order.status == 'CANCELLED' %}bg-red-50 text-red-700 border-red-200{% else %}bg-orange-50 text-[#FF5A1F] border-orange-100{% endif %} rounded-xl border text-xs">
                 <span class="font-bold">Status: {{ order.get_status_display }}</span>
             </div>
         </div>
     </div>
 </section>
-<!-- END: Order Confirmation Success Header -->
+<!-- END: Order Confirmation Header -->
 
 <!-- BEGIN: Order Details & Shipments -->
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-16 box-border">
@@ -216,9 +241,23 @@
 
                 <!-- Print & Continue Buttons -->
                 <div class="pt-4 space-y-2.5">
+                    {% if can_cancel %}
+                    {% url 'cancel_order' id=order.id as cancel_order_url %}
+                    {% with short_id=order.id|stringformat:'s'|slice:':8'|upper %}
+                    <button
+                        type="button"
+                        onclick="openCancelOrderModal('{{ cancel_order_url }}', '{{ short_id }}')"
+                        class="w-full py-3 px-4 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-rose-200 hover:border-rose-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                        <i class="fa-solid fa-ban text-xs"></i>
+                        <span>Cancel Order (Before Dispatch)</span>
+                    </button>
+                    {% endwith %}
+                    {% endif %}
+
                     <button
                         onclick="window.print()"
-                        class="w-full py-3 px-4 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+                        class="w-full py-3 px-4 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                     >
                         <i class="fa-solid fa-print text-xs"></i>
                         <span>Print Receipt</span>
@@ -241,5 +280,7 @@
 
 <!-- Reusable 50% Sale Ribbon Banner from Components -->
 {% include "components/sale_ribbon.html" %}
+
+{% include "components/cancel_order_modal.html" %}
 
 {% endblock %}

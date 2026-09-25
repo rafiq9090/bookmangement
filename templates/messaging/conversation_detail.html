@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Chat: {{ conversation.listing.book.title }} - Book ReSeller{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Back to Inbox & Breadcrumb -->
+    <div class="flex items-center justify-between mb-4">
+        <a href="{% url 'inbox' %}" class="inline-flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Messages</span>
+        </a>
+        <span class="text-xs text-gray-400 font-mono">Conversation #{{ conversation.id }}</span>
+    </div>
+
+    <!-- Feedback messages -->
+    {% if messages %}
+    <div class="mb-4 space-y-2">
+        {% for message in messages %}
+        <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-3 border shadow-xs {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% elif message.tags == 'success' %}fa-circle-check text-emerald-500{% else %}fa-circle-info text-amber-500{% endif %} text-base"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Book Listing Summary Card -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4 min-w-0">
+            <!-- Book Cover -->
+            <div class="w-14 h-18 bg-gray-100 rounded-xl overflow-hidden shadow-xs flex-shrink-0 border border-gray-200/60">
+                {% if listing.images.first %}
+                <img src="{{ listing.images.first.image.url }}" alt="{{ listing.book.title }}" class="w-full h-full object-cover">
+                {% elif listing.book.cover_image %}
+                <img src="{{ listing.book.cover_image.url }}" alt="{{ listing.book.title }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-gray-300 text-xl"><i class="fa-solid fa-book"></i></div>
+                {% endif %}
+            </div>
+
+            <div class="min-w-0">
+                <a href="{% url 'book_detail' listing.book.slug %}" class="text-sm font-bold text-gray-900 hover:text-[#FF5A1F] transition-colors truncate block">
+                    {{ listing.book.title }}
+                </a>
+                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-700">
+                        Condition: {{ listing.get_condition_display }}
+                    </span>
+                    <span class="text-xs font-extrabold text-[#FF5A1F] font-mono">
+                        ৳{{ listing.price }}
+                    </span>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1">
+                    {% if is_seller %}
+                    Buyer: <strong class="text-gray-700">{{ conversation.buyer.get_full_name|default:conversation.buyer.email }}</strong>
+                    {% else %}
+                    Store: <strong class="text-gray-700">{{ listing.seller.seller_profile.store_name|default:listing.seller.email }}</strong>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <a href="{% url 'book_detail' listing.book.slug %}" class="text-xs font-semibold text-gray-600 hover:text-[#FF5A1F] flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 hover:border-orange-200 transition-colors">
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                <span>View Listing</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ORDER CONFIRMATION ACTION BANNER -->
+    <div class="mb-4">
+        {% if is_seller %}
+            <!-- SELLER PERSPECTIVE -->
+            {% if conversation.order_status == 'INQUIRY' %}
+            <div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 font-bold text-sm">
+                        <i class="fa-solid fa-bell animate-bounce"></i>
+                        <span>Buyer Wants to Purchase this Book!</span>
+                    </div>
+                    <p class="text-xs text-orange-100">
+                        Please verify that you have this copy ready. Click "Confirm Order" to unlock the purchase button for the buyer.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2.5 flex-shrink-0">
+                    <form method="POST" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="confirm_order">
+                        <button type="submit" class="px-5 py-2.5 bg-white text-emerald-700 hover:bg-emerald-50 text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer transform hover:scale-105">
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                            <span>Confirm Order</span>
+                        </button>
+                    </form>
+                    <form method="POST" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="decline_order">
+                        <button type="submit" class="px-3.5 py-2.5 bg-black/20 hover:bg-black/30 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-xmark"></i>
+                            <span>Decline</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% elif conversation.order_status == 'CONFIRMED' %}
+            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-900 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold">You Confirmed this Order Request!</p>
+                        <p class="text-[11px] text-emerald-700">The buyer can now complete their payment and purchase this book copy.</p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 bg-emerald-200 text-emerald-900 text-[11px] font-bold rounded-full">
+                    Awaiting Buyer Payment
+                </span>
+            </div>
+            {% elif conversation.order_status == 'COMPLETED' %}
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-blue-900 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold">Order Placed & Escrow Funded!</p>
+                    <p class="text-[11px] text-blue-700">Buyer has finalized payment. Please prepare parcel for courier pickup.</p>
+                </div>
+            </div>
+            {% elif conversation.order_status == 'DECLINED' %}
+            <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-900 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold">Order Declined</p>
+                    <p class="text-[11px] text-rose-700">You marked this order request as declined.</p>
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- BUYER PERSPECTIVE -->
+            {% if conversation.order_status == 'CONFIRMED' %}
+            <div class="bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl p-5 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 font-bold text-sm">
+                        <i class="fa-solid fa-circle-check text-white text-base"></i>
+                        <span>Seller Approved Your Order!</span>
+                    </div>
+                    <p class="text-xs text-emerald-100">
+                        The seller confirmed that this copy is ready. Click below to proceed to secure checkout.
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'proceed_to_checkout_from_chat' conversation.id %}" class="px-6 py-3 bg-white hover:bg-emerald-50 text-emerald-800 font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center gap-2 transform hover:scale-105">
+                        <i class="fa-solid fa-bolt text-[#FF5A1F]"></i>
+                        <span>Purchase Now — ৳{{ conversation.listing.price }}</span>
+                    </a>
+                </div>
+            </div>
+            {% elif conversation.order_status == 'INQUIRY' %}
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-900 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold">Order Request Sent to Seller</p>
+                        <p class="text-[11px] text-amber-700">Waiting for seller confirmation. As soon as the seller confirms, the "Purchase Now" button will appear here.</p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 bg-amber-200/80 text-amber-900 text-[11px] font-bold rounded-full whitespace-nowrap">
+                    Pending Confirmation
+                </span>
+            </div>
+            {% elif conversation.order_status == 'COMPLETED' %}
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-blue-900 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold">Order Completed!</p>
+                        <p class="text-[11px] text-blue-700">You successfully placed this order. Your payment is held securely in escrow until delivery.</p>
+                    </div>
+                </div>
+                <a href="{% url 'profile' %}?tab=orders" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors">
+                    View in Orders
+                </a>
+            </div>
+            {% elif conversation.order_status == 'DECLINED' %}
+            <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-900 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold">Order Request Declined</p>
+                    <p class="text-[11px] text-rose-700">The seller is unable to fulfill this order at this time.</p>
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Chat Messages Box -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-[520px]">
+        
+        <!-- Chat Header -->
+        <div class="p-4 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-[#FF5A1F] text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                    {% if is_seller %}
+                    {{ conversation.buyer.first_name|default:conversation.buyer.email|slice:":1"|upper }}
+                    {% else %}
+                    {{ conversation.seller.seller_profile.store_name|default:conversation.seller.email|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-gray-900">
+                        {% if is_seller %}
+                        {{ conversation.buyer.get_full_name|default:conversation.buyer.email }} (Buyer)
+                        {% else %}
+                        {{ conversation.seller.seller_profile.store_name|default:conversation.seller.email }} (Seller)
+                        {% endif %}
+                    </p>
+                    <p class="text-[10px] text-gray-400">Direct Inquiry Thread</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[10px] text-gray-500 font-medium">Online</span>
+            </div>
+        </div>
+
+        <!-- Chat Stream -->
+        <div id="chatStream" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
+            
+            <!-- Conversation Initiated Badge -->
+            <div class="text-center my-2">
+                <span class="px-3 py-1 bg-gray-100 text-gray-500 rounded-full text-[10px] font-semibold">
+                    Inquiry opened on {{ conversation.created_at|date:"M d, Y, h:i A" }}
+                </span>
+            </div>
+
+            {% for msg in chat_messages %}
+            <div class="flex flex-col {% if msg.sender == request.user %}items-end{% else %}items-start{% endif %}">
+                <div class="flex items-end gap-2 max-w-[85%] sm:max-w-[75%] {% if msg.sender == request.user %}flex-row-reverse{% endif %}">
+                    
+                    <!-- Avatar circle -->
+                    <div class="w-7 h-7 rounded-lg text-[10px] font-bold flex items-center justify-center flex-shrink-0 {% if msg.sender == request.user %}bg-gray-900 text-white{% else %}bg-orange-100 text-[#FF5A1F]{% endif %}">
+                        {{ msg.sender.first_name|default:msg.sender.email|slice:":1"|upper }}
+                    </div>
+
+                    <!-- Message Bubble -->
+                    <div class="rounded-2xl p-3.5 text-xs shadow-xs {% if msg.sender == request.user %}bg-[#FF5A1F] text-white rounded-br-xs{% else %}bg-gray-100 text-gray-800 rounded-bl-xs{% endif %}">
+                        
+                        <!-- Confirmation highlight in bubble if automated confirmation -->
+                        {% if "✅ Order Confirmed!" in msg.text %}
+                        <div class="font-bold mb-1 flex items-center gap-1.5 text-amber-200">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Official Confirmation</span>
+                        </div>
+                        {% endif %}
+
+                        <p class="whitespace-pre-wrap leading-relaxed">{{ msg.text }}</p>
+
+                        {% if msg.photo_evidence %}
+                        <div class="mt-2 rounded-xl overflow-hidden border border-white/20">
+                            <a href="{{ msg.photo_evidence.url }}" target="_blank">
+                                <img src="{{ msg.photo_evidence.url }}" alt="Attachment" class="max-h-48 object-cover rounded-xl hover:opacity-95 transition-opacity">
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-1 text-[9px] {% if msg.sender == request.user %}text-orange-200 text-right{% else %}text-gray-400{% endif %}">
+                            {{ msg.created_at|date:"h:i A" }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% empty %}
+            <div class="py-12 text-center text-gray-400 text-xs">
+                No messages yet. Send a message to begin!
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="p-3 sm:p-4 border-t border-gray-100 bg-white">
+            <form method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_message">
+                
+                <!-- Attachment Button -->
+                <label class="cursor-pointer p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors" title="Attach Photo">
+                    <i class="fa-solid fa-paperclip text-sm"></i>
+                    <input type="file" name="photo_evidence" accept="image/*" class="hidden" onchange="previewAttachment(this)">
+                </label>
+
+                <!-- Text Input -->
+                <input type="text" name="text" placeholder="Type your message to {% if is_seller %}buyer{% else %}seller{% endif %}..." required
+                    class="flex-1 py-2.5 px-4 bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#FF5A1F] rounded-xl text-xs sm:text-sm text-gray-900 focus:ring-1 focus:ring-[#FF5A1F] transition-all">
+
+                <!-- Submit Button -->
+                <button type="submit" class="py-2.5 px-4 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                    <span>Send</span>
+                    <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                </button>
+            </form>
+            <div id="attachmentIndicator" class="hidden mt-2 text-[10px] text-gray-500 flex items-center gap-1.5">
+                <i class="fa-solid fa-image text-[#FF5A1F]"></i>
+                <span id="attachmentFileName"></span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+// Auto scroll chat stream to bottom on load
+document.addEventListener("DOMContentLoaded", function() {
+    const chatStream = document.getElementById("chatStream");
+    if (chatStream) {
+        chatStream.scrollTop = chatStream.scrollHeight;
+    }
+});
+
+function previewAttachment(input) {
+    const indicator = document.getElementById("attachmentIndicator");
+    const nameSpan = document.getElementById("attachmentFileName");
+    if (input.files && input.files[0]) {
+        nameSpan.textContent = "Selected: " + input.files[0].name;
+        indicator.classList.remove("hidden");
+    } else {
+        indicator.classList.add("hidden");
+    }
+}
+</script>
+{% endblock %}

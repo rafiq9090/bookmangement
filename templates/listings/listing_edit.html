@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Listing - {{ listing.book.title }} | eB Online Bookshop{% endblock %}
+
+{% block content %}
+<!-- BEGIN: Breadcrumb Navigation -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
+    <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
+        <a href="{% url 'home' %}" class="hover:text-gray-700 transition-colors">Home</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <a href="{% url 'seller_listings' %}" class="hover:text-gray-700 transition-colors">Seller Dashboard</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
+        <span class="text-gray-800 font-semibold truncate max-w-xs">Edit: {{ listing.book.title }}</span>
+    </nav>
+</section>
+<!-- END: Breadcrumb Navigation -->
+
+<!-- BEGIN: Edit Header -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 box-border">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+        <div>
+            <h1 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight">
+                Edit Book <span class="text-[#FF5A1F]">Listing</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">
+                Update price, condition, notes, photos, and listing availability.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'seller_listings' %}"
+               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                <span>Back to Listings</span>
+            </a>
+            <a href="{% url 'book_detail' listing.book.slug %}" target="_blank"
+               class="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-semibold rounded-full border border-orange-200 transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                <span>View in Store</span>
+            </a>
+        </div>
+    </div>
+</section>
+<!-- END: Edit Header -->
+
+<!-- BEGIN: Main Edit Form -->
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-16 box-border">
+    <form method="POST" action="{% url 'edit_listing' listing.id %}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {% csrf_token %}
+
+        <!-- Left Column: Primary Details (8 cols) -->
+        <div class="lg:col-span-8 space-y-6">
+
+            <!-- Card 1: Book Information -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
+                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                    <span class="w-8 h-8 rounded-xl bg-green-50 text-[#43A047] flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-book-open"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Book Details</h3>
+                        <p class="text-xs text-gray-400">Canonical title, author, and catalog category</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Book Title <span class="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            name="title"
+                            value="{{ listing.book.title }}"
+                            required
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Author</label>
+                        <input
+                            type="text"
+                            name="author"
+                            value="{{ listing.book.authors.first.name|default:'' }}"
+                            placeholder="Author Name"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Category</label>
+                        <select
+                            name="category_id"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
+                        >
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if cat in listing.book.categories.all %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">ISBN-13</label>
+                        <input
+                            type="text"
+                            disabled
+                            value="{{ listing.book.isbn_13|default:listing.book.isbn_10|default:'N/A' }}"
+                            class="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-xs font-mono text-gray-500 cursor-not-allowed"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Print / Edition Year</label>
+                        <input
+                            type="number"
+                            name="edition_year"
+                            value="{{ listing.edition_year|default:'' }}"
+                            placeholder="e.g. 2018"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Physical Condition & Wear -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
+                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                    <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-stamp"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Physical Condition Grading</h3>
+                        <p class="text-xs text-gray-400">Select the honest condition grade matching this copy</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {% for val, label in conditions %}
+                    <label class="relative flex items-center p-3 rounded-2xl border cursor-pointer transition-all hover:bg-orange-50/40 {% if listing.condition == val %}border-[#FF5A1F] bg-orange-50/30 ring-1 ring-[#FF5A1F]{% else %}border-gray-200 bg-gray-50/50{% endif %}">
+                        <input
+                            type="radio"
+                            name="condition"
+                            value="{{ val }}"
+                            {% if listing.condition == val %}checked{% endif %}
+                            class="text-[#FF5A1F] focus:ring-[#FF5A1F] h-4 w-4 border-gray-300"
+                        >
+                        <div class="ml-3 text-xs">
+                            <span class="block font-bold text-gray-900">{{ label|slice:":12" }}</span>
+                            <span class="text-[10px] text-gray-500 block leading-tight">{{ label }}</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Condition Notes & Defect Details</label>
+                    <textarea
+                        name="condition_notes"
+                        rows="3"
+                        placeholder="Detail any highlights, pencil notes, dog-eared pages, spine wear, or cover marks..."
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
+                    >{{ listing.condition_notes }}</textarea>
+                </div>
+            </div>
+
+            <!-- Card 3: Price & Features -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
+                <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                    <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-tag"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Pricing & Attributes</h3>
+                        <p class="text-xs text-gray-400">Set competitive resale pricing and special book attributes</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Listing Price (৳) <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">৳</span>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="1"
+                                name="price"
+                                value="{{ listing.price }}"
+                                required
+                                class="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
+                            >
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Original Cover MRP (৳)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">৳</span>
+                            <input
+                                type="number"
+                                step="0.01"
+                                name="original_mrp"
+                                value="{{ listing.original_mrp|default:'' }}"
+                                placeholder="Original Price"
+                                class="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Checkboxes -->
+                <div class="pt-2">
+                    <label class="block text-xs font-bold text-gray-700 mb-2.5">Special Attributes</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <label class="flex items-center space-x-2.5 p-3 rounded-xl border border-gray-200 bg-gray-50/50 cursor-pointer hover:bg-gray-50">
+                            <input type="checkbox" name="is_hardcover" {% if listing.is_hardcover %}checked{% endif %} class="h-4 w-4 rounded text-[#FF5A1F] focus:ring-[#FF5A1F] border-gray-300">
+                            <span class="text-xs font-semibold text-gray-700">Hardcover</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-3 rounded-xl border border-gray-200 bg-gray-50/50 cursor-pointer hover:bg-gray-50">
+                            <input type="checkbox" name="has_dust_jacket" {% if listing.has_dust_jacket %}checked{% endif %} class="h-4 w-4 rounded text-[#FF5A1F] focus:ring-[#FF5A1F] border-gray-300">
+                            <span class="text-xs font-semibold text-gray-700">Dust Jacket</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-3 rounded-xl border border-gray-200 bg-gray-50/50 cursor-pointer hover:bg-gray-50">
+                            <input type="checkbox" name="is_signed_by_author" {% if listing.is_signed_by_author %}checked{% endif %} class="h-4 w-4 rounded text-[#FF5A1F] focus:ring-[#FF5A1F] border-gray-300">
+                            <span class="text-xs font-semibold text-gray-700">Signed Copy</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Photos, Status & Action Card (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+
+            <!-- Card 4: Listing Status -->
+            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+                <h4 class="font-heading font-extrabold text-sm text-gray-900 pb-2 border-b border-gray-100 flex items-center justify-between">
+                    <span>Listing Status</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase
+                        {% if listing.status == 'ACTIVE' %}bg-emerald-100 text-emerald-800
+                        {% elif listing.status == 'RESERVED' %}bg-amber-100 text-amber-800
+                        {% elif listing.status == 'SOLD' %}bg-blue-100 text-blue-800
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ listing.status }}
+                    </span>
+                </h4>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Change Status</label>
+                    <select
+                        name="status"
+                        class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF5A1F]"
+                    >
+                        {% for val, label in statuses %}
+                        <option value="{{ val }}" {% if listing.status == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Card 5: Listing Photos -->
+            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+                <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <h4 class="font-heading font-extrabold text-sm text-gray-900">Photos & Cover</h4>
+                    <span class="text-[10px] text-gray-400 font-mono">{{ listing.images.count }}/5 photos</span>
+                </div>
+
+                <!-- Existing Photos Gallery with Delete Checkbox -->
+                {% if listing.images.exists %}
+                <div class="space-y-2">
+                    <span class="text-[11px] font-bold text-gray-600 block">Existing Photos:</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        {% for img in listing.images.all %}
+                        <div class="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-100 aspect-square">
+                            <img src="{{ img.image.url }}" alt="Photo" class="w-full h-full object-cover">
+                            <label class="absolute inset-x-0 bottom-0 bg-black/70 text-white text-[10px] font-bold py-1 px-1.5 flex items-center justify-center gap-1 cursor-pointer hover:bg-rose-700 transition-colors">
+                                <input type="checkbox" name="delete_photos" value="{{ img.id }}" class="h-3 w-3 rounded text-rose-600 focus:ring-0">
+                                <span>Remove</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% elif listing.book.cover_image %}
+                <div class="space-y-1.5">
+                    <span class="text-[11px] font-bold text-gray-600 block">Catalog Cover Image:</span>
+                    <div class="w-28 h-40 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 shadow-sm mx-auto">
+                        <img src="{{ listing.book.cover_image.url }}" alt="{{ listing.book.title }}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Upload Additional Photos -->
+                <div class="pt-2 border-t border-gray-100">
+                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Add Condition Photos</label>
+                    <input
+                        type="file"
+                        name="photos"
+                        multiple
+                        accept="image/*"
+                        class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-[#FF5A1F] hover:file:bg-orange-100 cursor-pointer"
+                    >
+                    <p class="text-[10px] text-gray-400 mt-1">Upload clear photos showing spine, cover, and defects.</p>
+                </div>
+
+                <!-- Update Book Cover Image (Optional) -->
+                <div class="pt-2 border-t border-gray-100">
+                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Replace Book Artwork Cover</label>
+                    <input
+                        type="file"
+                        name="cover_image"
+                        accept="image/*"
+                        class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer"
+                    >
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="space-y-2 pt-2">
+                <button
+                    type="submit"
+                    class="w-full py-3.5 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold rounded-2xl shadow-md shadow-orange-500/25 transition-all text-xs flex items-center justify-center gap-2"
+                >
+                    <i class="fa-solid fa-floppy-disk text-sm"></i>
+                    <span>Save Changes</span>
+                </button>
+                <a
+                    href="{% url 'seller_listings' %}"
+                    class="w-full py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-2xl transition-all text-xs flex items-center justify-center"
+                >
+                    Cancel
+                </a>
+            </div>
+
+        </div>
+    </form>
+</section>
+{% endblock %}

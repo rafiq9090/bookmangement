@@ -43,7 +43,15 @@ def sell_book_view(request):
     Supports ISBN autofill, physical condition grading, defect notes,
     feature checkboxes, price, author photo upload, and multiple book images (max 5).
     """
-    seller = get_or_create_seller_user(request)
+    if not request.user.is_authenticated:
+        messages.info(request, "Please sign in to list a book for sale.")
+        return redirect("/login/?next=/sell/")
+
+    if not request.user.is_seller:
+        messages.warning(request, "Please register your store details before listing books.")
+        return redirect("seller_apply")
+
+    seller = request.user
     categories = Category.objects.all().order_by("name")
     _, _, cart_count = get_cart_items_for_request(request)
 
@@ -278,7 +286,9 @@ def toggle_listing_view(request, id):
     """
     Toggles a listing between ACTIVE and ARCHIVED.
     """
-    seller = get_or_create_seller_user(request)
+    if not request.user.is_authenticated:
+        return redirect("/login/?next=/seller/dashboard/?tab=listings")
+    seller = request.user
     listing = get_object_or_404(BookListing, id=id, seller=seller)
     if listing.status == BookListing.Status.ACTIVE:
         listing.status = BookListing.Status.ARCHIVED
@@ -286,6 +296,120 @@ def toggle_listing_view(request, id):
         listing.status = BookListing.Status.ACTIVE
     listing.save(update_fields=["status", "updated_at"])
     return redirect(request.META.get("HTTP_REFERER") or "/seller/dashboard/?tab=listings")
+
+
+def edit_listing_view(request, id):
+    """
+    Allows a seller to edit an existing book listing: title, author, category, price,
+    condition, notes, edition year, features, status, and photos.
+    """
+    if not request.user.is_authenticated:
+        messages.info(request, "Please sign in to edit your listings.")
+        return redirect(f"/login/?next=/seller/listings/{id}/edit/")
+
+    listing = get_object_or_404(
+        BookListing.objects.select_related("book").prefetch_related("images", "book__authors", "book__categories"),
+        id=id,
+        seller=request.user,
+        is_deleted=False,
+    )
+    categories = Category.objects.all().order_by("name")
+    _, _, cart_count = get_cart_items_for_request(request)
+
+    if request.method == "POST":
+        title = request.POST.get("title", "").strip()
+        author_name = request.POST.get("author", "").strip()
+        category_id = request.POST.get("category_id")
+        price_str = request.POST.get("price", "").strip()
+        original_mrp_str = request.POST.get("original_mrp", "").strip()
+        condition = request.POST.get("condition", listing.condition)
+        condition_notes = request.POST.get("condition_notes", "").strip()
+        edition_year_str = request.POST.get("edition_year", "").strip()
+        status = request.POST.get("status", listing.status)
+        is_hardcover = bool(request.POST.get("is_hardcover"))
+        has_dust_jacket = bool(request.POST.get("has_dust_jacket"))
+        is_signed_by_author = bool(request.POST.get("is_signed_by_author"))
+
+        try:
+            price = Decimal(price_str) if price_str else listing.price
+        except Exception:
+            price = listing.price
+
+        try:
+            original_mrp = Decimal(original_mrp_str) if original_mrp_str else listing.original_mrp
+        except Exception:
+            original_mrp = listing.original_mrp
+
+        edition_year = int(edition_year_str) if edition_year_str.isdigit() else None
+
+        with transaction.atomic():
+            book = listing.book
+            if title and title != book.title:
+                book.title = title
+                book.save(update_fields=["title"])
+
+            if author_name:
+                author, _ = Author.objects.get_or_create(
+                    name=author_name,
+                    defaults={"slug": slugify(author_name) or "author"},
+                )
+                if not book.authors.filter(id=author.id).exists():
+                    book.authors.clear()
+                    book.authors.add(author)
+
+            if category_id:
+                category = Category.objects.filter(id=category_id).first()
+                if category and not book.categories.filter(id=category.id).exists():
+                    book.categories.clear()
+                    book.categories.add(category)
+
+            listing.price = price
+            listing.original_mrp = original_mrp
+            listing.condition = condition
+            listing.condition_notes = condition_notes
+            listing.edition_year = edition_year
+            listing.is_hardcover = is_hardcover
+            listing.has_dust_jacket = has_dust_jacket
+            listing.is_signed_by_author = is_signed_by_author
+            if status in BookListing.Status.values:
+                listing.status = status
+            listing.save()
+
+            # Handle photo deletion
+            delete_photo_ids = request.POST.getlist("delete_photos")
+            if delete_photo_ids:
+                listing.images.filter(id__in=delete_photo_ids).delete()
+
+            # Handle new photo uploads
+            new_photos = request.FILES.getlist("photos")
+            current_count = listing.images.count()
+            for i, photo in enumerate(new_photos[:max(0, 5 - current_count)]):
+                ListingImage.objects.create(
+                    listing=listing,
+                    image=photo,
+                    is_primary=(current_count == 0 and i == 0),
+                )
+
+            # Handle cover image replacement if provided
+            cover_photo = request.FILES.get("cover_image")
+            if cover_photo:
+                book.cover_image = cover_photo
+                book.save(update_fields=["cover_image"])
+
+        messages.success(request, f'Listing for "{listing.book.title}" updated successfully.')
+        return redirect("seller_listings")
+
+    return render(
+        request,
+        "listings/listing_edit.html",
+        {
+            "listing": listing,
+            "categories": categories,
+            "conditions": BookListing.Condition.choices,
+            "statuses": BookListing.Status.choices,
+            "cart_count": cart_count,
+        },
+    )
 
 
 def seller_dashboard_view(request, tab=None):

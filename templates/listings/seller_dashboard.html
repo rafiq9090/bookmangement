@@ -335,9 +335,12 @@
                                 {% if listing.images.first %}
                                 <img src="{{ listing.images.first.image.url }}" alt="{{ listing.book.title }}"
                                     class="w-full h-full object-cover">
+                                {% elif listing.book.cover_image %}
+                                <img src="{{ listing.book.cover_image.url }}" alt="{{ listing.book.title }}"
+                                    class="w-full h-full object-cover">
                                 {% else %}
                                 <div
-                                    class="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold bg-gray-100">
+                                    class="w-full h-full flex items-center justify-center text-white text-xs font-bold bg-[#1E5D57]">
                                     📖</div>
                                 {% endif %}
                             </div>
@@ -347,6 +350,10 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
+                            <a href="{% url 'edit_listing' listing.id %}" title="Edit Listing"
+                                class="p-1.5 text-gray-400 hover:text-[#FF5A1F] hover:bg-white rounded-lg transition-colors">
+                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                            </a>
                             {% if listing.status == 'ACTIVE' %}
                             <span
                                 class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-50 text-[#FF5A1F]">Active</span>
@@ -443,10 +450,21 @@
                         {% if listing.images.first %}
                         <img src="{{ listing.images.first.image.url }}" alt="{{ listing.book.title }}"
                             class="w-full h-full object-cover">
+                        {% elif listing.book.cover_image %}
+                        <img src="{{ listing.book.cover_image.url }}" alt="{{ listing.book.title }}"
+                            class="w-full h-full object-cover">
                         {% else %}
-                        <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                            <i class="fa-solid fa-book text-3xl mb-1 text-gray-300"></i>
-                            <span class="text-[10px] uppercase font-bold text-gray-400">No Photo</span>
+                        <div class="w-full h-full bg-gradient-to-b from-[#1E5D57] to-[#0d3430] text-teal-100 p-3 flex flex-col justify-between items-center text-center">
+                            <span class="text-[9px] font-bold tracking-widest uppercase opacity-80">
+                                {{ listing.book.categories.first.name|default:"BOOK" }}
+                            </span>
+                            <div class="my-auto flex flex-col items-center justify-center">
+                                <i class="fa-solid fa-book-bookmark text-2xl text-teal-200 opacity-80 mb-1"></i>
+                                <span class="text-[10px] font-bold leading-tight line-clamp-2 px-1 text-white">
+                                    {{ listing.book.title }}
+                                </span>
+                            </div>
+                            <span class="text-[8px] font-medium opacity-70">Curated Edition</span>
                         </div>
                         {% endif %}
 
@@ -462,6 +480,12 @@
                             class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-black/60 text-white backdrop-blur-sm">
                             {{ listing.get_condition_display }}
                         </span>
+
+                        <a href="{% url 'edit_listing' listing.id %}"
+                            class="absolute bottom-2 right-2 w-7 h-7 rounded-lg bg-white/90 hover:bg-white text-gray-700 hover:text-[#FF5A1F] flex items-center justify-center shadow-sm backdrop-blur-xs transition-colors z-10"
+                            title="Edit Listing Details">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </a>
                     </div>
 
                     <!-- Book Metadata -->
@@ -508,6 +532,11 @@
                                 class="px-2 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors">
                                 Save
                             </button>
+                            <a href="{% url 'edit_listing' listing.id %}" title="Edit Listing Details"
+                                class="px-2 py-1 text-[10px] font-bold text-[#FF5A1F] bg-orange-50 hover:bg-orange-100 rounded-lg border border-orange-200 transition-colors flex items-center gap-1">
+                                <i class="fa-solid fa-pen-to-square text-[9px]"></i>
+                                <span>Edit</span>
+                            </a>
                             <a href="{% url 'toggle_listing' listing.id %}" title="Toggle Active / Archive"
                                 class="px-2 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                                 {% if listing.status == 'ACTIVE' %}Archive{% else %}Activate{% endif %}

@@ -80,6 +80,7 @@ class OrderShipment(models.Model):
         IN_TRANSIT = "IN_TRANSIT", "In Transit"
         DELIVERED = "DELIVERED", "Delivered"
         RETURNED = "RETURNED", "Returned / Disputed"
+        CANCELLED = "CANCELLED", "Cancelled"
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="shipments")
     seller = models.ForeignKey(
