@@ -1,12 +1,12 @@
-# 📚 Old & Rare Book Marketplace Backend & Platform
+#  Old & Rare Book Marketplace Backend & Platform
 
 A comprehensive multi-vendor used, vintage, and rare book commerce platform engineered with **Django 5.1**, **PostgreSQL 16**, **Redis 7**, and **Celery**. Designed specifically to solve the unique challenges of second-hand and collectible book trading—including one-of-a-kind inventory preservation, condition verification, multi-vendor shipment splitting, buyer-seller pre-purchase negotiation, escrow security, and double-entry financial accounting.
 
 ---
 
-## 🌟 Key Features Overview
+##  Key Features Overview
 
-### 1. 📖 Master Canonical Catalog & Taxonomy Engine (`apps/books`)
+### 1.  Master Canonical Catalog & Taxonomy Engine (`apps/books`)
 * **Single Source of Truth Catalog:** Multiple sellers can attach their physical used copies to a single canonical `Book` entry, eliminating duplicate catalog noise and enabling price/condition comparisons.
 * **Deep ISBN Normalization:** Indexed ISBN-10 and unique ISBN-13 lookup with automated slug generation.
 * **Hierarchical Taxonomy:** Multi-author relationships and multi-tier category/subcategory structures (`Category.parent`).
@@ -15,7 +15,7 @@ A comprehensive multi-vendor used, vintage, and rare book commerce platform engi
 
 ---
 
-### 2. 🔍 Condition Grading & Physical Wear Inspection (`apps/listings`)
+### 2.  Condition Grading & Physical Wear Inspection (`apps/listings`)
 * **Standardized 5-Tier Condition Grading:**
   * `LIKE_NEW`: Minimal signs of wear, pristine pages.
   * `VERY_GOOD`: Clean pages, light shelf wear or minor spine creasing.
@@ -29,7 +29,7 @@ A comprehensive multi-vendor used, vintage, and rare book commerce platform engi
 
 ---
 
-### 3. ⭐ Community Book Reviews & Rating System (`apps/books`)
+### 3.  Community Book Reviews & Rating System (`apps/books`)
 * **1-to-5 Star Qualitative Feedback:** Readers can evaluate books on a 1–5 star rating scale, providing a headline summary and in-depth commentary.
 * **Anti-Fraud & Marketplace Integrity Rules:**
   * **Seller Self-Review Prohibition:** Sellers are strictly prevented from reviewing or inflating ratings on books listed in their own store (`is_seller_of_book` guardrail).
@@ -43,7 +43,7 @@ A comprehensive multi-vendor used, vintage, and rare book commerce platform engi
 
 ---
 
-### 4. 🛒 Multi-Vendor Cart & Automated Shipment Splitting (`apps/orders`)
+### 4.  Multi-Vendor Cart & Automated Shipment Splitting (`apps/orders`)
 * **Universal Multi-Vendor Cart:** Seamlessly combine single-copy used books from multiple distinct sellers into one checkout transaction.
 * **Automated Order Shipment Bifurcation (`OrderShipment`):** Automatically splits checkout orders into independent seller packages, each with its own shipping fee, dispatch status, and courier tracking.
 * **Immutable Shipping Snapshot:** Serializes customer delivery address at the exact moment of order placement to guarantee auditability and dispute protection.
@@ -51,13 +51,13 @@ A comprehensive multi-vendor used, vintage, and rare book commerce platform engi
 
 ---
 
-### 5. 🔒 Concurrency Safety & Anti-Double-Selling Engine
+### 5.  Concurrency Safety & Anti-Double-Selling Engine
 * **15-Minute Reservation Lock:** Because used books are usually single, unique copies, initiating checkout places listings in a `RESERVED` status to prevent race conditions and double-purchasing.
 * **Automated Celery Beat Sweeper (`sweep_expired_reservations`):** Periodic worker runs every 60 seconds to detect abandoned checkout locks (>15 minutes) and instantly restore books back to `ACTIVE` available inventory.
 
 ---
 
-### 6. 💰 Escrow Protection, Double-Entry Ledger & Payouts (`apps/payments`)
+### 6.  Escrow Protection, Double-Entry Ledger & Payouts (`apps/payments`)
 * **Milestone-Based Escrow Custody (`EscrowHold`):** Buyer funds are held securely in platform escrow and are only released to the seller after verified delivery or resolution of return windows.
 * **Transparent Double-Entry Bookkeeping (`SellerLedger`):** Every transaction is recorded with audit-grade ledger entries:
   * `SALE_CREDIT`: Gross sale revenue allocated to the seller.
@@ -70,14 +70,14 @@ A comprehensive multi-vendor used, vintage, and rare book commerce platform engi
 
 ---
 
-### 7. 🚚 Logistics Integration & Real-Time Tracking (`apps/shipping`)
+### 7.  Logistics Integration & Real-Time Tracking (`apps/shipping`)
 * **Courier Framework:** Built to integrate with nationwide courier providers (**Steadfast**, **Pathao**, **Paperfly**, **RedX**).
 * **Public Parcel Tracking Portal (`/tracking/` & `/tracking/<tracking_number>/`):** Real-time tracking page providing buyers with a chronological milestone timeline and event audit history (`TrackingEvent`).
 * **Shipment Status Flow:** `WAITING_SELLER` ➔ `PICKED_UP` ➔ `IN_TRANSIT` ➔ `DELIVERED` ➔ `RETURNED`.
 
 ---
 
-### 8. 💬 Pre-Purchase Buyer-Seller Messaging & Negotiation (`apps/messaging`)
+### 8.  Pre-Purchase Buyer-Seller Messaging & Negotiation (`apps/messaging`)
 * **Listing-Anchored Inquiry Threads:** Direct, listing-specific communication between prospective buyers and sellers prior to purchasing.
 * **Photo Evidence Exchange:** Buyers can request additional close-up photos of bindings, signatures, or page wear directly in the conversation.
 * **In-Chat Price Negotiation & Order Confirmation:**
@@ -88,7 +88,7 @@ A comprehensive multi-vendor used, vintage, and rare book commerce platform engi
 
 ---
 
-### 9. 🛡️ Dedicated Modern Platform Admin Dashboard (`apps/accounts`)
+### 9.  Dedicated Modern Platform Admin Dashboard (`apps/accounts`)
 * **Executive Financial KPIs:** Live summary of Gross Merchandise Value (GMV), 15% Platform Commission revenue, Escrow in Custody, and Total Completed Payouts.
 * **Seller KYC Verification Queue:** Administrative queue to review submitted National IDs and store credentials with 1-click **Approve** or **Reject** actions.
 * **Escrow & Payout Custody Manager:** Administrative control to manually release escrow holds or mark payout batches as completed.
@@ -98,13 +98,13 @@ A comprehensive multi-vendor used, vintage, and rare book commerce platform engi
 
 ---
 
-### 10. ⚡ Asynchronous Workers & Performance Optimization (Celery + Redis)
+### 10.  Asynchronous Workers & Performance Optimization (Celery + Redis)
 * **Background Image Compression (`process_listing_image_to_webp`):** Uploaded book condition photos are asynchronously converted to optimized **WebP** images via Pillow to drastically reduce mobile bandwidth and enhance page performance.
 * **Automated Reservation Sweeper (`sweep_expired_reservations`):** Celery Beat background task continuously cleans up stalled checkouts without blocking HTTP request threads.
 
 ---
 
-### 11. 🔌 Developer Experience, REST API & OpenAPI 3.0 Documentation
+### 11.  Developer Experience, REST API & OpenAPI 3.0 Documentation
 * **Complete RESTful API:** Full coverage across all platform modules under `/api/v1/`.
 * **JWT Authentication:** Secure stateless access using `djangorestframework-simplejwt`.
 * **Interactive OpenAPI 3.0 Docs:**
@@ -115,7 +115,7 @@ A comprehensive multi-vendor used, vintage, and rare book commerce platform engi
 
 ---
 
-## 🏗️ Architecture & Apps Structure
+##  Architecture & Apps Structure
 
 ```
 book/
@@ -136,7 +136,7 @@ book/
 
 ---
 
-## 🛠️ Quick Start Guide
+##  Quick Start Guide
 
 ### 1. Clone the Repository
 ```bash
@@ -197,7 +197,7 @@ Visit the platform at `http://127.0.0.1:8000/`.
 
 ---
 
-## 🔗 Useful URLs & Endpoints
+##  Useful URLs & Endpoints
 
 | Portal / Feature | URL Route | Description |
 | :--- | :--- | :--- |
@@ -216,7 +216,7 @@ Visit the platform at `http://127.0.0.1:8000/`.
 
 ---
 
-## 🧪 Testing the API
+##  Testing the API
 
 Run the automated endpoint smoke tests to verify server connectivity, authentication, catalog discovery, cart, messaging, and payments:
 
