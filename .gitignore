@@ -1,39 +1,110 @@
-# Python
+# ===============================
+# Byte-compiled / optimized files
+# ===============================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Virtual Environment
+# ===============================
+# Virtual Environments
+# ===============================
 .venv/
 venv/
 ENV/
 env/
+env.bak/
+venv.bak/
 
-# Environment variables & secrets
+# ===============================
+# Environment Variables & Secrets
+# ===============================
 .env
-.env.local
+.env.*
+!.env.example
 
-# Databases
+# ===============================
+# Databases & SQLite
+# ===============================
 *.sqlite3
+*.db
 db.sqlite3
+*.sql
+*.dump
 
-# Media & Static collection
+# ===============================
+# Media & Static Files
+# ===============================
 media/
 staticfiles/
 
-# IDEs
+# ===============================
+# Schema & Diagram Exports
+# ===============================
+*.dot
+*.png.bak
+
+# ===============================
+# IDEs & Editor Configuration
+# ===============================
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
 
-# Testing & Celery
+# ===============================
+# Testing, Coverage & Celery
+# ===============================
 .pytest_cache/
+.coverage
+htmlcov/
 celerybeat-schedule
+celerybeat-schedule.*
 celerybeat.pid
 
-# Scratch & Logs
+# ===============================
+# Logs & Temporary Files
+# ===============================
 *.log
+*.bak
+*.tmp
+temp/
+tmp/
+
+# ===============================
+# Operating System Artifacts
+# ===============================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===============================
+# Office Documents & Temporary Docs
+# ===============================
 ~$*
 *.docx
 *.doc
