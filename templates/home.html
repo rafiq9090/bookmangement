@@ -1,8 +1,32 @@
 {% extends "base.html" %}
 
-{% block title %}eB - Online Bookshop{% endblock %}
+{% block title %}Book ReSeller | Used & Rare Books{% endblock %}
 
 {% block content %}
+<div class="mobile-home-layout">
+    <!-- In-Page Alert Messages (Auto-dismisses without reload) -->
+    {% if messages %}
+    <div class="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 -mb-2" data-purpose="auto-alert">
+        <div class="space-y-2">
+            {% for message in messages %}
+            <div class="p-4 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between gap-3 shadow-xs border transition-all duration-300
+                {% if message.tags == 'error' %}bg-red-50 text-red-800 border-red-200
+                {% elif message.tags == 'warning' %}bg-amber-50 text-amber-800 border-amber-200
+                {% elif message.tags == 'info' %}bg-blue-50 text-blue-800 border-blue-200
+                {% else %}bg-emerald-50 text-emerald-800 border-emerald-200{% endif %}">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% elif message.tags == 'warning' %}fa-triangle-exclamation text-amber-500{% elif message.tags == 'info' %}fa-circle-info text-blue-500{% else %}fa-circle-check text-emerald-500{% endif %} text-base"></i>
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" onclick="this.closest('[data-purpose=\'auto-alert\']').remove()" class="text-gray-400 hover:text-gray-700 p-1 cursor-pointer" aria-label="Close">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Hero Section -->
     {% include "components/hero.html" %}
 
@@ -26,4 +50,5 @@
 
     <!-- 50% Sale Ribbon Banner -->
     {% include "components/sale_ribbon.html" %}
+</div>
 {% endblock %}

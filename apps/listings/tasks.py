@@ -31,3 +31,12 @@ def process_listing_image_to_webp(image_id: int) -> str:
         listing_image.webp_image.save(webp_filename, ContentFile(output.read()), save=True)
 
     return f"Image #{image_id} successfully converted to WebP."
+
+
+def queue_listing_image(image_id):
+    """Optional optimization failure must not fail a committed upload."""
+    try:
+        process_listing_image_to_webp.delay(image_id)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning("Image optimization worker unavailable", exc_info=True)

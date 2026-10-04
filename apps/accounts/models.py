@@ -3,6 +3,46 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
 
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    subject = models.CharField(max_length=150)
+    message = models.TextField(max_length=5000)
+    resolved = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class PushSubscription(models.Model):
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE, related_name="push_subscriptions")
+    endpoint = models.URLField(max_length=2048, unique=True)
+    keys = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class PushDelivery(models.Model):
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
+    event_key = models.CharField(max_length=100, unique=True)
+    url = models.CharField(max_length=255)
+    title = models.CharField(max_length=100)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+
+class AdminActivity(models.Model):
+    actor = models.ForeignKey("CustomUser", null=True, on_delete=models.SET_NULL)
+    action = models.CharField(max_length=60)
+    target = models.CharField(max_length=100)
+    reason = models.TextField()
+    before = models.JSONField(default=dict)
+    after = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email: str, password: str | None = None, **extra_fields) -> "CustomUser":
         if not email:
@@ -31,6 +71,10 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True, db_index=True)
     phone_number = models.CharField(max_length=20, blank=True)
     is_seller = models.BooleanField(default=False)
+    default_district = models.CharField(max_length=100, blank=True)
+    default_area = models.CharField(max_length=100, blank=True)
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=False)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

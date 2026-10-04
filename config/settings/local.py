@@ -9,3 +9,5 @@ INTERNAL_IPS = [
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "*"]
 
 
+
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")

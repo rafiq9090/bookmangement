@@ -24,7 +24,7 @@ def cart_view(request):
         return redirect("/login/?next=/cart/")
 
     items, subtotal, cart_count = get_cart_items_for_request(request)
-    shipping_fee = Decimal("2.00") if subtotal > 0 and subtotal < Decimal("30.00") else Decimal("0.00")
+    shipping_fee = Decimal("0.00")
     total = subtotal + shipping_fee
 
     return render(
@@ -58,23 +58,8 @@ def add_to_cart_view(request, listing_id):
         messages.warning(request, "You cannot purchase your own book listing.")
         return redirect("book_detail", slug=listing.book.slug)
 
-    from apps.messaging.models import Conversation
-    conv = Conversation.objects.filter(listing=listing, buyer=request.user).first()
-    if not conv or conv.order_status != Conversation.OrderStatus.CONFIRMED:
-        messages.warning(
-            request,
-            "Seller confirmation required: Please message the seller to confirm book availability before purchasing."
-        )
-        return redirect("start_inquiry", listing_id=listing.id)
-
     cart, _ = Cart.objects.get_or_create(user=request.user)
-    existing_item = CartItem.objects.filter(listing=listing).first()
-    if existing_item:
-        if existing_item.cart_id != cart.id:
-            existing_item.cart = cart
-            existing_item.save(update_fields=["cart"])
-    else:
-        CartItem.objects.create(cart=cart, listing=listing)
+    CartItem.objects.get_or_create(cart=cart, listing=listing)
 
     if request.GET.get("redirect") == "checkout":
         return redirect("checkout")
@@ -94,6 +79,13 @@ def remove_from_cart_view(request, item_id):
 
 
 def checkout_view(request):
+    from django.conf import settings
+    if settings.LOCAL_PICKUP_ENABLED:
+        return redirect("pickup_list")
+    return legacy_checkout_view(request)
+
+
+def legacy_checkout_view(request):
     """
     Renders the Checkout page and processes order placement.
     Requires user account: guests cannot buy books without registering/signing in.
@@ -104,7 +96,7 @@ def checkout_view(request):
 
     items, subtotal, cart_count = get_cart_items_for_request(request)
     if not items:
-        return redirect("cart")
+        return redirect("inbox")
 
     # Enforce Seller Confirmation Rule: All items in cart must be confirmed by their seller
     from apps.messaging.models import Conversation

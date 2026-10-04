@@ -8,7 +8,7 @@
     <title>{% block title %}Platform Operations Console | eB Marketplace{% endblock %}</title>
 
     <!-- Tailwind CSS v3 CDN with forms & container queries plugins -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 
     <!-- Google Fonts: Poppins & Inter -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -18,33 +18,12 @@
     <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-    <!-- Tailwind Configuration -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Poppins', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            orange: '#FF5A1F',
-                            green: '#43A047',
-                            darkGreen: '#2E7D32',
-                            dark: '#0f172a',
-                            bgLight: '#f8fafc',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
     <!-- Custom Micro-interactions & Styles -->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
     {% block extra_head %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/mobile-theme.css' %}" media="(max-width: 767px)">
+    <link rel="stylesheet" href="{% static 'css/mobile-admin.css' %}" media="(max-width: 767px)">
 </head>
 
 <body class="bg-[#f8fafc] text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-[#FF5A1F] selection:text-white">
@@ -84,97 +63,12 @@
             </button>
         </div>
 
-        <!-- Scrollable Navigation Items -->
-        <div class="flex-1 overflow-y-auto px-3 py-5 space-y-6">
-            <!-- Section: Primary Operations -->
-            <div>
-                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 font-mono">
-                    Management Menu
-                </p>
-                <nav class="space-y-1 text-xs font-semibold">
-                    <!-- Tab: Overview -->
-                    <a href="{% url 'platform_admin_dashboard' %}?tab=overview"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'overview' or not active_tab %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-chart-pie w-4 text-center {% if active_tab == 'overview' or not active_tab %}text-white{% else %}text-slate-400{% endif %}"></i>
-                            <span>Overview</span>
-                        </span>
-                    </a>
-
-                    <!-- Tab: KYC Queue -->
-                    <a href="{% url 'platform_admin_dashboard' %}?tab=kyc"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'kyc' %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-id-card w-4 text-center {% if active_tab == 'kyc' %}text-white{% else %}text-slate-400{% endif %}"></i>
-                            <span>KYC Queue</span>
-                        </span>
-                        {% if pending_kyc_count %}
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full {% if active_tab == 'kyc' %}bg-white text-[#FF5A1F]{% else %}bg-amber-500/20 text-amber-400 border border-amber-500/30{% endif %}">
-                            {{ pending_kyc_count }}
-                        </span>
-                        {% endif %}
-                    </a>
-
-                    <!-- Tab: Payouts & Escrow -->
-                    <a href="{% url 'platform_admin_dashboard' %}?tab=payouts"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'payouts' %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-vault w-4 text-center {% if active_tab == 'payouts' %}text-white{% else %}text-slate-400{% endif %}"></i>
-                            <span>Payouts & Escrow</span>
-                        </span>
-                    </a>
-
-                    <!-- Tab: Orders & Courier -->
-                    <a href="{% url 'platform_admin_dashboard' %}?tab=orders"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'orders' %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-truck-fast w-4 text-center {% if active_tab == 'orders' %}text-white{% else %}text-slate-400{% endif %}"></i>
-                            <span>Orders & Courier</span>
-                        </span>
-                        {% if pending_dispatch_count %}
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full {% if active_tab == 'orders' %}bg-white text-[#FF5A1F]{% else %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% endif %}">
-                            {{ pending_dispatch_count }}
-                        </span>
-                        {% endif %}
-                    </a>
-
-                    <!-- Tab: Catalog Moderation -->
-                    <a href="{% url 'platform_admin_dashboard' %}?tab=listings"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-xl transition-all {% if active_tab == 'listings' %}bg-[#FF5A1F] text-white font-bold shadow-md shadow-orange-500/25{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-book-open w-4 text-center {% if active_tab == 'listings' %}text-white{% else %}text-slate-400{% endif %}"></i>
-                            <span>Catalog Moderation</span>
-                        </span>
-                    </a>
-                </nav>
-            </div>
-
-            <!-- Section: System & Quick Shortcuts -->
-            <div>
-                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 font-mono">
-                    System & Links
-                </p>
-                <nav class="space-y-1 text-xs font-semibold">
-                    <a href="{% url 'home' %}" target="_blank"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-store w-4 text-center text-[#FF5A1F]"></i>
-                            <span>Live Bookstore</span>
-                        </span>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500 group-hover:text-slate-300"></i>
-                    </a>
-
-                    <a href="/admin/" target="_blank"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                        <span class="flex items-center space-x-3">
-                            <i class="fa-solid fa-database w-4 text-center text-indigo-400"></i>
-                            <span>Django ORM DB</span>
-                        </span>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500 group-hover:text-slate-300"></i>
-                    </a>
-                </nav>
-            </div>
-        </div>
+        <nav class="flex-1 overflow-y-auto px-3 py-5 space-y-2" aria-label="Administration">
+            {% for key, label in admin_tabs %}
+            <a href="{% url 'platform_admin_dashboard' %}?tab={{ key }}" class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold {% if active_tab == key %}bg-[#FF5A1F] text-white{% else %}text-slate-300 hover:bg-slate-800{% endif %}" {% if active_tab == key %}aria-current="page"{% endif %}>{{ label }}</a>
+            {% endfor %}
+            {% if request.user.is_superuser %}<a href="/admin/" class="block px-4 py-3 text-xs text-slate-400">Technical administration</a>{% endif %}
+        </nav>
 
         <!-- Sidebar User Footer -->
         <div class="p-4 border-t border-slate-800 bg-slate-950/60 shrink-0">
@@ -332,7 +226,9 @@
     {% endif %}
 
     <!-- Global Scripts -->
+    {% include "components/page_loader.html" %}
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/page-loader.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 

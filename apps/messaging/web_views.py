@@ -1,7 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import Http404
+from django.core.paginator import Paginator
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -11,29 +12,84 @@ from apps.orders.models import Cart, CartItem
 from apps.orders.services.cart import get_cart_items_for_request
 
 
+def clean_api_exception(exc):
+    detail = getattr(exc, 'detail', str(exc))
+    if isinstance(detail, (list, tuple)):
+        return " ".join(str(d) for d in detail)
+    elif isinstance(detail, dict):
+        parts = []
+        for k, v in detail.items():
+            val_str = " ".join(str(i) for i in v) if isinstance(v, (list, tuple)) else str(v)
+            parts.append(f"{k.replace('_', ' ').capitalize()}: {val_str}")
+        return " ".join(parts)
+    return str(detail)
+
+
+
 @login_required(login_url="/login/")
 def inbox_view(request):
     """
-    Shows buyer inquiries and seller messages in a unified message inbox.
+    Messenger-style unified inbox: all conversations in one left sidebar,
+    chat opens in the right panel when clicked.
     """
     user = request.user
     conversations = (
         Conversation.objects.filter(Q(buyer=user) | Q(seller=user))
         .select_related("listing__book", "listing__seller__seller_profile", "buyer", "seller")
-        .prefetch_related("messages", "listing__images")
         .order_by("-updated_at")
     )
 
-    buyer_threads = []
-    seller_threads = []
-
-    for conv in conversations:
+    thread_page = Paginator(conversations, 50).get_page(request.GET.get("page"))
+    all_threads = []
+    for conv in thread_page:
         conv.last_msg = conv.messages.last()
         conv.unread_count = conv.messages.exclude(sender=user).filter(is_read=False).count()
-        if conv.seller == user:
-            seller_threads.append(conv)
-        else:
-            buyer_threads.append(conv)
+        conv.is_seller_role = (conv.seller == user)
+        conv.other_user = conv.buyer if conv.is_seller_role else conv.seller
+        conv.display_name = conv.other_user.get_full_name() or "Reader"
+        if not conv.is_seller_role:
+            profile = getattr(conv.seller, 'seller_profile', None)
+            if profile:
+                conv.display_name = profile.store_name
+        conv.initials = ''.join(part[0] for part in conv.display_name.split()[:2]).upper()
+        all_threads.append(conv)
+
+    # Pre-load the first conversation's messages if there are threads
+    active_conv = None
+    active_chat_messages = None
+    active_is_seller = False
+    active_is_buyer = False
+    active_pickup = None
+    selected_id = request.GET.get("conv")
+    if selected_id:
+        for t in all_threads:
+            if str(t.id) == selected_id:
+                active_conv = t
+                break
+    if active_conv is None and selected_id and selected_id.isdigit():
+        active_conv = get_object_or_404(conversations, pk=int(selected_id))
+        active_conv.other_user = active_conv.buyer if active_conv.seller_id == user.pk else active_conv.seller
+        active_conv.display_name = active_conv.other_user.get_full_name() or "Reader"
+        if active_conv.buyer_id == user.pk:
+            profile = getattr(active_conv.seller, 'seller_profile', None)
+            if profile:
+                active_conv.display_name = profile.store_name
+        active_conv.initials = ''.join(part[0] for part in active_conv.display_name.split()[:2]).upper()
+    if active_conv is None and all_threads:
+        active_conv = all_threads[0]
+
+    if active_conv:
+        # Mark as read
+        active_conv.messages.exclude(sender=user).filter(is_read=False).update(is_read=True)
+        active_is_seller = (active_conv.seller == user)
+        active_is_buyer = (active_conv.buyer == user)
+        history = active_conv.messages.select_related("sender").order_by("-id")
+        before_id = request.GET.get("before_id", "")
+        if before_id.isdigit():
+            history = history.filter(id__lt=int(before_id))
+        active_chat_messages = list(reversed(history[:200]))
+        active_conv.unread_count = 0
+        active_pickup = active_conv.agreements.order_by("-created_at").first()
 
     _, _, cart_count = get_cart_items_for_request(request)
 
@@ -41,10 +97,17 @@ def inbox_view(request):
         request,
         "messaging/inbox.html",
         {
-            "buyer_threads": buyer_threads,
-            "seller_threads": seller_threads,
+            "all_threads": all_threads,
+            "page_obj": thread_page,
+            "last_message_id": active_conv.messages.order_by("-id").values_list("id", flat=True).first() if active_conv else 0,
+            "history_previous_id": active_chat_messages[0].pk if active_chat_messages and len(active_chat_messages) == 200 else 0,
+            "viewing_history": bool(request.GET.get("before_id")),
+            "active_conv": active_conv,
+            "active_chat_messages": active_chat_messages,
+            "active_is_seller": active_is_seller,
+            "active_is_buyer": active_is_buyer,
+            "active_pickup": active_pickup,
             "cart_count": cart_count,
-            "active_tab": request.GET.get("tab", "seller" if user.is_seller and seller_threads else "buyer"),
         },
     )
 
@@ -122,43 +185,29 @@ def conversation_detail_view(request, conversation_id):
     if request.method == "POST":
         action = request.POST.get("action", "send_message")
 
-        if action == "confirm_order":
-            if not is_seller:
-                messages.error(request, "Only the seller can confirm this order.")
+        if action in ("confirm_order", "decline_order"):
+            from apps.orders.models import PurchaseAgreement
+            from apps.orders.services.pickup import create_purchase_request, act_on_agreement
+            from rest_framework.exceptions import APIException
+            try:
+                if not is_seller:
+                    from rest_framework.exceptions import PermissionDenied
+                    raise PermissionDenied("Only the seller can accept or decline.")
+                agreement = PurchaseAgreement.objects.filter(conversation=conversation).order_by("-created_at").first()
+                if agreement is None:
+                    agreement = create_purchase_request(conversation.buyer, conversation.listing_id)
+                act_on_agreement(agreement.pk, user, "accept" if action == "confirm_order" else "decline")
+                return redirect("pickup_detail", pk=agreement.pk)
+            except APIException as exc:
+                messages.error(request, clean_api_exception(exc))
                 return redirect("conversation_detail", conversation_id=conversation.id)
-
-            conversation.order_status = Conversation.OrderStatus.CONFIRMED
-            conversation.confirmed_price = conversation.listing.price
-            conversation.confirmed_at = timezone.now()
-            conversation.save()
-
-            InquiryMessage.objects.create(
-                conversation=conversation,
-                sender=user,
-                text=f"✅ Order Confirmed! I have approved your order request for ৳{conversation.listing.price}. You can now click 'Purchase Now' to proceed with your payment.",
-            )
-            messages.success(request, "You have approved and confirmed this order! The buyer can now purchase.")
-            return redirect("conversation_detail", conversation_id=conversation.id)
-
-        elif action == "decline_order":
-            if not is_seller:
-                messages.error(request, "Only the seller can decline this order.")
-                return redirect("conversation_detail", conversation_id=conversation.id)
-
-            conversation.order_status = Conversation.OrderStatus.DECLINED
-            conversation.save()
-
-            InquiryMessage.objects.create(
-                conversation=conversation,
-                sender=user,
-                text="❌ Order request declined. The book is currently unavailable or cannot be fulfilled.",
-            )
-            messages.info(request, "Order request marked as declined.")
-            return redirect("conversation_detail", conversation_id=conversation.id)
 
         elif action == "send_message":
             text = request.POST.get("text", "").strip()
             photo = request.FILES.get("photo_evidence")
+            if len(text) > 5000:
+                messages.error(request, "Messages must be at most 5000 characters.")
+                return redirect("conversation_detail", conversation_id=conversation.pk)
 
             if text or photo:
                 InquiryMessage.objects.create(
@@ -167,6 +216,8 @@ def conversation_detail_view(request, conversation_id):
                     text=text or "Attached photo",
                     photo_evidence=photo,
                 )
+                from apps.orders.services.pickup import notify
+                notify(conversation, user, "New message about " + conversation.listing.book.title[:180])
                 conversation.updated_at = timezone.now()
                 conversation.save(update_fields=["updated_at"])
 
@@ -180,6 +231,7 @@ def conversation_detail_view(request, conversation_id):
         "messaging/conversation_detail.html",
         {
             "conversation": conversation,
+            "pickup_agreement": conversation.agreements.order_by("-created_at").first(),
             "listing": conversation.listing,
             "chat_messages": chat_messages,
             "is_seller": is_seller,
@@ -201,19 +253,160 @@ def proceed_to_checkout_from_chat(request, conversation_id):
         buyer=request.user,
     )
 
-    if conversation.order_status != Conversation.OrderStatus.CONFIRMED:
-        messages.warning(request, "Please wait for the seller to confirm the order before purchasing.")
-        return redirect("conversation_detail", conversation_id=conversation.id)
+    from apps.orders.models import PurchaseAgreement
+    from apps.orders.services.pickup import create_purchase_request
+    from rest_framework.exceptions import APIException
+    agreement = PurchaseAgreement.objects.filter(conversation=conversation).order_by("-created_at").first()
+    if agreement:
+        return redirect("pickup_detail", pk=agreement.pk)
+    if request.method != "POST":
+        return redirect("conversation_detail", conversation_id=conversation.pk)
+    try:
+        agreement = create_purchase_request(request.user, conversation.listing_id)
+        return redirect("pickup_detail", pk=agreement.pk)
+    except APIException as exc:
+        messages.error(request, clean_api_exception(exc))
+        return redirect("conversation_detail", conversation_id=conversation.pk)
 
-    # Ensure listing is in buyer's cart
-    cart, _ = Cart.objects.get_or_create(user=request.user)
-    existing_item = CartItem.objects.filter(listing=conversation.listing).first()
-    if existing_item:
-        if existing_item.cart_id != cart.id:
-            existing_item.cart = cart
-            existing_item.save(update_fields=["cart"])
-    else:
-        CartItem.objects.create(cart=cart, listing=conversation.listing)
 
-    messages.success(request, f"Order confirmed by seller! Proceed to checkout for '{conversation.listing.book.title}'.")
-    return redirect("checkout")
+@login_required(login_url="/login/")
+def inbox_unread_count_api(request):
+    """
+    Lightweight endpoint returning live unread message count across all conversations.
+    Enables header badges to update in real time without full page reloads.
+    """
+    user = request.user
+    unread_count = (
+        InquiryMessage.objects.filter(
+            Q(conversation__buyer=user) | Q(conversation__seller=user)
+        )
+        .exclude(sender=user)
+        .filter(is_read=False)
+        .count()
+    )
+    latest_msg = (
+        InquiryMessage.objects.filter(
+            Q(conversation__buyer=user) | Q(conversation__seller=user)
+        )
+        .exclude(sender=user)
+        .order_by("-created_at")
+        .first()
+    )
+    return JsonResponse({
+        "unread_count": unread_count,
+        "latest_id": latest_msg.id if latest_msg else 0,
+    })
+
+
+@login_required(login_url="/login/")
+def inbox_threads_api(request):
+    """
+    Returns thread summary for inbox view to update unread counters and previews in real time.
+    """
+    user = request.user
+    conversations = (
+        Conversation.objects.filter(Q(buyer=user) | Q(seller=user))
+        .select_related("listing__book", "listing__seller__seller_profile", "buyer", "seller")
+        .order_by("-updated_at")
+    )
+    conversations = Paginator(conversations, 50).get_page(request.GET.get("page"))
+    threads = []
+    unread_total = InquiryMessage.objects.filter(Q(conversation__buyer=user) | Q(conversation__seller=user)).exclude(sender=user).filter(is_read=False).count()
+    for conv in conversations:
+        last = conv.messages.last()
+        unread = conv.messages.exclude(sender=user).filter(is_read=False).count()
+        threads.append({
+            "id": conv.id,
+            "is_seller": (conv.seller_id == user.id),
+            "unread_count": unread,
+            "last_message": last.text if last else "",
+            "last_time": last.created_at.strftime("%I:%M %p") if last else "",
+            "updated_at": conv.updated_at.isoformat(),
+        })
+    return JsonResponse({
+        "unread_count": unread_total,
+        "threads": threads,
+    })
+
+
+@login_required(login_url="/login/")
+def conversation_messages_api(request, conversation_id):
+    """
+    Returns new messages in a conversation for live real-time chat updates without reloading.
+    Also handles POST to send messages asynchronously via AJAX.
+    """
+    conversation = get_object_or_404(
+        Conversation.objects.select_related("buyer", "seller", "listing__book"),
+        id=conversation_id,
+    )
+    user = request.user
+    if user != conversation.buyer and user != conversation.seller:
+        return JsonResponse({"error": "Forbidden"}, status=403)
+
+    if request.method == "POST":
+        text = request.POST.get("text", "").strip()
+        photo = request.FILES.get("photo_evidence")
+        if len(text) > 5000:
+            return JsonResponse({"error": "Messages must be at most 5000 characters."}, status=400)
+        if text or photo:
+            msg = InquiryMessage.objects.create(
+                conversation=conversation,
+                sender=user,
+                text=text or "Attached photo",
+                photo_evidence=photo,
+            )
+            from apps.orders.services.pickup import notify
+            notify(conversation, user, "New message about " + conversation.listing.book.title[:180])
+            conversation.updated_at = timezone.now()
+            conversation.save(update_fields=["updated_at"])
+            return JsonResponse({
+                "success": True,
+                "message": {
+                    "id": msg.id,
+                    "sender_id": msg.sender_id,
+                    "sender_name": msg.sender.get_full_name() or "Reader",
+                    "sender_initial": (msg.sender.first_name or msg.sender.email)[:1].upper(),
+                    "is_me": True,
+                    "text": msg.text,
+                    "photo_url": msg.photo_evidence.url if msg.photo_evidence else "",
+                    "created_at_time": timezone.localtime(msg.created_at).strftime("%I:%M %p"),
+                },
+            })
+        return JsonResponse({"error": "Empty message"}, status=400)
+
+    after_id = request.GET.get("after_id")
+    qs = conversation.messages.select_related("sender").order_by("created_at")
+    if after_id and after_id.isdigit():
+        qs = qs.filter(id__gt=int(after_id))
+
+    incoming = qs.exclude(sender=user).filter(is_read=False)
+    if incoming.exists():
+        incoming.update(is_read=True)
+
+    messages_data = [
+        {
+            "id": m.id,
+            "sender_id": m.sender_id,
+            "sender_name": m.sender.get_full_name() or "Reader",
+            "sender_initial": (m.sender.first_name or m.sender.email)[:1].upper(),
+            "is_me": (m.sender_id == user.id),
+            "text": m.text,
+            "photo_url": m.photo_evidence.url if m.photo_evidence else "",
+            "created_at_time": timezone.localtime(m.created_at).strftime("%I:%M %p"),
+        }
+        for m in qs[:200]
+    ]
+
+    unread_total = (
+        InquiryMessage.objects.filter(
+            Q(conversation__buyer=user) | Q(conversation__seller=user)
+        )
+        .exclude(sender=user)
+        .filter(is_read=False)
+        .count()
+    )
+
+    return JsonResponse({
+        "messages": messages_data,
+        "unread_count": unread_total,
+    })

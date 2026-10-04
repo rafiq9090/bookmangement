@@ -1,0 +1,88 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Marketplace Administration | Book ReSeller{% endblock %}
+{% block extra_head %}
+<style>
+.admin-listing-card{padding:18px!important;overflow:hidden}
+.admin-listing-summary{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:16px;align-items:center}
+.admin-listing-cover{width:64px;height:88px;object-fit:contain;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px}
+.admin-listing-info{min-width:0}.admin-listing-info h2{font-size:15px;line-height:1.5;margin:0}
+.admin-listing-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#64748b;margin-top:6px;overflow-wrap:anywhere}
+.admin-listing-price{font-size:17px;font-weight:700;color:#0f172a;margin-top:8px}
+.admin-listing-side{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.admin-listing-link{display:inline-flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:600;color:#0f172a}
+.admin-listing-card>details{border-top:1px solid #f1f5f9;padding-top:12px;margin-top:14px}
+.admin-listing-card .admin-action-form{max-width:640px}
+@media(max-width:600px){.admin-listing-summary{grid-template-columns:52px minmax(0,1fr);gap:12px}.admin-listing-cover{width:52px;height:74px}.admin-listing-side{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between}.admin-listing-card{padding:14px!important}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+  <div><h1 class="text-2xl font-heading font-bold text-slate-900">{% for key, label in admin_tabs %}{% if key == active_tab %}{{ label }}{% endif %}{% endfor %}</h1></div>
+  {% for message in messages %}<p role="status" class="rounded-xl border border-orange-100 bg-orange-50 p-3 text-sm">{{ message }}</p>{% endfor %}
+  {% if active_tab == 'overview' %}
+  <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for label, count in metrics %}<div class="bg-white border border-gray-100 rounded-2xl p-5"><p class="text-sm text-slate-500">{{ label }}</p><strong class="block text-3xl text-slate-900 mt-2">{{ count }}</strong></div>{% endfor %}
+  </div>
+  {% if show_system_status %}
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+    <h2 class="text-lg font-bold">System status</h2>
+    <p class="text-sm">Pending push deliveries: <strong>{{ pending_push }}</strong></p>
+    <p class="text-sm">Overdue reservations: <strong>{{ expired_reservations }}</strong></p>
+    <div class="flex flex-wrap gap-3 pt-2"><a href="?tab=reports&status=PENDING" class="text-sm text-brand-orange font-bold">Review reports →</a><a href="?tab=pickups&status=DISPUTED" class="text-sm text-brand-orange font-bold">Review disputes →</a></div>
+  </div>
+  {% endif %}
+  {% else %}
+  <form method="get" class="flex flex-wrap items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4">
+    <input type="hidden" name="tab" value="{{ active_tab }}">
+    <label class="sr-only" for="adminSearch">Search</label><input id="adminSearch" name="q" value="{{ query }}" placeholder="Search {{ active_tab }}" class="flex-1 min-w-0 border border-gray-200 rounded-xl p-3 text-sm">
+    {% if status_choices %}<label class="sr-only" for="adminStatus">Status</label><select id="adminStatus" name="status" class="border border-gray-200 rounded-xl p-3 text-sm"><option value="">All statuses</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{% endif %}
+    {% if active_tab == 'catalog' %}<select name="kind" aria-label="Catalog type" class="border border-gray-200 rounded-xl p-3 text-sm"><option value="category" {% if catalog_kind == 'category' %}selected{% endif %}>Categories</option><option value="author" {% if catalog_kind == 'author' %}selected{% endif %}>Authors</option></select>{% endif %}
+    <button class="bg-brand-orange text-white rounded-xl px-5 py-3 text-sm font-bold">Search</button>
+  </form>
+  {% if active_tab == 'catalog' and can_add_catalog %}
+  <details class="bg-white rounded-2xl border border-gray-100 p-4"><summary class="font-bold cursor-pointer">Add {{ catalog_kind }}</summary>
+    <form method="post" class="mt-4 grid gap-3">{% csrf_token %}<input type="hidden" name="action" value="save_{{ catalog_kind }}"><input name="name" required maxlength="{% if catalog_kind == 'author' %}200{% else %}100{% endif %}" placeholder="Name" aria-label="Name" class="border rounded-xl p-3"><textarea name="reason" required maxlength="2000" placeholder="Reason" aria-label="Reason" class="border rounded-xl p-3"></textarea><button class="bg-brand-orange text-white rounded-xl p-3">Add {{ catalog_kind }}</button></form>
+  </details>
+  {% endif %}
+  <p class="text-sm text-slate-500">{{ page_obj.paginator.count }} results</p>
+  <div class="space-y-3">
+    {% for row in rows %}
+    <article class="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 space-y-3 {% if active_tab == 'listings' %}admin-listing-card{% endif %}">
+      {% if active_tab == 'listings' %}
+      <div class="admin-listing-summary">
+        {% if row.image %}<img src="{{ row.image }}" alt="{{ row.title }} listing photo" class="admin-listing-cover" loading="lazy">{% else %}<div class="admin-listing-cover flex items-center justify-center text-slate-400" aria-label="No listing photo"><i class="fa-solid fa-book" aria-hidden="true"></i></div>{% endif %}
+        <div class="admin-listing-info">
+          <h2 class="font-bold"><a href="{{ row.url }}">{{ row.title }}</a></h2>
+          <div class="admin-listing-meta"><span>{{ row.seller }}</span><span>{{ row.condition }}</span></div>
+          <div class="admin-listing-meta"><span>Listed {{ row.listed|date:"M j, Y" }}</span>{% if row.isbn %}<span>ISBN: {{ row.isbn }}</span>{% endif %}</div>
+          <p class="admin-listing-price">৳{{ row.price }}</p>
+        </div>
+        <div class="admin-listing-side"><span class="text-xs rounded-lg bg-orange-50 text-brand-orange px-3 py-1">{{ row.status }}</span><a href="{{ row.url }}" class="admin-listing-link">View book →</a></div>
+      </div>
+      {% else %}
+      <div class="flex flex-wrap justify-between gap-2"><h2 class="text-base font-bold">{{ row.title }}</h2><span class="text-xs rounded-lg bg-orange-50 text-brand-orange px-3 py-1">{{ row.status }}</span></div>
+      <p class="text-sm text-slate-500 break-words">{{ row.detail }}</p>
+      {% if row.extra %}<p class="text-sm break-words">{{ row.extra }}</p>{% endif %}
+      {% if row.image %}<img src="{{ row.image }}" alt="Listing photo" class="w-24 h-32 object-contain rounded-lg">{% endif %}
+      {% if row.url %}<a href="{{ row.url }}" class="inline-block text-sm text-brand-orange font-semibold">View book →</a>{% endif %}
+      {% if row.changes %}<details><summary class="text-xs cursor-pointer">Recorded changes</summary><pre class="text-xs whitespace-pre-wrap mt-2">Before: {{ row.changes.before }}
+After: {{ row.changes.after }}</pre></details>{% endif %}
+      {% endif %}
+      {% if row.actions %}
+      <details><summary class="text-sm font-semibold cursor-pointer">Manage</summary>
+        <form method="post" class="grid gap-3 mt-3 admin-action-form">{% csrf_token %}<input type="hidden" name="pk" value="{{ row.pk }}">
+          {% if row.catalog %}<input name="name" value="{{ row.title }}" required aria-label="Name" class="border rounded-xl p-3">{% endif %}
+          <select name="action" aria-label="Action" class="border rounded-xl p-3">{% for value,label in row.actions %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+          {% if row.dispute %}<select name="outcome" aria-label="Dispute outcome" class="border rounded-xl p-3"><option value="completed">Book handed over — complete sale</option><option value="cancelled">Book retained — cancel and restock</option></select>{% endif %}
+          <textarea name="reason" required maxlength="2000" placeholder="Reason for this change" aria-label="Reason for this change" class="border rounded-xl p-3"></textarea>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="confirm" value="yes" required> I confirm this action.</label>
+          <button class="bg-brand-orange text-white rounded-xl p-3 text-sm font-bold">Apply change</button>
+        </form>
+      </details>{% endif %}
+    </article>
+    {% empty %}<p class="bg-white rounded-2xl border border-gray-100 p-8 text-center text-slate-500">No matching records.</p>{% endfor %}
+  </div>
+  {% if page_obj.has_other_pages %}<nav aria-label="Pagination" class="flex items-center justify-between gap-3">{% if page_obj.has_previous %}<a href="?{{ query_params }}&page={{ page_obj.previous_page_number }}" class="text-brand-orange">Previous</a>{% endif %}<span class="text-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?{{ query_params }}&page={{ page_obj.next_page_number }}" class="text-brand-orange">Next</a>{% endif %}</nav>{% endif %}
+  {% endif %}
+</section>
+{% endblock %}

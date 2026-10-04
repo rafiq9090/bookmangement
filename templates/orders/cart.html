@@ -23,7 +23,7 @@
                 Shopping <span class="text-[#FF5A1F]">Cart</span>
             </h1>
             <p class="text-xs sm:text-sm text-gray-500 mt-1">
-                Review your items, apply promotional discounts, and proceed to checkout.
+                Saved copies do not reserve inventory. Request each purchase from its seller.
             </p>
         </div>
 
@@ -36,7 +36,7 @@
             <span class="w-4 sm:w-6 h-0.5 bg-gray-200"></span>
             <span class="flex items-center gap-1.5 text-gray-400">
                 <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-[10px]">2</span>
-                <span>Checkout</span>
+                <span>Arrange Pickup</span>
             </span>
             <span class="w-4 sm:w-6 h-0.5 bg-gray-200"></span>
             <span class="flex items-center gap-1.5 text-gray-400">
@@ -70,6 +70,8 @@
                                     <a href="{% url 'book_detail' item.listing.book.slug %}" class="w-20 h-28 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-2 shadow-inner border border-gray-100 hover:scale-105 transition-transform">
                                         {% if item.listing.book.cover_image %}
                                             <img src="{{ item.listing.book.cover_image.url }}" alt="{{ item.listing.book.title }}" class="w-16 h-24 object-cover rounded shadow-sm" />
+                                        {% elif item.listing.images.first %}
+                                            <img src="{{ item.listing.images.first.image.url }}" alt="{{ item.listing.book.title }}" class="w-16 h-24 object-cover rounded shadow-sm" />
                                         {% else %}
                                             <div class="w-14 h-20 bg-white rounded shadow-sm flex flex-col items-center justify-between p-1 text-center border border-gray-100">
                                                 <span class="text-[6px] font-bold text-gray-400 uppercase truncate w-full">
@@ -144,7 +146,7 @@
                         </a>
                         <span class="text-gray-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-lock text-[10px] text-[#FF5A1F]"></i>
-                            <span>Safe & Encrypted Checkout</span>
+                            <span>Private Pickup Agreements</span>
                         </span>
                     </div>
                 </div>
@@ -164,7 +166,7 @@
                             <span class="font-bold text-gray-900 font-mono">৳{{ subtotal }}</span>
                         </div>
                         <div class="flex items-center justify-between text-gray-600">
-                            <span>Estimated Shipping</span>
+                            <span>Pickup</span>
                             {% if shipping_fee == 0 %}
                                 <span class="font-bold text-[#FF5A1F]">FREE</span>
                             {% else %}
@@ -174,23 +176,6 @@
                         <div class="flex items-center justify-between text-gray-600">
                             <span>Tax / VAT</span>
                             <span class="font-medium text-gray-400">Included</span>
-                        </div>
-                    </div>
-
-                    <!-- Promo Code Input -->
-                    <div class="pt-2">
-                        <div class="flex items-center space-x-2">
-                            <input
-                                type="text"
-                                placeholder="Coupon code (e.g. 50OFF)"
-                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]"
-                            >
-                            <button
-                                type="button"
-                                class="px-4 py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-semibold rounded-xl transition-colors flex-shrink-0"
-                            >
-                                Apply
-                            </button>
                         </div>
                     </div>
 
@@ -211,7 +196,7 @@
                         href="{% url 'checkout' %}"
                         class="w-full py-3.5 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-sm rounded-full shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5"
                     >
-                        <span>Proceed to Checkout</span>
+                        <span>My Pickup Agreements</span>
                         <i class="fa-solid fa-arrow-right text-xs"></i>
                     </a>
                     {% else %}
@@ -223,13 +208,13 @@
                         <span>Sign In / Register to Buy</span>
                     </a>
                     <p class="text-[11px] text-center text-amber-700 bg-amber-50 border border-amber-100 p-2 rounded-xl font-medium">
-                        <i class="fa-solid fa-shield-halved text-amber-500 mr-1"></i> An account is required to complete purchase & track parcel.
+                        <i class="fa-solid fa-shield-halved text-amber-500 mr-1"></i> An account is required to complete a pickup agreement.
                     </p>
                     {% endif %}
 
                     <!-- Payment Badges -->
                     <div class="pt-2 text-center space-y-2">
-                        <p class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Accepted Payment Methods</p>
+                        <p class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Agree payment directly at handover</p>
                         <div class="flex items-center justify-center gap-2 text-xs text-gray-600">
                             <span class="px-2.5 py-1 rounded bg-rose-50 text-rose-700 font-bold border border-rose-100 text-[10px]">bKash</span>
                             <span class="px-2.5 py-1 rounded bg-orange-50 text-orange-700 font-bold border border-orange-100 text-[10px]">Nagad</span>

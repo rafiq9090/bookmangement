@@ -11,6 +11,10 @@ def sweep_expired_reservations() -> str:
     Identifies reservations older than 15 minutes that never culminated
     in completed payment, returning them to ACTIVE state.
     """
+    from django.conf import settings
+    if settings.LOCAL_PICKUP_ENABLED:
+        from apps.orders.services.pickup import expire_reservations
+        return f"Expired {expire_reservations()} pickup reservations."
     threshold = timezone.now() - timedelta(minutes=15)
     expired_listings = BookListing.objects.filter(
         status=BookListing.Status.RESERVED,

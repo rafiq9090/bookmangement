@@ -1,0 +1,266 @@
+{
+  "result": "dependency resolution dry-run passed; no packages installed",
+  "platform": "Windows Python 3.12; Linux Docker build remains unverified",
+  "packages": [
+    {
+      "name": "Django",
+      "version": "5.2.17"
+    },
+    {
+      "name": "PyJWT",
+      "version": "2.15.1"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3"
+    },
+    {
+      "name": "amqp",
+      "version": "5.4.0"
+    },
+    {
+      "name": "asgiref",
+      "version": "3.12.1"
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0"
+    },
+    {
+      "name": "billiard",
+      "version": "4.3.0"
+    },
+    {
+      "name": "boto3",
+      "version": "1.43.108"
+    },
+    {
+      "name": "botocore",
+      "version": "1.43.108"
+    },
+    {
+      "name": "celery",
+      "version": "5.6.3"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.2"
+    },
+    {
+      "name": "click-didyoumean",
+      "version": "0.3.1"
+    },
+    {
+      "name": "click-plugins",
+      "version": "1.1.1.2"
+    },
+    {
+      "name": "click-repl",
+      "version": "0.4.0"
+    },
+    {
+      "name": "click",
+      "version": "8.5.0"
+    },
+    {
+      "name": "django-cors-headers",
+      "version": "4.9.0"
+    },
+    {
+      "name": "django-filter",
+      "version": "26.2"
+    },
+    {
+      "name": "django-storages",
+      "version": "1.14.6"
+    },
+    {
+      "name": "djangorestframework",
+      "version": "3.18.1"
+    },
+    {
+      "name": "djangorestframework_simplejwt",
+      "version": "5.5.1"
+    },
+    {
+      "name": "drf-spectacular",
+      "version": "0.30.0"
+    },
+    {
+      "name": "gunicorn",
+      "version": "26.2.0"
+    },
+    {
+      "name": "idna",
+      "version": "3.20"
+    },
+    {
+      "name": "inflection",
+      "version": "0.5.1"
+    },
+    {
+      "name": "jmespath",
+      "version": "1.1.0"
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1"
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0"
+    },
+    {
+      "name": "kombu",
+      "version": "5.6.2"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3"
+    },
+    {
+      "name": "pillow",
+      "version": "12.3.0"
+    },
+    {
+      "name": "prompt_toolkit",
+      "version": "3.0.53"
+    },
+    {
+      "name": "psycopg-binary",
+      "version": "3.3.6"
+    },
+    {
+      "name": "psycopg2-binary",
+      "version": "2.9.13"
+    },
+    {
+      "name": "psycopg",
+      "version": "3.3.6"
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0"
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.4"
+    },
+    {
+      "name": "redis",
+      "version": "6.4.0"
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0"
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2"
+    },
+    {
+      "name": "rpds-py",
+      "version": "2026.6.3"
+    },
+    {
+      "name": "s3transfer",
+      "version": "0.19.2"
+    },
+    {
+      "name": "sentry-sdk",
+      "version": "2.71.0"
+    },
+    {
+      "name": "six",
+      "version": "1.17.0"
+    },
+    {
+      "name": "sqlparse",
+      "version": "0.6.0"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0"
+    },
+    {
+      "name": "tzdata",
+      "version": "2026.5"
+    },
+    {
+      "name": "tzlocal",
+      "version": "5.4.4"
+    },
+    {
+      "name": "uritemplate",
+      "version": "4.2.0"
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0"
+    },
+    {
+      "name": "vine",
+      "version": "5.1.0"
+    },
+    {
+      "name": "wcwidth",
+      "version": "0.9.1"
+    },
+    {
+      "name": "aiohappyeyeballs",
+      "version": "2.7.1"
+    },
+    {
+      "name": "aiohttp",
+      "version": "3.14.3"
+    },
+    {
+      "name": "aiosignal",
+      "version": "1.4.0"
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1"
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2"
+    },
+    {
+      "name": "frozenlist",
+      "version": "1.8.0"
+    },
+    {
+      "name": "http_ece",
+      "version": "1.2.1"
+    },
+    {
+      "name": "multidict",
+      "version": "6.9.1"
+    },
+    {
+      "name": "propcache",
+      "version": "0.5.4"
+    },
+    {
+      "name": "py-vapid",
+      "version": "1.9.4"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.0"
+    },
+    {
+      "name": "pywebpush",
+      "version": "2.5.0"
+    },
+    {
+      "name": "yarl",
+      "version": "1.25.1"
+    }
+  ]
+}

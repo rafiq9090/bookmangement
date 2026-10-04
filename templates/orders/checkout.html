@@ -8,9 +8,9 @@
     <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
         <a href="{% url 'home' %}" class="hover:text-gray-700 transition-colors">Home</a>
         <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
-        <a href="{% url 'cart' %}" class="hover:text-gray-700 transition-colors">Cart</a>
+        <a href="{% url 'inbox' %}" class="hover:text-gray-700 transition-colors">Inquiries</a>
         <i class="fa-solid fa-chevron-right text-[9px] text-gray-300"></i>
-        <span class="text-gray-800 font-semibold">Checkout</span>
+        <span class="text-gray-800 font-semibold">P2P Escrow Checkout</span>
     </nav>
 </section>
 <!-- END: Breadcrumb Navigation -->
@@ -32,7 +32,7 @@
             <span class="flex items-center gap-1.5 text-[#FF5A1F]">
                 <span
                     class="w-5 h-5 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-[10px]">✓</span>
-                <span>Cart</span>
+                <span>Chat Agreement</span>
             </span>
             <span class="w-4 sm:w-6 h-0.5 bg-[#FF5A1F]"></span>
             <span class="flex items-center gap-1.5 text-[#FF5A1F]">
@@ -218,8 +218,8 @@
                     <h3 class="font-heading font-extrabold text-lg text-gray-900">
                         Order Summary
                     </h3>
-                    <a href="{% url 'cart' %}" class="text-xs text-[#FF5A1F] hover:text-orange-600 font-semibold">
-                        Edit Cart
+                    <a href="{% url 'inbox' %}" class="text-xs text-[#FF5A1F] hover:text-orange-600 font-semibold">
+                        View Inquiries
                     </a>
                 </div>
 

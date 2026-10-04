@@ -1,5 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from config.security import safe_next
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounts.models import Address, CustomUser, SellerProfile
@@ -17,7 +21,7 @@ def login_register_view(request):
     if request.path.rstrip("/") == "/register":
         mode = "register"
     
-    next_url = request.GET.get("next") or request.POST.get("next") or "profile"
+    next_url = safe_next(request)
     _, _, cart_count = get_cart_items_for_request(request)
 
     if request.method == "POST":
@@ -48,7 +52,16 @@ def login_register_view(request):
             store_name = request.POST.get("store_name", "").strip()
             is_seller = (account_type == "seller" or bool(request.POST.get("become_seller")))
 
-            if not email or not password:
+            validation_errors = []
+            try:
+                validate_email(email)
+                validate_password(password, CustomUser(email=email, first_name=first_name, last_name=last_name))
+            except ValidationError as exc:
+                validation_errors = exc.messages
+            if validation_errors:
+                messages.error(request, " ".join(validation_errors))
+                mode = "register"
+            elif not email or not password:
                 messages.error(request, "Email and password are required.")
                 mode = "register"
             elif password != confirm_password:
@@ -106,6 +119,8 @@ def logout_view(request):
     """
     Terminates user session and redirects to home.
     """
+    from apps.accounts.models import PushSubscription
+    PushSubscription.objects.filter(user=request.user, endpoint=request.session.get("push_endpoint", "")).delete()
     logout(request)
     messages.info(request, "You have been successfully logged out.")
     return redirect("home")
@@ -122,7 +137,9 @@ def user_profile_view(request):
 
     user = request.user
 
-    active_tab = request.GET.get("tab", "info")
+    active_tab = request.GET.get("tab", "overview")
+    if active_tab not in {"overview", "info", "addresses", "orders", "security"}:
+        active_tab = "overview"
     _, _, cart_count = get_cart_items_for_request(request)
 
     # Handle Profile Update POST
@@ -214,9 +231,12 @@ def user_profile_view(request):
                 messages.error(request, "Your current password is incorrect.")
             elif new_password != confirm_new_password:
                 messages.error(request, "New passwords do not match.")
-            elif len(new_password) < 6:
-                messages.error(request, "Password must be at least 6 characters.")
             else:
+                try:
+                    validate_password(new_password, user)
+                except ValidationError as exc:
+                    messages.error(request, " ".join(exc.messages))
+                    return redirect("/profile/?tab=security")
                 user.set_password(new_password)
                 user.save()
                 if request.user.is_authenticated:
@@ -226,20 +246,18 @@ def user_profile_view(request):
             return redirect(f"/profile/?tab=security")
 
     addresses = Address.objects.filter(user=user)
-    if not addresses.exists():
-        Address.objects.create(
-            user=user,
-            recipient_name=f"{user.first_name} {user.last_name}".strip() or "Leslie Alexander",
-            phone_number=user.phone_number or "+880 1712 345678",
-            street_address="House 42, Road 11, Banani",
-            city="Dhaka",
-            state_division="Dhaka Division",
-            postal_code="1213",
-            is_default=True,
-        )
-        addresses = Address.objects.filter(user=user)
 
     orders = Order.objects.filter(buyer=user).prefetch_related("shipments__items__listing__book").order_by("-created_at")[:10]
+    from apps.orders.models import PurchaseAgreement
+    from apps.messaging.models import InquiryMessage
+    purchases = PurchaseAgreement.objects.filter(buyer=user)
+    upcoming_pickups = purchases.filter(status__in=["RESERVED", "PICKUP_AGREED"]).select_related("listing__book", "seller").order_by("pickup_at", "-created_at")
+    buyer_overview = {
+        "purchases": purchases.filter(status="COMPLETED").count(),
+        "pending": purchases.filter(status="REQUESTED").count(),
+        "upcoming": upcoming_pickups.count(),
+        "unread": InquiryMessage.objects.filter(conversation__buyer=user, is_read=False).exclude(sender=user).count(),
+    }
     seller_profile = getattr(user, "seller_profile", None)
 
     return render(
@@ -247,6 +265,8 @@ def user_profile_view(request):
         "accounts/profile.html",
         {
             "profile_user": user,
+            "buyer_overview": buyer_overview,
+            "upcoming_pickups": upcoming_pickups[:5],
             "active_tab": active_tab,
             "addresses": addresses,
             "orders": orders,
@@ -295,12 +315,16 @@ def seller_apply_view(request):
     if request.method == "POST":
         store_name = request.POST.get("store_name", "").strip()
         bio = request.POST.get("bio", "").strip()
-        national_id_number = request.POST.get("national_id_number", "").strip()
-        payout_method = request.POST.get("payout_method", "BKASH").upper()
-        payout_account_details = request.POST.get("payout_account_details", "").strip()
+        national_id_number = existing_profile.national_id_number if existing_profile else ""
+        payout_method = existing_profile.payout_method if existing_profile else "BKASH"
+        payout_account_details = existing_profile.payout_account_details if existing_profile else ""
 
-        if not store_name or not payout_account_details:
-            messages.error(request, "Please enter your Store Name and Payout Account details.")
+        if not store_name or len(store_name) > 120:
+            messages.error(request, "Enter a seller name of up to 120 characters.")
+        elif len(bio) > 2000:
+            messages.error(request, "Keep your bio within 2,000 characters.")
+        elif request.POST.get("seller_agreement") != "yes":
+            messages.error(request, "Please accept the seller agreement.")
         elif SellerProfile.objects.filter(store_name__iexact=store_name).exclude(user=user).exists():
             messages.error(request, f"The store name '{store_name}' is already taken. Please choose another.")
         else:
@@ -324,10 +348,7 @@ def seller_apply_view(request):
                     bio=bio,
                 )
 
-            if national_id_number:
-                messages.success(request, f"Congratulations! Your store '{profile.store_name}' has been updated and your KYC identity verification is submitted for review.")
-            else:
-                messages.success(request, f"Congratulations! Your store '{profile.store_name}' is ready. You can start listing books immediately!")
+            messages.success(request, "Seller details saved. You can now list your books.")
             return redirect("seller_listings")
 
     return render(
@@ -336,6 +357,9 @@ def seller_apply_view(request):
         {
             "seller_user": user,
             "seller_profile": existing_profile,
+            "form_store_name": request.POST.get("store_name", "") if request.method == "POST" else (existing_profile.store_name if existing_profile else ""),
+            "form_bio": request.POST.get("bio", "") if request.method == "POST" else (existing_profile.bio if existing_profile else ""),
+            "agreement_checked": request.POST.get("seller_agreement") == "yes",
             "cart_count": cart_count,
         },
     )

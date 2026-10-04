@@ -1,0 +1,170 @@
+<div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+    <div class="seller-location-heading flex items-center justify-between pb-3 border-b border-gray-100">
+        <div class="flex items-center space-x-3">
+            <span class="w-8 h-8 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center font-bold text-sm">
+                <i class="fa-solid fa-location-dot"></i>
+            </span>
+            <div>
+                <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Pickup Location</h3>
+            </div>
+        </div>
+        <button type="button" id="sellerDetectLocationBtn" class="px-3.5 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-bold rounded-xl border border-orange-200 transition-colors flex items-center gap-1.5 shadow-2xs">
+            <i class="fa-solid fa-crosshairs text-xs"></i>
+            <span>Use My Location</span>
+        </button>
+    </div>
+
+    <!-- Quick Location Search / Autocomplete -->
+    <div class="relative space-y-1.5">
+        <label class="block text-xs font-bold text-gray-700">Search Area or Landmark (Bangladesh)</label>
+        <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input
+                type="text"
+                id="sellerLocationSearch"
+                placeholder="Type your area, e.g. Mirpur 10, Dhanmondi, East Nakhalpara, Burichang..."
+                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#FF5A1F] transition-all"
+                autocomplete="off"
+            >
+        </div>
+        <!-- Autocomplete Suggestions Dropdown -->
+        <div id="sellerLocationSuggestions" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-56 overflow-y-auto"></div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-gray-700">District / City <span class="text-rose-500">*</span></label>
+            <input class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]" name="district" id="sellerDistrictInput" maxlength="100" required value="{{ listing.district }}" placeholder="e.g. Dhaka">
+        </div>
+        <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-gray-700">Area / Neighborhood <span class="text-rose-500">*</span></label>
+            <input class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#FF5A1F]" name="area" id="sellerAreaInput" maxlength="100" required value="{{ listing.area }}" placeholder="e.g. East Nakhalpara">
+        </div>
+    </div>
+
+    <!-- Location Status & Privacy Guarantee -->
+    <div class="p-3 bg-orange-50/50 rounded-2xl border border-orange-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 text-gray-600 text-[11px]">
+            <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+            <span>Privacy protected: Only your neighborhood is shown publicly. Exact spot is agreed privately.</span>
+        </div>
+        <span id="sellerLocationStatus" class="text-[11px] text-emerald-600 font-bold whitespace-nowrap"></span>
+    </div>
+
+    <input type="hidden" name="latitude" id="sellerLatInput" value="{{ listing.latitude|default_if_none:'' }}">
+    <input type="hidden" name="longitude" id="sellerLonInput" value="{{ listing.longitude|default_if_none:'' }}">
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('sellerLocationSearch');
+    const suggestionsBox = document.getElementById('sellerLocationSuggestions');
+    const districtInput = document.getElementById('sellerDistrictInput');
+    const areaInput = document.getElementById('sellerAreaInput');
+    const latInput = document.getElementById('sellerLatInput');
+    const lonInput = document.getElementById('sellerLonInput');
+    const detectBtn = document.getElementById('sellerDetectLocationBtn');
+    const statusText = document.getElementById('sellerLocationStatus');
+
+    let debounceTimer = null;
+
+    function applyLocation(lat, lon, name = '', district = '', area = '') {
+        if (latInput && lat) latInput.value = Number(lat).toFixed(6);
+        if (lonInput && lon) lonInput.value = Number(lon).toFixed(6);
+        if (district && districtInput) districtInput.value = district;
+        if (area && areaInput) areaInput.value = area;
+        if (name && searchInput) searchInput.value = name;
+        if (statusText) statusText.textContent = '✓ Location set: ' + (name || `${area}, ${district}`);
+    }
+
+    // Quick Search & Autocomplete
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const q = this.value.trim();
+            if (q.length < 2) {
+                suggestionsBox.classList.add('hidden');
+                suggestionsBox.innerHTML = '';
+                return;
+            }
+            debounceTimer = setTimeout(() => {
+                let url = '/api/locations/suggest/?q=' + encodeURIComponent(q);
+                if (latInput && latInput.value && lonInput && lonInput.value) {
+                    url += '&lat=' + encodeURIComponent(latInput.value) + '&lon=' + encodeURIComponent(lonInput.value);
+                }
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        suggestionsBox.innerHTML = '';
+                        if (!data.results || data.results.length === 0) {
+                            suggestionsBox.classList.add('hidden');
+                            return;
+                        }
+                        data.results.forEach(item => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'w-full text-left px-3.5 py-2.5 text-xs hover:bg-orange-50/80 transition-colors flex items-center gap-2.5';
+                            btn.innerHTML = `
+                                <i class="fa-solid fa-location-dot text-gray-400 text-xs flex-shrink-0"></i>
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-bold text-gray-900 truncate">${item.name}</p>
+                                    <p class="text-[10px] text-gray-400 truncate">${item.full_name || item.name}</p>
+                                </div>
+                            `;
+                            btn.onclick = () => {
+                                applyLocation(item.lat, item.lon, item.name, item.district, item.area);
+                                suggestionsBox.classList.add('hidden');
+                            };
+                            suggestionsBox.appendChild(btn);
+                        });
+                        suggestionsBox.classList.remove('hidden');
+                    })
+                    .catch(() => suggestionsBox.classList.add('hidden'));
+            }, 300);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.classList.add('hidden');
+            }
+        });
+    }
+
+    // "Use My Location" GPS Button
+    if (detectBtn) {
+        detectBtn.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                return;
+            }
+            detectBtn.disabled = true;
+            detectBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-[#FF5A1F]"></i><span>Detecting...</span>';
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    fetch(`/api/locations/reverse/?lat=${lat}&lon=${lon}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            detectBtn.disabled = false;
+                            detectBtn.innerHTML = '<i class="fa-solid fa-check text-emerald-500"></i><span>Detected</span>';
+                            if (data.found && data.location) {
+                                applyLocation(lat, lon, data.location.name, data.location.district, data.location.area);
+                            }
+                        })
+                        .catch(() => {
+                            detectBtn.disabled = false;
+                            detectBtn.innerHTML = '<i class="fa-solid fa-crosshairs text-[#FF5A1F]"></i><span>Use My Location</span>';
+                        });
+                },
+                function() {
+                    detectBtn.disabled = false;
+                    detectBtn.innerHTML = '<i class="fa-solid fa-crosshairs text-[#FF5A1F]"></i><span>Use My Location</span>';
+                    alert('Unable to retrieve location. Please check browser permissions.');
+                },
+                { timeout: 8000, enableHighAccuracy: true }
+            );
+        });
+    }
+});
+</script>

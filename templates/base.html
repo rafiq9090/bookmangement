@@ -4,11 +4,10 @@
 
 <head>
     <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
     <title>{% block title %}Book ReSeller - Pre-loved & Rare Books Marketplace{% endblock %}</title>
 
-    <!-- Tailwind CSS v3 CDN with forms & container queries plugins -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 
     <!-- Google Fonts: Poppins & Inter -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -19,29 +18,6 @@
 
     <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Tailwind Configuration -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Poppins', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            orange: '#FF5A1F',
-                            green: '#43A047',
-                            darkGreen: '#2E7D32',
-                            dark: '#111827',
-                            bgLight: '#FFFDF9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
 
     <!-- Custom Styles for Ambient Glow and Details -->
     <style data-purpose="ambient-backgrounds">
@@ -64,15 +40,23 @@
     </style>
 
     <!-- Custom Micro-interactions & Styles -->
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}?v=footer-layout-2">
+    <link rel="stylesheet" href="{% static 'css/site-motion.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cookies.css' %}">
 
     {% block extra_head %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/desktop-view.css' %}?v=center-banner-3" media="(min-width: 768px)">
+    <link rel="stylesheet" href="{% static 'css/tablet-view.css' %}" media="(min-width: 768px) and (max-width: 1023px)">
+    <link rel="stylesheet" href="{% static 'css/mobile-theme.css' %}" media="(max-width: 767px)">
+    <link rel="stylesheet" href="{% static 'css/mobile-app.css' %}" media="(max-width: 767px)">
 </head>
 
 <body
-    class="bg-[#FFFDF9] text-gray-800 font-sans antialiased overflow-x-hidden glow-bg selection:bg-brand-orange selection:text-white">
+    data-page="{{ request.resolver_match.url_name|default:'account' }}"
+    class="marketplace-shell bg-[#FFFDF9] text-gray-800 font-sans antialiased overflow-x-hidden glow-bg selection:bg-brand-orange selection:text-white">
 
     <!-- Global Header -->
+    {% include "components/page_loader.html" %}
     {% include "components/header.html" %}
 
     <!-- Main Content Area -->
@@ -83,8 +67,15 @@
     <!-- Global Footer -->
     {% include "components/footer.html" %}
 
+    {% include "components/mobile_navigation.html" %}
+    {% include "components/cookie_preferences.html" %}
+
     <!-- Global Scripts -->
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/page-loader.js' %}"></script>
+    <script src="{% static 'js/cookies.js' %}"></script>
+    <script src="{% static 'js/site-motion.js' %}"></script>
+    {% if request.user.is_authenticated %}<script src="{% static 'js/push-notifications.js' %}"></script>{% endif %}
     {% block extra_js %}{% endblock %}
 </body>
 

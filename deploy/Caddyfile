@@ -1,0 +1,32 @@
+{$APP_HOST} {
+    request_body {
+        max_size 60MB
+    }
+    handle_path /static/* {
+        root * /srv/static
+        header Cache-Control "public, max-age=3600"
+        file_server
+    }
+    handle /media/* {
+        respond "Use the media origin" 404
+    }
+    handle /private_uploads/* {
+        respond "Not found" 404
+    }
+    handle {
+        reverse_proxy web:8000
+    }
+}
+
+{$MEDIA_HOST} {
+    handle_path /media/* {
+        root * /srv/media
+        header X-Content-Type-Options nosniff
+        header Content-Security-Policy "default-src 'none'; sandbox"
+        header Cache-Control "public, max-age=3600"
+        file_server
+    }
+    handle {
+        respond "Not found" 404
+    }
+}

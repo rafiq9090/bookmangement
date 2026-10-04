@@ -1,0 +1,8 @@
+{% load static %}
+<nav class="mobile-app-nav" aria-label="Mobile navigation">
+  <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H15v-6H9v6H3z"/></svg><span>Home</span></a>
+  <a href="{% url 'store' %}" {% if request.resolver_match.url_name == 'store' or request.resolver_match.url_name == 'book_detail' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="{% static 'images/inbox-icons.svg' %}#search"/></svg><span>Browse</span></a>
+  <a href="{% url 'inbox' %}" {% if request.resolver_match.url_name == 'inbox' or request.resolver_match.url_name == 'conversation_detail' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="{% static 'images/inbox-icons.svg' %}#chat"/></svg><span>Messages</span>{% if unread_messages_count %}<span class="mobile-nav-badge" aria-label="{{ unread_messages_count }} unread messages">{{ unread_messages_count }}</span>{% endif %}</a>
+  <a href="{% url 'pickup_list' %}" {% if request.resolver_match.url_name == 'pickup_list' or request.resolver_match.url_name == 'pickup_detail' %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="{% static 'images/inbox-icons.svg' %}#calendar"/></svg><span>Pickups</span></a>
+  <a href="{% url 'profile' %}" {% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'register' %}aria-current="page"{% endif %}><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg><span>Profile</span></a>
+</nav>

@@ -1,0 +1,7 @@
+<div class="recommendation-controls flex flex-wrap items-center gap-2 mb-4">
+    {% csrf_token %}
+    <button type="button" data-recommendation-action="location" class="px-3 py-2 rounded-xl bg-orange-50 text-brand-orange text-xs font-semibold">Use my location</button>
+    <button type="button" data-recommendation-action="clear_location" class="px-3 py-2 rounded-xl bg-gray-50 text-xs">Clear location</button>
+    <button type="button" data-recommendation-action="reset_interests" class="px-3 py-2 rounded-xl bg-gray-50 text-xs">Reset interests</button>
+    <span class="text-xs text-gray-500 w-full" data-recommendation-status role="status"></span>
+</div>

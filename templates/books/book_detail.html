@@ -25,7 +25,7 @@
 <!-- BEGIN: Book Detail Showcase -->
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-8 box-border">
     <div
-        class="bg-white rounded-3xl p-4 sm:p-8 lg:p-12 border border-gray-100 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+        class="mobile-book-detail bg-white rounded-3xl p-4 sm:p-8 lg:p-12 border border-gray-100 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
 
         <!-- Left Column: Book Artwork Presentation -->
         <div class="lg:col-span-5 flex flex-col items-center">
@@ -34,6 +34,9 @@
                 class="w-full max-w-sm h-80 sm:h-96 bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl overflow-hidden p-4 sm:p-6 relative flex items-center justify-center shadow-inner group">
                 {% if book.cover_image %}
                 <img id="main-book-artwork" src="{{ book.cover_image.url }}" alt="{{ book.title }}"
+                    class="w-52 h-72 object-cover rounded-lg shadow-2xl transform group-hover:scale-105 transition-transform duration-300" />
+                {% elif primary_listing and primary_listing.images.first %}
+                <img id="main-book-artwork" src="{{ primary_listing.images.first.image.url }}" alt="{{ book.title }}"
                     class="w-52 h-72 object-cover rounded-lg shadow-2xl transform group-hover:scale-105 transition-transform duration-300" />
                 {% else %}
                 <!-- 3D Book Graphic Representation (Matching Home Design) -->
@@ -66,11 +69,11 @@
                     </span>
                     <span class="text-[10px] text-gray-400">Click photo to switch view</span>
                 </div>
-                <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                <div class="flex items-center gap-2.5 overflow-x-auto p-1.5">
                     {% for img in listing.images.all %}
                     <button type="button"
-                        onclick="document.getElementById('main-book-artwork').src = '{{ img.image.url }}'; document.querySelectorAll('.listing-thumb-btn').forEach(b => { b.classList.remove('ring-2', 'ring-[#FF5A1F]'); b.classList.add('opacity-70'); }); this.classList.remove('opacity-70'); this.classList.add('ring-2', 'ring-[#FF5A1F]');"
-                        class="listing-thumb-btn flex-shrink-0 w-14 h-18 rounded-lg overflow-hidden border border-gray-200 hover:border-[#FF5A1F] transition-all cursor-pointer shadow-2xs {% if forloop.first %}ring-2 ring-[#FF5A1F]{% else %}opacity-70 hover:opacity-100{% endif %}">
+                        onclick="document.getElementById('main-book-artwork').src = '{{ img.image.url }}'; document.querySelectorAll('.listing-thumb-btn').forEach(b => { b.classList.remove('ring-2', 'ring-inset', 'ring-[#FF5A1F]'); b.classList.add('opacity-70'); }); this.classList.remove('opacity-70'); this.classList.add('ring-2', 'ring-inset', 'ring-[#FF5A1F]');"
+                        class="listing-thumb-btn flex-shrink-0 w-14 h-18 rounded-lg overflow-hidden border border-gray-200 hover:border-[#FF5A1F] transition-all cursor-pointer shadow-2xs {% if forloop.first %}ring-2 ring-inset ring-[#FF5A1F]{% else %}opacity-70 hover:opacity-100{% endif %}">
                         <img src="{{ img.image.url }}" alt="Listing Photo {{ forloop.counter }}"
                             class="w-full h-full object-cover">
                     </button>
@@ -81,11 +84,14 @@
 
             {% if listing.seller %}
             <!-- Seller & Contact Card -->
-            <div class="w-full max-w-sm mt-4 p-4 rounded-2xl bg-gray-50/80 border border-gray-100 hover:border-gray-200 transition-all">
+            <div
+                class="w-full max-w-sm mt-4 p-4 rounded-2xl bg-gray-50/80 border border-gray-100 hover:border-gray-200 transition-all">
                 <div class="flex items-center justify-between mb-3">
-                    <span class="text-[10px] uppercase font-bold tracking-wider text-gray-400">Sold & Dispatched By</span>
+                    <span class="text-[10px] uppercase font-bold tracking-wider text-gray-400">Sold & Dispatched
+                        By</span>
                     {% if listing.seller.seller_profile.kyc_status == 'VERIFIED' %}
-                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full">
+                    <span
+                        class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full">
                         <i class="fa-solid fa-circle-check text-[9px] text-emerald-600"></i>
                         <span>Verified Seller</span>
                     </span>
@@ -93,18 +99,20 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-xl bg-white border border-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-2xs">
+                    <div
+                        class="w-11 h-11 rounded-xl bg-white border border-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-2xs">
                         {% if listing.seller.avatar %}
-                        <img src="{{ listing.seller.avatar.url }}" alt="{{ listing.seller.email }}" class="w-full h-full object-cover">
+                        <img src="{{ listing.seller.avatar.url }}" alt="Seller"
+                            class="w-full h-full object-cover">
                         {% else %}
                         <span class="font-heading font-black text-sm text-[#FF5A1F]">
-                            {{ listing.seller.seller_profile.store_name|default:listing.seller.first_name|default:listing.seller.email|slice:":2"|upper }}
+                            {{ listing.seller.seller_profile.store_name|default:listing.seller.first_name|default:"Reader"|slice:":2"|upper }}
                         </span>
                         {% endif %}
                     </div>
                     <div class="min-w-0 flex-1">
                         <h4 class="text-xs font-bold text-gray-900 truncate">
-                            {{ listing.seller.seller_profile.store_name|default:listing.seller.get_full_name|default:listing.seller.email }}
+                            {{ listing.seller.seller_profile.store_name|default:listing.seller.get_full_name|default:"Reader" }}
                         </h4>
                         {% if listing.seller.seller_profile.rating_count > 0 %}
                         <div class="flex items-center gap-1 text-[11px] text-amber-500 font-bold mt-0.5">
@@ -113,45 +121,13 @@
                             <span class="text-gray-400 font-normal">({{ listing.seller.seller_profile.rating_count }})</span>
                         </div>
                         {% else %}
-                        <p class="text-[10px] text-gray-400 mt-0.5 truncate">{{ listing.seller.email }}</p>
+
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Seller Contact Phone Number -->
-                {% with seller_phone=listing.seller.contact_phone %}
-                <div class="mt-3.5 pt-3 border-t border-gray-200/60 space-y-2">
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="text-[11px] font-medium text-gray-500 flex items-center gap-1.5">
-                            <i class="fa-solid fa-phone text-[#43A047]"></i>
-                            <span>Seller Contact</span>
-                        </span>
-                        {% if seller_phone %}
-                        <a href="tel:{{ seller_phone }}" class="font-bold text-gray-900 hover:text-[#FF5A1F] transition-colors font-mono tracking-tight">
-                            {{ seller_phone }}
-                        </a>
-                        {% else %}
-                        <span class="text-gray-400 italic text-[11px]">Chat Inquiry Only</span>
-                        {% endif %}
-                    </div>
 
-                    {% if seller_phone %}
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                        <a href="tel:{{ seller_phone }}"
-                            class="py-1.5 px-3 bg-white hover:bg-emerald-50 text-emerald-700 font-bold text-[11px] rounded-xl border border-emerald-200 transition-all flex items-center justify-center gap-1.5 shadow-2xs">
-                            <i class="fa-solid fa-phone-volume text-[10px]"></i>
-                            <span>Call Seller</span>
-                        </a>
-                        <button type="button"
-                            onclick="navigator.clipboard.writeText('{{ seller_phone|escapejs }}'); const btn = this; const orig = btn.innerHTML; btn.innerHTML = '<i class=\'fa-solid fa-check text-[10px]\'></i> Copied!'; setTimeout(() => btn.innerHTML = orig, 2000);"
-                            class="py-1.5 px-3 bg-white hover:bg-gray-100 text-gray-700 font-semibold text-[11px] rounded-xl border border-gray-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
-                            <i class="fa-regular fa-copy text-[10px]"></i>
-                            <span>Copy Number</span>
-                        </button>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endwith %}
             </div>
             {% endif %}
 
@@ -216,28 +192,24 @@
             </div>
 
             <!-- Price & Discount -->
-            <div class="flex items-baseline space-x-3 pt-2 pb-2 border-y border-gray-100">
+            <div class="book-price-row flex items-baseline space-x-3 pt-2 pb-2 border-y border-gray-100">
                 <span class="text-3xl sm:text-4xl font-extrabold text-[#FF5A1F] font-heading font-mono">
-                    ৳{{ listing.price|default:"3.36" }}
+                    {% if listing %}৳{{ listing.price }}{% else %}No available copy{% endif %}
                 </span>
                 {% if listing.original_mrp %}
                 <span class="text-base sm:text-lg text-rose-400 line-through">
                     ৳{{ listing.original_mrp }}
-                </span>
-                <span
-                    class="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold text-xs border border-rose-200">
-                    Save 50%
                 </span>
                 {% endif %}
             </div>
 
             <!-- Short Overview -->
             <p class="text-xs sm:text-sm text-gray-500 leading-relaxed">
-                {{ book.description|default:"Starting off in an eighteenth century London, this book invites readers to an exciting journey. The lifelong fight of main protagonist's crime solving and thrilling mysteries." }}
+                {{ book.description|default:"No description provided." }}
             </p>
 
             <!-- Specification Pills Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+            <div class="book-summary-specs grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                 <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
                     <p class="text-[10px] text-gray-400 uppercase font-medium">ISBN-13</p>
                     <p class="text-xs font-bold text-gray-800 font-mono mt-0.5">{{ book.isbn_13 }}</p>
@@ -253,15 +225,50 @@
                 </div>
             </div>
 
+            <!-- Location & Pickup Area Information -->
+            {% if listing.district or listing.area %}
+            <div class="book-pickup-location p-3.5 bg-orange-50/60 rounded-2xl border border-orange-100 text-xs space-y-2 mt-2">
+                <div class="flex items-center justify-between font-bold text-gray-800">
+                    <span class="flex items-center gap-1.5 text-gray-900">
+                        <i class="fa-solid fa-location-dot text-[#FF5A1F]"></i>
+                        <span>Pickup Area: {{ listing.district }}{% if listing.area %}, {{ listing.area }}{% endif %}</span>
+                    </span>
+                    {% if listing.is_collectible %}
+                    <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <i class="fa-solid fa-gem text-amber-500"></i> Rare Edition
+                    </span>
+                    {% endif %}
+                </div>
+
+                {% if listing.latitude and listing.longitude %}
+                <div class="book-pickup-maps mt-2 pt-2 border-t border-orange-100/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-500">
+                    <div class="flex items-center gap-1.5">
+                        <span id="buyerProximityText" class="font-bold text-emerald-700 hidden"></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ listing.latitude }},{{ listing.longitude }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-semibold flex items-center gap-1" title="Get directions in Google Maps">
+                            <span>Google Maps</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </a>
+                        <span class="text-gray-300">•</span>
+                        <a href="https://www.openstreetmap.org/?mlat={{ listing.latitude }}&mlon={{ listing.longitude }}#map=16/{{ listing.latitude }}/{{ listing.longitude }}" target="_blank" rel="noopener noreferrer" class="text-[#FF5A1F] hover:underline font-semibold flex items-center gap-1" title="View on OpenStreetMap">
+                            <span>OpenStreetMap</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
             <!-- Purchase & Inquiry Controls -->
             <div class="pt-4 space-y-4">
                 {% if is_primary_own_listing %}
                 <!-- Own Store Listing Warning -->
-                <div
-                    class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between gap-3">
+                <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
                         <i class="fa-solid fa-store text-amber-600"></i>
-                        <span class="text-xs font-bold">This is your store listing.</span>
+                        <span class="text-xs font-bold">This is your listing.</span>
                     </div>
                     <a href="{% url 'edit_listing' listing.id %}"
                         class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors">
@@ -269,112 +276,95 @@
                     </a>
                 </div>
 
-                {% elif buyer_conversation and buyer_conversation.order_status == 'CONFIRMED' %}
-                <!-- Order Confirmed by Seller: Unlocked Checkout -->
-                <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-2">
+                {% elif active_agreement %}
+                <!-- Active Agreement Exists -->
+                <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-3">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2 text-xs font-bold text-emerald-800">
-                            <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
-                            <span>Seller Confirmed Your Order!</span>
+                            <i class="fa-solid fa-handshake text-emerald-600 text-base"></i>
+                            <span>Active Pickup: {{ active_agreement.get_status_display }}</span>
                         </div>
-                        <a href="{% url 'conversation_detail' buyer_conversation.id %}"
-                            class="text-[11px] font-semibold text-emerald-700 hover:underline flex items-center gap-1">
-                            <i class="fa-solid fa-comments"></i> Chat
-                        </a>
-                    </div>
-                    <p class="text-[11px] text-emerald-700">
-                        The seller has verified this copy for ৳{{ listing.price }}. You can now complete your purchase.
-                    </p>
-                </div>
-
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <!-- Purchase Now -->
-                    <a href="{% url 'add_to_cart' listing.id %}?redirect=checkout"
-                        class="flex-1 py-3.5 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-extrabold text-sm rounded-full shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
-                        <i class="fa-solid fa-bolt text-amber-300"></i>
-                        <span>Purchase Now (৳{{ listing.price }})</span>
-                    </a>
-                    <!-- Add to Cart -->
-                    <a href="{% url 'add_to_cart' listing.id %}"
-                        class="sm:w-auto py-3.5 px-5 bg-gray-900 hover:bg-black text-white font-semibold text-xs rounded-full shadow-md transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-cart-shopping text-sm"></i>
-                        <span>Add to Cart</span>
-                    </a>
-                </div>
-
-                {% elif buyer_conversation and buyer_conversation.order_status == 'INQUIRY' %}
-                <!-- Pending Seller Confirmation -->
-                <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2 text-xs font-bold text-amber-800">
-                            <i class="fa-solid fa-clock text-amber-600"></i>
-                            <span>Awaiting Seller Confirmation</span>
-                        </div>
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-200/80 text-amber-900">
-                            In Review
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900">
+                            ৳{{ active_agreement.accepted_price|default:active_agreement.offered_price }}
                         </span>
                     </div>
-                    <p class="text-[11px] text-amber-700">
-                        You sent an inquiry to the seller. As soon as the seller clicks "Confirm Order", your purchase
-                        button will be unlocked.
+                    <p class="text-[11px] text-emerald-700">
+                        You have an active purchase agreement for this book copy. Click below to manage pickup or open chat.
                     </p>
-                    <a href="{% url 'conversation_detail' buyer_conversation.id %}"
-                        class="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-comments"></i>
-                        <span>View Chat & Order Request</span>
-                    </a>
-                </div>
-
-                {% elif buyer_conversation and buyer_conversation.order_status == 'DECLINED' %}
-                <!-- Declined by Seller -->
-                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 space-y-2">
-                    <div class="flex items-center gap-2 text-xs font-bold text-rose-800">
-                        <i class="fa-solid fa-circle-xmark text-rose-600"></i>
-                        <span>Order Request Declined</span>
+                    <div class="flex gap-2">
+                        <a href="{% url 'pickup_detail' active_agreement.pk %}"
+                            class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <span>Manage Pickup</span>
+                        </a>
+                        {% if active_agreement.conversation_id %}
+                        <a href="{% url 'conversation_detail' active_agreement.conversation_id %}"
+                            class="py-2.5 px-4 bg-white border border-emerald-200 text-emerald-800 font-bold text-xs rounded-xl hover:bg-emerald-50 transition-colors flex items-center gap-1.5">
+                            <i class="fa-solid fa-comments"></i>
+                            <span>Chat</span>
+                        </a>
+                        {% endif %}
                     </div>
-                    <p class="text-[11px] text-rose-700">The seller is currently unable to fulfill orders for this book
-                        copy.</p>
-                    <a href="{% url 'conversation_detail' buyer_conversation.id %}"
-                        class="inline-block text-xs font-bold text-rose-700 hover:underline">
-                        View Chat Messages →
-                    </a>
                 </div>
 
                 {% else %}
-                <!-- Initial State: Buyer Must Contact Seller First -->
-                <div class="p-4 rounded-2xl bg-orange-50/70 border border-orange-100 text-orange-950 space-y-2">
-                    <div class="flex items-center gap-2 text-xs font-bold text-gray-900">
-                        <i class="fa-solid fa-shield-halved text-[#FF5A1F]"></i>
-                        <span>Seller Confirmation Required</span>
-                    </div>
-                    <p class="text-[11px] text-gray-600 leading-relaxed">
-                        To protect buyers and verify book condition, please contact the seller first. Once the seller
-                        confirms availability, payment is unlocked!
-                    </p>
-                </div>
-
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <!-- Direct Request to Buy / Make Offer / Chat -->
+                <div class="space-y-3">
                     {% if request.user.is_authenticated %}
-                    <a href="{% if listing %}{% url 'start_inquiry' listing.id %}{% else %}#{% endif %}"
-                        class="flex-1 py-3.5 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-sm rounded-full shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 cursor-pointer">
-                        <i class="fa-solid fa-comments text-base"></i>
-                        <span>Contact Seller to Order</span>
-                    </a>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <!-- Direct Purchase Request at Sticker Price -->
+                        <form method="POST" action="{% url 'request_purchase' listing.id %}" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="w-full py-3.5 px-4 bg-[#FF5A1F] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-bag-shopping"></i>
+                                <span>Request at ৳{{ listing.price }}</span>
+                            </button>
+                        </form>
+
+                        <!-- Inquire / Chat Button -->
+                        <a href="{% url 'start_inquiry' listing.id %}"
+                            class="w-full py-3.5 px-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-comments text-[#FF5A1F]"></i>
+                            <span>Chat with Seller</span>
+                        </a>
+                    </div>
+
+                    <!-- Make a Negotiated Counter-Offer Form -->
+                    <div class="p-3 bg-gray-50 rounded-xl border border-gray-200">
+                        <form method="POST" action="{% url 'request_purchase' listing.id %}" class="book-offer-form flex items-center gap-2">
+                            {% csrf_token %}
+                            <label for="offered_price_input" class="text-xs font-semibold text-gray-700 whitespace-nowrap">
+                                Make an Offer:
+                            </label>
+                            <div class="relative flex-1">
+                                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">৳</span>
+                                <input
+                                    id="offered_price_input"
+                                    type="number"
+                                    name="offered_price"
+                                    step="1"
+                                    min="1"
+                                    max="99999"
+                                    placeholder="Your offer (e.g. {{ listing.price }})"
+                                    class="w-full pl-6 pr-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF5A1F]"
+                                    required
+                                >
+                            </div>
+                            <button type="submit" class="px-3 py-1.5 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-colors whitespace-nowrap">
+                                Send Offer
+                            </button>
+                        </form>
+                    </div>
+
                     {% else %}
-                    <a href="{% url 'login' %}?next={% if listing %}{% url 'start_inquiry' listing.id %}{% else %}/store/{% endif %}"
-                        class="flex-1 py-3.5 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-sm rounded-full shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
-                        <i class="fa-solid fa-comments text-base"></i>
-                        <span>Contact Seller to Order</span>
+                    <!-- Guest Sign-in prompt -->
+                    <a href="{% url 'login' %}?next={% url 'book_detail' book.slug %}"
+                        class="w-full py-4 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-xl shadow-orange-500/25 transition-all flex items-center justify-center gap-2.5">
+                        <i class="fa-solid fa-user-lock text-base"></i>
+                        <span>Sign In to Request or Make Offer (৳{{ listing.price }})</span>
                     </a>
                     {% endif %}
-
-                    <!-- Locked Purchase Indicator -->
-                    <button type="button" disabled
-                        class="sm:w-auto py-3 px-5 bg-gray-100 text-gray-400 font-semibold text-xs rounded-full border border-gray-200 cursor-not-allowed flex items-center justify-center gap-2"
-                        title="Contact seller first to unlock checkout">
-                        <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
-                        <span>Purchase (Locked)</span>
-                    </button>
                 </div>
                 {% endif %}
             </div>
@@ -383,13 +373,30 @@
     </div>
 </section>
 <!-- END: Book Detail Showcase -->
+{% if listing and not is_primary_own_listing %}
+<section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pb-4 box-border">
+    <details class="bg-white border border-gray-100 rounded-2xl p-4">
+        <summary class="text-sm font-semibold text-gray-500 cursor-pointer">Report listing</summary>
+        {% if request.user.is_authenticated %}
+        <form method="post" action="{% url 'report_listing' listing.id %}" class="mt-4 space-y-3 max-w-xl">
+            {% csrf_token %}
+            <label for="listingReportDetails" class="block text-sm font-semibold">What is wrong with this listing?</label>
+            <textarea id="listingReportDetails" name="details" required maxlength="4000" rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-sm" placeholder="Describe the problem"></textarea>
+            <button type="submit" class="bg-brand-orange text-white rounded-xl px-5 py-3 text-sm font-semibold">Submit report</button>
+        </form>
+        {% else %}
+        <a href="{% url 'login' %}?next={% url 'book_detail' book.slug %}" class="inline-block mt-3 text-sm text-brand-orange font-semibold">Sign in to report this listing</a>
+        {% endif %}
+    </details>
+</section>
+{% endif %}
 
 <!-- BEGIN: Tabbed Info Section -->
 <section id="bookTabsSection" class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-4 box-border scroll-mt-20">
     <div class="bg-white rounded-3xl p-6 sm:p-10 border border-gray-100 shadow-sm space-y-6">
         <!-- Tabs Header -->
         <div
-            class="flex items-center space-x-6 sm:space-x-8 border-b border-gray-100 pb-2 text-sm font-bold overflow-x-auto no-scrollbar">
+            class="book-detail-tabs flex items-center space-x-6 sm:space-x-8 border-b border-gray-100 pb-2 text-sm font-bold overflow-x-auto no-scrollbar">
             <button id="tabBtn-desc" type="button" onclick="switchBookTab('desc')"
                 class="book-tab-btn text-[#FF5A1F] border-b-2 border-[#FF5A1F] pb-4 -mb-[9px] font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer">
                 <i class="fa-solid fa-align-left text-xs"></i>
@@ -528,24 +535,17 @@
                             <div class="flex justify-between items-baseline py-1 border-b border-gray-100">
                                 <dt class="text-gray-400 font-medium">Fulfillment Seller</dt>
                                 <dd class="text-gray-900 font-semibold text-right truncate max-w-[60%]">
-                                    {{ listing.seller.seller_profile.store_name|default:listing.seller.get_full_name|default:listing.seller.email|default:"eB Certified Bookstore" }}
+                                    {{ listing.seller.seller_profile.store_name|default:listing.seller.get_full_name|default:"Reader"|default:"eB Certified Bookstore" }}
                                 </dd>
                             </div>
+                            {% if listing.district or listing.area %}
                             <div class="flex justify-between items-baseline py-1 border-b border-gray-100">
-                                <dt class="text-gray-400 font-medium">Seller Contact</dt>
-                                <dd class="text-gray-900 font-semibold text-right">
-                                    {% with seller_phone=listing.seller.contact_phone %}
-                                    {% if seller_phone %}
-                                    <a href="tel:{{ seller_phone }}" class="text-[#43A047] hover:underline inline-flex items-center gap-1 font-mono">
-                                        <i class="fa-solid fa-phone text-[10px]"></i>
-                                        <span>{{ seller_phone }}</span>
-                                    </a>
-                                    {% else %}
-                                    <span class="text-gray-400 font-normal">Contact via Chat</span>
-                                    {% endif %}
-                                    {% endwith %}
+                                <dt class="text-gray-400 font-medium">Pickup Location</dt>
+                                <dd class="text-gray-900 font-semibold text-right truncate max-w-[60%]">
+                                    {{ listing.district }}{% if listing.area %}, {{ listing.area }}{% endif %}
                                 </dd>
                             </div>
+                            {% endif %}
                             <div class="flex justify-between items-baseline py-1">
                                 <dt class="text-gray-400 font-medium">Status</dt>
                                 <dd class="inline-flex items-center gap-1.5 text-emerald-600 font-bold text-right">
@@ -580,16 +580,11 @@
                             <div class="space-y-0.5">
                                 <p class="font-bold text-gray-900">{{ ol.get_condition_display }}</p>
                                 <p class="text-[11px] text-gray-500 flex items-center gap-1.5 flex-wrap">
-                                    <span>Sold by {{ ol.seller.seller_profile.store_name|default:ol.seller.email }}</span>
-                                    {% with ol_phone=ol.seller.contact_phone %}
-                                    {% if ol_phone %}
+                                    <span>Sold by {{ ol.seller.seller_profile.store_name|default:"Reader" }}</span>
+                                    {% if ol.district %}
                                     <span class="text-gray-300">•</span>
-                                    <a href="tel:{{ ol_phone }}" class="text-[#43A047] hover:underline font-mono font-medium inline-flex items-center gap-1">
-                                        <i class="fa-solid fa-phone text-[9px]"></i>
-                                        <span>{{ ol_phone }}</span>
-                                    </a>
+                                    <span class="text-gray-600 font-medium"><i class="fa-solid fa-location-dot text-[#FF5A1F] text-[10px]"></i> {{ ol.district }}{% if ol.area %}, {{ ol.area }}{% endif %}</span>
                                     {% endif %}
-                                    {% endwith %}
                                 </p>
                             </div>
                             <div class="flex items-center gap-3">
@@ -889,6 +884,9 @@
                 {% if rel.book.cover_image %}
                 <img src="{{ rel.book.cover_image.url }}" alt="{{ rel.book.title }}"
                     class="w-36 h-52 object-cover rounded shadow-md border border-gray-100" />
+                {% elif rel.images.first %}
+                <img src="{{ rel.images.first.image.url }}" alt="{{ rel.book.title }}"
+                    class="w-36 h-52 object-cover rounded shadow-md border border-gray-100" />
                 {% else %}
                 <div
                     class="w-36 h-52 bg-white rounded shadow-md flex flex-col items-center justify-between p-3 border border-gray-100 text-center relative overflow-hidden">
@@ -1142,6 +1140,33 @@
                 section.scrollIntoView({ behavior: 'smooth' });
             }
         }
+
+        // Buyer proximity calculation (text-only, no visual map tiles)
+        const proxTextEl = document.getElementById('buyerProximityText');
+        {% if listing.latitude and listing.longitude %}
+        const itemLat = Number('{{ listing.latitude }}');
+        const itemLon = Number('{{ listing.longitude }}');
+        if (proxTextEl && Number.isFinite(itemLat) && Number.isFinite(itemLon) && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    const bLat = pos.coords.latitude;
+                    const bLon = pos.coords.longitude;
+                    const R = 6371;
+                    const dLat = (itemLat - bLat) * Math.PI / 180;
+                    const dLon = (itemLon - bLon) * Math.PI / 180;
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                              Math.cos(bLat * Math.PI / 180) * Math.cos(itemLat * Math.PI / 180) *
+                              Math.sin(dLon/2) * Math.sin(dLon/2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    const dist = (R * c).toFixed(1);
+                    proxTextEl.textContent = `(~${dist} km away)`;
+                    proxTextEl.classList.remove('hidden');
+                },
+                function() {},
+                { timeout: 6000 }
+            );
+        }
+        {% endif %}
     });
 </script>
 {% endblock %}

@@ -16,12 +16,12 @@ class BookListing(models.Model):
         VERY_GOOD = "VERY_GOOD", "Very Good (Clean pages, light spine creasing)"
         GOOD = "GOOD", "Good (Average used wear, possible notes/highlights)"
         ACCEPTABLE = "ACCEPTABLE", "Acceptable (Readable copy, noticeable wear or damage)"
-        COLLECTIBLE = "COLLECTIBLE", "Collectible / Vintage (Rare edition, signed)"
+        POOR = "POOR", "Poor (Heavy wear; describe defects)"
 
     class Status(models.TextChoices):
         DRAFT = "DRAFT", "Draft"
         ACTIVE = "ACTIVE", "Active / Available"
-        RESERVED = "RESERVED", "Reserved (Checkout in progress)"
+        RESERVED = "RESERVED", "Reserved (Awaiting pickup)"
         SOLD = "SOLD", "Sold"
         ARCHIVED = "ARCHIVED", "Archived / Deactivated"
 
@@ -51,6 +51,13 @@ class BookListing(models.Model):
         decimal_places=2,
         help_text="Listing price in platform currency.",
     )
+    district = models.CharField(max_length=100, blank=True, db_index=True)
+    area = models.CharField(max_length=100, blank=True, db_index=True)
+    # Public coordinates represent an area center, never a home address.
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    is_collectible = models.BooleanField(default=False)
+    condition_needs_review = models.BooleanField(default=False)
     original_mrp = models.DecimalField(
         max_digits=8,
         decimal_places=2,

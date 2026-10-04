@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Contact Us | Book ReSeller{% endblock %}
+{% block content %}
+<section class="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+  <div class="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 space-y-5">
+    <h1 class="font-heading font-bold text-3xl">Contact Us</h1>
+    {% for message in messages %}<p role="status" class="bg-orange-50 rounded-xl p-3 text-sm">{{ message }}</p>{% endfor %}
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div role="alert" class="text-sm text-red-600">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+      <div><label for="{{ field.id_for_label }}" class="block text-sm font-semibold mb-2">{{ field.label }}</label>{{ field }}{% if field.errors %}<div role="alert" class="text-sm text-red-600 mt-1">{{ field.errors }}</div>{% endif %}</div>
+      {% endfor %}
+      <button type="submit" class="w-full inline-flex items-center justify-center bg-brand-orange text-white rounded-xl px-5 py-3 text-sm font-semibold">Send message</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

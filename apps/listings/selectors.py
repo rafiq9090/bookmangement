@@ -15,6 +15,7 @@ def get_available_listings(
         BookListing.objects.filter(
             status=BookListing.Status.ACTIVE,
             is_deleted=False,
+            condition_needs_review=False,
         )
         .select_related("book", "seller", "seller__seller_profile")
         .prefetch_related("images", "book__authors")

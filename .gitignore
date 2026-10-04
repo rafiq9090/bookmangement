@@ -108,3 +108,9 @@ desktop.ini
 ~$*
 *.docx
 *.doc
+
+node_modules/
+private_uploads/
+!.env.production.example
+
+.audit-tools/

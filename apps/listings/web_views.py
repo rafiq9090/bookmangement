@@ -1,11 +1,14 @@
 from decimal import Decimal
 import uuid
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
+from django.views.decorators.http import require_POST
 
 from apps.accounts.models import CustomUser, SellerProfile
 from apps.books.models import Author, Book, Category
@@ -17,24 +20,14 @@ from apps.shipping.models import TrackingEvent
 
 
 
-def get_or_create_seller_user(request):
+def get_authenticated_user(request):
     """
-    Returns the authenticated user or falls back to an existing seller user in development.
+    Returns the signed-in user; anonymous visitors never inherit a seller identity.
     """
-    if request.user.is_authenticated:
-        return request.user
-    seller = CustomUser.objects.filter(is_seller=True).first()
-    if not seller:
-        seller = CustomUser.objects.first()
-    if not seller:
-        seller = CustomUser.objects.create_user(
-            email="seller@edoxbookshop.com",
-            password="DemoPassword123!",
-            first_name="Ronald",
-            last_name="Richards",
-            is_seller=True,
-        )
-    return seller
+    from django.core.exceptions import PermissionDenied
+    if not request.user.is_authenticated:
+        raise PermissionDenied("Sign in to access seller tools.")
+    return request.user
 
 
 def sell_book_view(request):
@@ -47,22 +40,43 @@ def sell_book_view(request):
         messages.info(request, "Please sign in to list a book for sale.")
         return redirect("/login/?next=/sell/")
 
-    if not request.user.is_seller:
-        messages.warning(request, "Please register your store details before listing books.")
-        return redirect("seller_apply")
-
     seller = request.user
     categories = Category.objects.all().order_by("name")
     _, _, cart_count = get_cart_items_for_request(request)
 
     if request.method == "POST":
+        from apps.listings.forms import ListingLocationForm, ListingPhotoForm, ListingDetailsForm
+        details_form = ListingDetailsForm(request.POST)
+        if not details_form.is_valid():
+            messages.error(request, str(details_form.errors))
+            return redirect(request.path)
+        location_form = ListingLocationForm(request.POST)
+        for photo in request.FILES.getlist("photos"):
+            photo_form = ListingPhotoForm(files={"photo": photo})
+            if not photo_form.is_valid():
+                messages.error(request, str(photo_form.errors))
+                return redirect(request.path)
+        if not location_form.is_valid():
+            messages.error(request, str(location_form.errors))
+            return render(request, "listings/listing_create.html", {"categories": categories, "conditions": BookListing.Condition.choices, "cart_count": cart_count})
+        from apps.orders.services.pickup import price_value
+        from rest_framework.exceptions import ValidationError
+        try:
+            price_value(request.POST.get("price"))
+            if not request.POST.get("title", "").strip() or request.POST.get("condition") not in BookListing.Condition.values:
+                raise ValidationError("Provide a title and a physical condition.")
+            if not request.FILES.getlist("photos"):
+                raise ValidationError("Upload at least one photo of the actual copy.")
+        except ValidationError as exc:
+            messages.error(request, str(exc.detail))
+            return render(request, "listings/listing_create.html", {"categories": categories, "conditions": BookListing.Condition.choices, "cart_count": cart_count})
         isbn = request.POST.get("isbn", "").strip().replace("-", "")
         title = request.POST.get("title", "").strip()
         author_name = request.POST.get("author", "Independent Author").strip()
         category_id = request.POST.get("category_id")
         price = Decimal(request.POST.get("price", "12.00").strip() or "12.00")
         original_mrp_str = request.POST.get("original_mrp", "").strip()
-        original_mrp = Decimal(original_mrp_str) if original_mrp_str else (price * Decimal("1.80")).quantize(Decimal("0.01"))
+        original_mrp = details_form.cleaned_data["original_mrp"]
         condition = request.POST.get("condition", BookListing.Condition.GOOD)
         condition_notes = request.POST.get("condition_notes", "").strip()
         edition_year_str = request.POST.get("edition_year", "").strip()
@@ -92,7 +106,7 @@ def sell_book_view(request):
 
             # Handle author photo upload if provided by seller
             author_photo = request.FILES.get("author_photo")
-            if author_photo:
+            if author_photo and seller.is_staff:
                 author.photo = author_photo
                 author.save(update_fields=["photo"])
 
@@ -101,24 +115,24 @@ def sell_book_view(request):
             else:
                 category = Category.objects.first()
 
-            if not isbn:
-                isbn = f"978{uuid.uuid4().hex[:10].upper()}"
-
-            book, created = Book.objects.get_or_create(
-                isbn_13=isbn[:13] if len(isbn) >= 13 else f"978{isbn[:10]}",
-                defaults={
-                    "title": title or "Untitled Book",
-                    "slug": slugify(title or "untitled-book") + f"-{uuid.uuid4().hex[:6]}",
-                    "isbn_10": isbn[:10],
-                    "publication_year": edition_year or 2021,
-                },
-            )
+            metadata = {
+                "title": title or "Untitled Book",
+                "slug": slugify(title or "untitled-book") + f"-{uuid.uuid4().hex[:10]}",
+                "publication_year": edition_year,
+            }
+            if len(isbn) == 13:
+                book, created = Book.objects.get_or_create(isbn_13=isbn, defaults=metadata)
+            elif len(isbn) == 10:
+                book = Book.objects.filter(isbn_10=isbn).first()
+                created = book is None
+                if created:
+                    book = Book.objects.create(isbn_10=isbn, **metadata)
+            else:
+                book, created = Book.objects.create(**metadata), True
             if created:
                 book.authors.add(author)
                 if category:
                     book.categories.add(category)
-            elif not book.authors.filter(id=author.id).exists():
-                book.authors.add(author)
 
             listing = BookListing.objects.create(
                 book=book,
@@ -132,6 +146,7 @@ def sell_book_view(request):
                 has_dust_jacket=has_dust_jacket,
                 is_signed_by_author=is_signed_by_author,
                 status=BookListing.Status.ACTIVE,
+                **location_form.cleaned_data,
             )
 
             # Upload up to 5 book images
@@ -144,10 +159,13 @@ def sell_book_view(request):
                 )
 
             # Sync primary cover image to book catalog if empty
-            if photos and not book.cover_image:
-                book.cover_image = photos[0]
-                book.save(update_fields=["cover_image"])
+            if not book.cover_image and listing.images.exists():
+                primary = listing.images.filter(is_primary=True).first() or listing.images.first()
+                if primary and primary.image:
+                    book.cover_image = primary.image
+                    book.save(update_fields=["cover_image"])
 
+        CustomUser.objects.filter(pk=seller.pk).update(is_seller=True)
         messages.success(request, f'Book "{book.title}" listed successfully with {min(len(photos), 5)} photo(s)!')
         return redirect("seller_listings")
 
@@ -240,21 +258,22 @@ def isbn_lookup_api(request):
     return JsonResponse({"found": False})
 
 
+@login_required(login_url="/login/")
 def seller_listings_view(request):
     """
     Page 7: Seller Dashboard / My Listings (/seller/listings/)
     Displays active, reserved, sold, and draft listings with inventory metrics.
     """
-    seller = get_or_create_seller_user(request)
+    seller = get_authenticated_user(request)
     status_filter = request.GET.get("status", "ALL").upper()
     query = request.GET.get("q", "").strip()
 
     all_seller_listings = BookListing.objects.filter(seller=seller, is_deleted=False).select_related("book").prefetch_related("images", "book__authors")
-    
+
     total_listings = all_seller_listings.count()
     active_count = all_seller_listings.filter(status=BookListing.Status.ACTIVE).count()
     sold_count = all_seller_listings.filter(status=BookListing.Status.SOLD).count()
-    
+
     revenue_agg = SellerLedger.objects.filter(seller=seller, entry_type=SellerLedger.EntryType.SALE_CREDIT).aggregate(total=Sum("amount"))
     total_revenue = revenue_agg["total"] or Decimal("0.00")
 
@@ -264,6 +283,7 @@ def seller_listings_view(request):
     if query:
         listings = listings.filter(Q(book__title__icontains=query) | Q(book__isbn_13__icontains=query))
 
+    listings = Paginator(listings, 25).get_page(request.GET.get("page"))
     _, _, cart_count = get_cart_items_for_request(request)
 
     return render(
@@ -271,6 +291,7 @@ def seller_listings_view(request):
         "listings/my_listings.html",
         {
             "listings": listings,
+            "page_obj": listings,
             "current_status": status_filter,
             "query": query,
             "total_listings": total_listings,
@@ -282,6 +303,39 @@ def seller_listings_view(request):
     )
 
 
+@login_required(login_url="/login/")
+@require_POST
+@transaction.atomic
+def mark_listing_sold_view(request, id):
+    """Record a sale outside the platform without completing a buyer's transaction."""
+    listing = get_object_or_404(
+        BookListing.objects.select_for_update(), id=id, seller=request.user, is_deleted=False
+    )
+    if listing.status == BookListing.Status.SOLD:
+        messages.info(request, "This book is already marked as sold.")
+        return redirect("seller_listings")
+    has_pickup = listing.agreements.filter(status__in=[
+        "AWAITING_CONFIRMATION", "DISPUTED"
+    ]).exists()
+    has_order = listing.order_items.exclude(shipment__order__status=Order.Status.CANCELLED).exists()
+    if has_pickup or has_order:
+        messages.error(request, "Complete or cancel this book's existing pickup or checkout before marking it sold manually.")
+        return redirect("seller_listings")
+    reservations = listing.agreements.filter(status__in=["RESERVED", "PICKUP_AGREED"])
+    if reservations.exists() and request.POST.get("cancel_reservation") != "yes":
+        messages.error(request, "This book has a reserved pickup. Confirm cancellation before marking it sold.")
+        return redirect("seller_listings")
+    from apps.orders.services.pickup import act_on_agreement
+    for agreement in reservations:
+        act_on_agreement(agreement.pk, request.user, "cancel")
+    listing.status = BookListing.Status.SOLD
+    listing.save(update_fields=["status", "updated_at"])
+    listing.cart_items.all().delete()
+    messages.success(request, f'"{listing.book.title}" marked as sold.')
+    return redirect("seller_listings")
+
+
+@transaction.atomic
 def toggle_listing_view(request, id):
     """
     Toggles a listing between ACTIVE and ARCHIVED.
@@ -289,15 +343,19 @@ def toggle_listing_view(request, id):
     if not request.user.is_authenticated:
         return redirect("/login/?next=/seller/dashboard/?tab=listings")
     seller = request.user
-    listing = get_object_or_404(BookListing, id=id, seller=seller)
+    listing = get_object_or_404(BookListing.objects.select_for_update(), id=id, seller=seller)
+    if request.method != "POST" or listing.status in (BookListing.Status.RESERVED, BookListing.Status.SOLD):
+        messages.error(request, "Reserved or sold copies cannot be reactivated.")
+        return redirect("seller_listings")
     if listing.status == BookListing.Status.ACTIVE:
         listing.status = BookListing.Status.ARCHIVED
     else:
         listing.status = BookListing.Status.ACTIVE
     listing.save(update_fields=["status", "updated_at"])
-    return redirect(request.META.get("HTTP_REFERER") or "/seller/dashboard/?tab=listings")
+    return redirect("seller_listings")
 
 
+@transaction.atomic
 def edit_listing_view(request, id):
     """
     Allows a seller to edit an existing book listing: title, author, category, price,
@@ -308,7 +366,7 @@ def edit_listing_view(request, id):
         return redirect(f"/login/?next=/seller/listings/{id}/edit/")
 
     listing = get_object_or_404(
-        BookListing.objects.select_related("book").prefetch_related("images", "book__authors", "book__categories"),
+        BookListing.objects.select_for_update().select_related("book").prefetch_related("images", "book__authors", "book__categories"),
         id=id,
         seller=request.user,
         is_deleted=False,
@@ -317,6 +375,29 @@ def edit_listing_view(request, id):
     _, _, cart_count = get_cart_items_for_request(request)
 
     if request.method == "POST":
+        from apps.listings.forms import ListingLocationForm, ListingPhotoForm, ListingDetailsForm
+        details_form = ListingDetailsForm(request.POST)
+        if not details_form.is_valid():
+            messages.error(request, str(details_form.errors))
+            return redirect(request.path)
+        location_form = ListingLocationForm(request.POST)
+        for photo in request.FILES.getlist("photos"):
+            photo_form = ListingPhotoForm(files={"photo": photo})
+            if not photo_form.is_valid():
+                messages.error(request, str(photo_form.errors))
+                return redirect(request.path)
+        if not location_form.is_valid():
+            messages.error(request, str(location_form.errors))
+            return redirect("edit_listing", id=listing.pk)
+        from apps.orders.services.pickup import price_value
+        from rest_framework.exceptions import ValidationError
+        try:
+            price_value(request.POST.get("price", listing.price))
+            if request.POST.get("condition", listing.condition) not in BookListing.Condition.values:
+                raise ValidationError("Choose a physical condition for this copy.")
+        except ValidationError as exc:
+            messages.error(request, str(exc.detail))
+            return redirect("edit_listing", id=listing.pk)
         title = request.POST.get("title", "").strip()
         author_name = request.POST.get("author", "").strip()
         category_id = request.POST.get("category_id")
@@ -326,6 +407,25 @@ def edit_listing_view(request, id):
         condition_notes = request.POST.get("condition_notes", "").strip()
         edition_year_str = request.POST.get("edition_year", "").strip()
         status = request.POST.get("status", listing.status)
+        editable_statuses = [BookListing.Status.ACTIVE, BookListing.Status.ARCHIVED, BookListing.Status.DRAFT, BookListing.Status.SOLD]
+        if status not in editable_statuses:
+            messages.error(request, "Choose Active, Archived, Draft, or Sold. Reservations are managed through pickup agreements.")
+            return redirect("edit_listing", id=listing.pk)
+        cancel_reservations = False
+        if listing.status == BookListing.Status.RESERVED:
+            if status == listing.status or request.POST.get("cancel_reservation") != "yes":
+                messages.error(request, "Choose a new status and confirm cancellation of the reserved pickup before saving.")
+                return redirect("edit_listing", id=listing.pk)
+            cancel_reservations = True
+        if status != listing.status:
+            protected_statuses = ["AWAITING_CONFIRMATION", "DISPUTED", "COMPLETED"]
+            if not cancel_reservations:
+                protected_statuses += ["RESERVED", "PICKUP_AGREED"]
+            has_transaction = listing.agreements.filter(status__in=protected_statuses).exists() or listing.order_items.exclude(shipment__order__status=Order.Status.CANCELLED).exists()
+            if has_transaction:
+                messages.error(request, "This copy has a pickup or sale record. Manage its status through that transaction; list another copy separately.")
+                return redirect("edit_listing", id=listing.pk)
+
         is_hardcover = bool(request.POST.get("is_hardcover"))
         has_dust_jacket = bool(request.POST.get("has_dust_jacket"))
         is_signed_by_author = bool(request.POST.get("is_signed_by_author"))
@@ -335,34 +435,47 @@ def edit_listing_view(request, id):
         except Exception:
             price = listing.price
 
-        try:
-            original_mrp = Decimal(original_mrp_str) if original_mrp_str else listing.original_mrp
-        except Exception:
-            original_mrp = listing.original_mrp
+        original_mrp = details_form.cleaned_data["original_mrp"]
 
         edition_year = int(edition_year_str) if edition_year_str.isdigit() else None
+        if (edition_year_str and (edition_year is None or not 1 <= edition_year <= 9999)) or (original_mrp is not None and not original_mrp.is_finite()):
+            messages.error(request, "Provide a valid edition year and original price.")
+            return redirect("edit_listing", id=listing.pk)
+        if original_mrp is not None and not Decimal("0") <= original_mrp <= Decimal("999999.99"):
+            messages.error(request, "Original price must be between 0 and 999999.99.")
+            return redirect("edit_listing", id=listing.pk)
 
         with transaction.atomic():
+            if cancel_reservations:
+                from apps.orders.services.pickup import act_on_agreement
+                for agreement in listing.agreements.filter(status__in=["RESERVED", "PICKUP_AGREED"]):
+                    act_on_agreement(agreement.pk, request.user, "cancel")
             book = listing.book
-            if title and title != book.title:
-                book.title = title
-                book.save(update_fields=["title"])
+            # Canonical catalog records are shared across sellers.
+            if request.user.is_staff:
+                if title and title != book.title:
+                    book.title = title
+                    book.save(update_fields=["title"])
 
-            if author_name:
-                author, _ = Author.objects.get_or_create(
-                    name=author_name,
-                    defaults={"slug": slugify(author_name) or "author"},
-                )
-                if not book.authors.filter(id=author.id).exists():
-                    book.authors.clear()
-                    book.authors.add(author)
+                if author_name:
+                    author, _ = Author.objects.get_or_create(
+                        name=author_name,
+                        defaults={"slug": (slugify(author_name) or "author")[:200] + "-" + uuid.uuid4().hex[:8]},
+                    )
+                    if not book.authors.filter(id=author.id).exists():
+                        book.authors.clear()
+                        book.authors.add(author)
 
-            if category_id:
-                category = Category.objects.filter(id=category_id).first()
-                if category and not book.categories.filter(id=category.id).exists():
-                    book.categories.clear()
-                    book.categories.add(category)
+                if category_id:
+                    category = Category.objects.filter(id=category_id).first()
+                    if category and not book.categories.filter(id=category.id).exists():
+                        book.categories.clear()
+                        book.categories.add(category)
 
+
+            for field, value in location_form.cleaned_data.items():
+                setattr(listing, field, value)
+            listing.condition_needs_review = False
             listing.price = price
             listing.original_mrp = original_mrp
             listing.condition = condition
@@ -371,8 +484,9 @@ def edit_listing_view(request, id):
             listing.is_hardcover = is_hardcover
             listing.has_dust_jacket = has_dust_jacket
             listing.is_signed_by_author = is_signed_by_author
-            if status in BookListing.Status.values:
-                listing.status = status
+            listing.status = status
+            if status != BookListing.Status.ACTIVE:
+                listing.cart_items.all().delete()
             listing.save()
 
             # Handle photo deletion
@@ -390,11 +504,18 @@ def edit_listing_view(request, id):
                     is_primary=(current_count == 0 and i == 0),
                 )
 
-            # Handle cover image replacement if provided
+            # A seller's cover upload belongs to this physical copy, not the catalog.
             cover_photo = request.FILES.get("cover_image")
             if cover_photo:
-                book.cover_image = cover_photo
-                book.save(update_fields=["cover_image"])
+                if listing.images.count() >= 5:
+                    primary = listing.images.filter(is_primary=True).first() or listing.images.first()
+                    primary.image = cover_photo
+                    primary.is_primary = True
+                    primary.save(update_fields=["image", "is_primary"])
+                    listing.images.exclude(pk=primary.pk).update(is_primary=False)
+                else:
+                    listing.images.update(is_primary=False)
+                    ListingImage.objects.create(listing=listing, image=cover_photo, is_primary=True)
 
         messages.success(request, f'Listing for "{listing.book.title}" updated successfully.')
         return redirect("seller_listings")
@@ -406,7 +527,7 @@ def edit_listing_view(request, id):
             "listing": listing,
             "categories": categories,
             "conditions": BookListing.Condition.choices,
-            "statuses": BookListing.Status.choices,
+            "statuses": [(value, label) for value, label in BookListing.Status.choices if value != BookListing.Status.RESERVED or listing.status == value],
             "cart_count": cart_count,
         },
     )
@@ -426,6 +547,9 @@ def seller_dashboard_view(request, tab=None):
         messages.info(request, "Please sign in with your seller account to access the Seller Dashboard.")
         return redirect("/login/?next=/seller/dashboard/")
 
+    from django.conf import settings
+    if settings.LOCAL_PICKUP_ENABLED:
+        return seller_listings_view(request)
     if not request.user.is_seller:
         messages.warning(request, "You need a registered seller account to access the Seller Dashboard.")
         return redirect("seller_apply")
@@ -438,7 +562,7 @@ def seller_dashboard_view(request, tab=None):
     # Profile & KYC
     profile, _ = SellerProfile.objects.get_or_create(
         user=seller,
-        defaults={"store_name": f"{seller.first_name or 'My'} Book Store"},
+        defaults={"store_name": f"Reader {seller.pk} Book Store"},
     )
 
     # Handle POST Actions

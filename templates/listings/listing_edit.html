@@ -3,6 +3,7 @@
 {% block title %}Edit Listing - {{ listing.book.title }} | eB Online Bookshop{% endblock %}
 
 {% block content %}
+{% if messages %}<div class="max-w-[1360px] mx-auto px-6 pt-4" role="alert">{% for message in messages %}<p class="mb-2 rounded-xl bg-orange-50 border border-orange-200 px-4 py-3 text-sm text-gray-800">{{ message }}</p>{% endfor %}</div>{% endif %}
 <!-- BEGIN: Breadcrumb Navigation -->
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
     <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
@@ -58,7 +59,7 @@
                     </span>
                     <div>
                         <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Book Details</h3>
-                        <p class="text-xs text-gray-400">Canonical title, author, and catalog category</p>
+                        <p class="text-xs text-gray-400">Catalog details are managed by the platform. Edit your copy below.</p>
                     </div>
                 </div>
 
@@ -67,7 +68,7 @@
                         <label class="block text-xs font-bold text-gray-700 mb-1.5">Book Title <span class="text-red-500">*</span></label>
                         <input
                             type="text"
-                            name="title"
+                            name="title" {% if not request.user.is_staff %}readonly{% endif %}
                             value="{{ listing.book.title }}"
                             required
                             class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
@@ -78,7 +79,7 @@
                         <label class="block text-xs font-bold text-gray-700 mb-1.5">Author</label>
                         <input
                             type="text"
-                            name="author"
+                            name="author" {% if not request.user.is_staff %}readonly{% endif %}
                             value="{{ listing.book.authors.first.name|default:'' }}"
                             placeholder="Author Name"
                             class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
@@ -88,7 +89,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1.5">Category</label>
                         <select
-                            name="category_id"
+                            name="category_id" {% if not request.user.is_staff %}disabled{% endif %}
                             class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 focus:outline-none focus:border-[#FF5A1F] focus:bg-white transition-all"
                         >
                             {% for cat in categories %}
@@ -224,9 +225,19 @@
                             <input type="checkbox" name="is_signed_by_author" {% if listing.is_signed_by_author %}checked{% endif %} class="h-4 w-4 rounded text-[#FF5A1F] focus:ring-[#FF5A1F] border-gray-300">
                             <span class="text-xs font-semibold text-gray-700">Signed Copy</span>
                         </label>
+                        <label class="flex items-center space-x-2.5 p-3 rounded-xl border border-gray-200 bg-gray-50/50 cursor-pointer hover:bg-gray-50 sm:col-span-3">
+                            <input type="checkbox" name="is_collectible" {% if listing.is_collectible %}checked{% endif %} class="h-4 w-4 rounded text-[#FF5A1F] focus:ring-[#FF5A1F] border-gray-300">
+                            <span class="text-xs font-semibold text-amber-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-gem text-amber-500 text-xs"></i>
+                                <span>Rare / Collectible Edition (Featured Badge)</span>
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>
+
+            <!-- Card 4: Pickup Location -->
+            {% include "listings/location_fields.html" %}
 
         </div>
 
@@ -256,6 +267,12 @@
                         <option value="{{ val }}" {% if listing.status == val %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
+                    {% if listing.status == 'RESERVED' %}
+                    <label class="flex items-start gap-2 mt-3 text-xs text-gray-600">
+                        <input type="checkbox" name="cancel_reservation" value="yes" class="mt-0.5">
+                        <span>Cancel the reserved pickup when saving a different status.</span>
+                    </label>
+                    {% endif %}
                 </div>
             </div>
 

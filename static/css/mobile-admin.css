@@ -1,0 +1,12 @@
+/* Operations pages use their own drawer instead of the marketplace bottom bar. */
+@media (max-width: 767px) {
+  main { padding: 16px; min-width: 0; overflow-wrap: anywhere; }
+  main .grid { gap: 12px; }
+  main .grid > *, main .flex > * { min-width: 0; }
+  main h1 { font-size: 24px; line-height: 1.25; }
+  main h2 { font-size: 20px; }
+  main :is(input, select, textarea) { font-size: 16px; max-width: 100%; }
+  main :is(button, input:not([type=checkbox]), select) { min-height: 44px; }
+  main .overflow-x-auto { max-width: 100%; overscroll-behavior-x: contain; }
+  main [class*="rounded-3xl"] { border-radius: 18px; padding: 16px; }
+}

@@ -3,6 +3,13 @@
 {% block title %}Seller Inventory & My Listings | eB Online Bookshop{% endblock %}
 
 {% block content %}
+{% if messages %}
+<div class="max-w-[1360px] mx-auto px-6 pt-4" role="status">
+{% for message in messages %}{% if forloop.last %}
+<p class="mb-2 rounded-xl border px-4 py-3 text-sm {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-orange-50 border-orange-200 text-gray-800{% endif %}">{{ message }}</p>
+{% endif %}{% endfor %}
+</div>
+{% endif %}
 <!-- BEGIN: Breadcrumb Navigation -->
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
     <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
@@ -27,16 +34,8 @@
             </p>
         </div>
         <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-            <a href="{% url 'seller_wallet' %}"
-               class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-bold rounded-full border border-orange-200 transition-colors flex items-center gap-1.5 sm:gap-2">
-                <i class="fa-solid fa-wallet text-xs"></i>
-                <span>Wallet</span>
-            </a>
-            <a href="{% url 'seller_shipments' %}"
-               class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-green-50 hover:bg-green-100 text-[#43A047] text-xs font-bold rounded-full border border-green-200 transition-colors flex items-center gap-1.5 sm:gap-2">
-                <i class="fa-solid fa-truck-fast text-xs"></i>
-                <span>Shipments</span>
-            </a>
+
+
             <a href="{% url 'sell_book' %}"
                class="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#FF5A1F] hover:bg-orange-600 text-white text-xs font-bold rounded-full shadow-md shadow-orange-500/20 transition-all flex items-center gap-1.5 sm:gap-2 transform hover:-translate-y-0.5">
                 <i class="fa-solid fa-plus text-xs"></i>
@@ -49,7 +48,7 @@
 
 <!-- BEGIN: Metrics Overview Cards -->
 <section class="w-full max-w-[1360px] mx-auto px-3 sm:px-6 lg:px-8 py-2 box-border">
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div class="mobile-inventory-stats grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <!-- Metric 1: Total Listings -->
         <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center space-x-4">
             <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-xl flex-shrink-0">
@@ -103,7 +102,7 @@
         <!-- Filter Tabs and Search Bar -->
         <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <!-- Tabs -->
-            <div class="flex items-center space-x-2 text-xs font-semibold overflow-x-auto pb-1">
+            <div class="seller-inventory-tabs flex items-center space-x-2 text-xs font-semibold overflow-x-auto pb-1">
                 <a href="{% url 'seller_listings' %}?status=ALL"
                    class="px-4 py-2 rounded-xl transition-colors {% if current_status == 'ALL' %}bg-gray-900 text-white{% else %}text-gray-500 hover:bg-gray-100{% endif %}">
                     All ({{ total_listings }})
@@ -111,10 +110,6 @@
                 <a href="{% url 'seller_listings' %}?status=ACTIVE"
                    class="px-4 py-2 rounded-xl transition-colors {% if current_status == 'ACTIVE' %}bg-[#43A047] text-white{% else %}text-gray-500 hover:bg-gray-100{% endif %}">
                     Active ({{ active_count }})
-                </a>
-                <a href="{% url 'seller_listings' %}?status=RESERVED"
-                   class="px-4 py-2 rounded-xl transition-colors {% if current_status == 'RESERVED' %}bg-amber-500 text-white{% else %}text-gray-500 hover:bg-gray-100{% endif %}">
-                    In Checkout
                 </a>
                 <a href="{% url 'seller_listings' %}?status=SOLD"
                    class="px-4 py-2 rounded-xl transition-colors {% if current_status == 'SOLD' %}bg-purple-600 text-white{% else %}text-gray-500 hover:bg-gray-100{% endif %}">
@@ -127,7 +122,7 @@
             </div>
 
             <!-- Search Form -->
-            <form method="GET" action="{% url 'seller_listings' %}" class="flex items-center gap-2">
+            <form method="GET" action="{% url 'seller_listings' %}" class="seller-inventory-search flex items-center gap-2">
                 <input type="hidden" name="status" value="{{ current_status }}">
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
@@ -146,7 +141,7 @@
         </div>
 
         <!-- Listings List Table -->
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto mobile-inventory">
             <table class="w-full text-left text-xs">
                 <thead class="bg-gray-50/70 border-b border-gray-100 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">
                     <tr>
@@ -164,8 +159,16 @@
                             <!-- Book details -->
                             <td class="py-4 px-6">
                                 <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-14 bg-gradient-to-b from-slate-100 to-slate-200 rounded flex-shrink-0 flex items-center justify-center p-1 border border-gray-100">
-                                        <i class="fa-solid fa-book-open text-xs text-[#FF5A1F]"></i>
+                                    <div class="w-10 h-14 bg-gradient-to-b from-slate-100 to-slate-200 rounded flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100">
+                                        {% with photo=listing.images.first %}
+                                        {% if photo.image %}
+                                            <img src="{{ photo.image.url }}" alt="{{ listing.book.title }}" class="w-full h-full object-cover" loading="lazy" width="40" height="56">
+                                        {% elif listing.book.cover_image %}
+                                            <img src="{{ listing.book.cover_image.url }}" alt="{{ listing.book.title }}" class="w-full h-full object-cover" loading="lazy" width="40" height="56">
+                                        {% else %}
+                                            <i class="fa-solid fa-book-open text-xs text-[#FF5A1F]" aria-hidden="true"></i>
+                                        {% endif %}
+                                        {% endwith %}
                                     </div>
                                     <div>
                                         <a href="{% url 'book_detail' listing.book.slug %}" class="font-bold text-sm text-gray-900 hover:text-[#FF5A1F] transition-colors line-clamp-1">
@@ -181,7 +184,7 @@
                             </td>
 
                             <!-- Condition -->
-                            <td class="py-4 px-4">
+                            <td data-label="Condition" class="py-4 px-4">
                                 <span class="px-2.5 py-1 bg-gray-100 text-gray-700 font-semibold rounded-lg text-[10px] inline-block">
                                     {{ listing.get_condition_display|truncatechars:20 }}
                                 </span>
@@ -191,7 +194,7 @@
                             </td>
 
                             <!-- Price -->
-                            <td class="py-4 px-4">
+                            <td data-label="Price" class="py-4 px-4">
                                 <div class="font-mono">
                                     <span class="font-extrabold text-sm text-green-600">৳{{ listing.price }}</span>
                                     {% if listing.original_mrp %}
@@ -201,7 +204,7 @@
                             </td>
 
                             <!-- Status -->
-                            <td class="py-4 px-4">
+                            <td data-label="Status" class="py-4 px-4">
                                 {% if listing.status == 'ACTIVE' %}
                                     <span class="px-2.5 py-1 bg-green-50 text-[#43A047] border border-green-200 font-bold rounded-full text-[10px]">
                                         ● Active
@@ -212,7 +215,7 @@
                                     </span>
                                 {% elif listing.status == 'RESERVED' %}
                                     <span class="px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-200 font-bold rounded-full text-[10px]">
-                                        ⏳ In Cart
+                                        ⏳ Reserved
                                     </span>
                                 {% else %}
                                     <span class="px-2.5 py-1 bg-gray-100 text-gray-500 font-bold rounded-full text-[10px]">
@@ -222,12 +225,12 @@
                             </td>
 
                             <!-- Date -->
-                            <td class="py-4 px-4 text-gray-500 text-[11px]">
+                            <td data-label="Listed" class="py-4 px-4 text-gray-500 text-[11px]">
                                 {{ listing.created_at|date:"M d, Y" }}
                             </td>
 
                             <!-- Actions -->
-                            <td class="py-4 px-6 text-right">
+                            <td data-label="Actions" class="py-4 px-6 text-right">
                                 <div class="flex items-center justify-end space-x-2">
                                     <a href="{% url 'edit_listing' listing.id %}"
                                        class="p-2 text-gray-400 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-lg transition-colors"
@@ -239,6 +242,14 @@
                                        title="View in Store">
                                         <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
                                     </a>
+                                    {% if listing.status != 'SOLD' %}
+                                    <form method="post" action="{% url 'mark_listing_sold' listing.id %}" {% if listing.status == 'RESERVED' %}onsubmit="return confirm('Mark this book as sold and cancel its reserved pickup?')"{% endif %}>
+                                        {% if listing.status == 'RESERVED' %}<input type="hidden" name="cancel_reservation" value="yes">{% endif %}
+                                        {% csrf_token %}
+                                        <button type="submit" class="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] rounded-lg text-[11px] font-semibold transition-colors" title="Mark this copy as sold">Mark as sold</button>
+                                    </form>
+                                    {% endif %}
+                                    {% if listing.status != 'SOLD' and listing.status != 'RESERVED' %}
                                     <form method="POST" action="{% url 'toggle_listing' listing.id %}">
                                         {% csrf_token %}
                                         {% if listing.status == 'ACTIVE' %}
@@ -255,6 +266,7 @@
                                             </button>
                                         {% endif %}
                                     </form>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
@@ -285,4 +297,5 @@
 <!-- Reusable 50% Sale Ribbon Banner from Components -->
 {% include "components/sale_ribbon.html" %}
 
+{% include "components/pagination.html" %}
 {% endblock %}

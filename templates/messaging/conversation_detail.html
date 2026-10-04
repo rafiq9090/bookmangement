@@ -17,11 +17,16 @@
 
     <!-- Feedback messages -->
     {% if messages %}
-    <div class="mb-4 space-y-2">
+    <div class="mb-4 space-y-2" data-purpose="auto-alert">
         {% for message in messages %}
-        <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-3 border shadow-xs {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
-            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% elif message.tags == 'success' %}fa-circle-check text-emerald-500{% else %}fa-circle-info text-amber-500{% endif %} text-base"></i>
-            <span>{{ message }}</span>
+        <div class="p-4 rounded-2xl text-xs font-semibold flex items-center justify-between gap-3 border shadow-xs transition-all duration-300 {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% elif message.tags == 'success' %}fa-circle-check text-emerald-500{% else %}fa-circle-info text-amber-500{% endif %} text-base"></i>
+                <span>{{ message }}</span>
+            </div>
+            <button type="button" onclick="this.closest('[data-purpose=\'auto-alert\']').remove()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
         </div>
         {% endfor %}
     </div>
@@ -71,143 +76,43 @@
         </div>
     </div>
 
-    <!-- ORDER CONFIRMATION ACTION BANNER -->
-    <div class="mb-4">
-        {% if is_seller %}
-            <!-- SELLER PERSPECTIVE -->
-            {% if conversation.order_status == 'INQUIRY' %}
-            <div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2 font-bold text-sm">
-                        <i class="fa-solid fa-bell animate-bounce"></i>
-                        <span>Buyer Wants to Purchase this Book!</span>
-                    </div>
-                    <p class="text-xs text-orange-100">
-                        Please verify that you have this copy ready. Click "Confirm Order" to unlock the purchase button for the buyer.
-                    </p>
-                </div>
-                <div class="flex items-center gap-2.5 flex-shrink-0">
-                    <form method="POST" class="inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="confirm_order">
-                        <button type="submit" class="px-5 py-2.5 bg-white text-emerald-700 hover:bg-emerald-50 text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer transform hover:scale-105">
-                            <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
-                            <span>Confirm Order</span>
-                        </button>
-                    </form>
-                    <form method="POST" class="inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="decline_order">
-                        <button type="submit" class="px-3.5 py-2.5 bg-black/20 hover:bg-black/30 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer">
-                            <i class="fa-solid fa-xmark"></i>
-                            <span>Decline</span>
-                        </button>
-                    </form>
-                </div>
+    {% if pickup_agreement %}
+    <div class="mb-4 p-4 rounded-2xl bg-orange-50/70 border border-orange-200 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-orange-100 text-[#FF5A1F] flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-handshake"></i>
+            </span>
+            <div>
+                <p class="text-xs font-bold text-gray-900">Pickup Agreement: {{ pickup_agreement.get_status_display }}</p>
+                <p class="text-[11px] text-gray-500 font-mono">Agreed Price: ৳{{ pickup_agreement.accepted_price|default:pickup_agreement.offered_price }}</p>
             </div>
-            {% elif conversation.order_status == 'CONFIRMED' %}
-            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-900 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg flex-shrink-0">
-                        <i class="fa-solid fa-circle-check"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold">You Confirmed this Order Request!</p>
-                        <p class="text-[11px] text-emerald-700">The buyer can now complete their payment and purchase this book copy.</p>
-                    </div>
-                </div>
-                <span class="px-3 py-1 bg-emerald-200 text-emerald-900 text-[11px] font-bold rounded-full">
-                    Awaiting Buyer Payment
-                </span>
-            </div>
-            {% elif conversation.order_status == 'COMPLETED' %}
-            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-blue-900 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-bold">Order Placed & Escrow Funded!</p>
-                    <p class="text-[11px] text-blue-700">Buyer has finalized payment. Please prepare parcel for courier pickup.</p>
-                </div>
-            </div>
-            {% elif conversation.order_status == 'DECLINED' %}
-            <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-900 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg flex-shrink-0">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-bold">Order Declined</p>
-                    <p class="text-[11px] text-rose-700">You marked this order request as declined.</p>
-                </div>
-            </div>
-            {% endif %}
-
-        {% else %}
-            <!-- BUYER PERSPECTIVE -->
-            {% if conversation.order_status == 'CONFIRMED' %}
-            <div class="bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl p-5 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2 font-bold text-sm">
-                        <i class="fa-solid fa-circle-check text-white text-base"></i>
-                        <span>Seller Approved Your Order!</span>
-                    </div>
-                    <p class="text-xs text-emerald-100">
-                        The seller confirmed that this copy is ready. Click below to proceed to secure checkout.
-                    </p>
-                </div>
-                <div>
-                    <a href="{% url 'proceed_to_checkout_from_chat' conversation.id %}" class="px-6 py-3 bg-white hover:bg-emerald-50 text-emerald-800 font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center gap-2 transform hover:scale-105">
-                        <i class="fa-solid fa-bolt text-[#FF5A1F]"></i>
-                        <span>Purchase Now — ৳{{ conversation.listing.price }}</span>
-                    </a>
-                </div>
-            </div>
-            {% elif conversation.order_status == 'INQUIRY' %}
-            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-900 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg flex-shrink-0">
-                        <i class="fa-solid fa-clock"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold">Order Request Sent to Seller</p>
-                        <p class="text-[11px] text-amber-700">Waiting for seller confirmation. As soon as the seller confirms, the "Purchase Now" button will appear here.</p>
-                    </div>
-                </div>
-                <span class="px-3 py-1 bg-amber-200/80 text-amber-900 text-[11px] font-bold rounded-full whitespace-nowrap">
-                    Pending Confirmation
-                </span>
-            </div>
-            {% elif conversation.order_status == 'COMPLETED' %}
-            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-blue-900 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
-                        <i class="fa-solid fa-check-double"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold">Order Completed!</p>
-                        <p class="text-[11px] text-blue-700">You successfully placed this order. Your payment is held securely in escrow until delivery.</p>
-                    </div>
-                </div>
-                <a href="{% url 'profile' %}?tab=orders" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors">
-                    View in Orders
-                </a>
-            </div>
-            {% elif conversation.order_status == 'DECLINED' %}
-            <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-900 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg flex-shrink-0">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-bold">Order Request Declined</p>
-                    <p class="text-[11px] text-rose-700">The seller is unable to fulfill this order at this time.</p>
-                </div>
-            </div>
-            {% endif %}
-        {% endif %}
+        </div>
+        <a href="{% url 'pickup_detail' pickup_agreement.pk %}" class="px-4 py-2 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 whitespace-nowrap">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Manage Pickup</span>
+        </a>
     </div>
+    {% elif is_buyer and listing.status == 'ACTIVE' %}
+    <div class="mb-4 p-4 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="text-xs text-gray-600">
+            <span class="font-bold text-gray-800">Ready to purchase?</span>
+            <p class="text-[11px] text-gray-500">Send an offer or purchase request. Pay cash/MFS when you inspect in person.</p>
+        </div>
+        <form method="post" action="{% url 'request_purchase' conversation.listing_id %}" class="flex items-center gap-2">
+            {% csrf_token %}
+            <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">৳</span>
+                <input name="offered_price" type="number" step="1" min="1" placeholder="{{ listing.price }}" class="w-28 pl-6 pr-2 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#FF5A1F]">
+            </div>
+            <button type="submit" class="px-3.5 py-1.5 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap">
+                Request Purchase
+            </button>
+        </form>
+    </div>
+    {% endif %}
 
     <!-- Chat Messages Box -->
-    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-[520px]">
+    <div id="chatBox" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col" style="height: 520px;">
         
         <!-- Chat Header -->
         <div class="p-4 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
@@ -237,7 +142,7 @@
         </div>
 
         <!-- Chat Stream -->
-        <div id="chatStream" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
+        <div id="chatStream" data-last-id="{{ chat_messages.last.id|default:0 }}" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
             
             <!-- Conversation Initiated Badge -->
             <div class="text-center my-2">
@@ -247,7 +152,7 @@
             </div>
 
             {% for msg in chat_messages %}
-            <div class="flex flex-col {% if msg.sender == request.user %}items-end{% else %}items-start{% endif %}">
+            <div class="flex flex-col {% if msg.sender == request.user %}items-end{% else %}items-start{% endif %}" data-msg-id="{{ msg.id }}">
                 <div class="flex items-end gap-2 max-w-[85%] sm:max-w-[75%] {% if msg.sender == request.user %}flex-row-reverse{% endif %}">
                     
                     <!-- Avatar circle -->
@@ -284,7 +189,7 @@
                 </div>
             </div>
             {% empty %}
-            <div class="py-12 text-center text-gray-400 text-xs">
+            <div id="emptyChatPlaceholder" class="py-12 text-center text-gray-400 text-xs">
                 No messages yet. Send a message to begin!
             </div>
             {% endfor %}
@@ -293,22 +198,22 @@
 
         <!-- Chat Input Form -->
         <div class="p-3 sm:p-4 border-t border-gray-100 bg-white">
-            <form method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
+            <form id="chatForm" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="send_message">
                 
                 <!-- Attachment Button -->
                 <label class="cursor-pointer p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors" title="Attach Photo">
                     <i class="fa-solid fa-paperclip text-sm"></i>
-                    <input type="file" name="photo_evidence" accept="image/*" class="hidden" onchange="previewAttachment(this)">
+                    <input type="file" id="photoInput" name="photo_evidence" accept="image/*" class="hidden" onchange="previewAttachment(this)">
                 </label>
 
                 <!-- Text Input -->
-                <input type="text" name="text" placeholder="Type your message to {% if is_seller %}buyer{% else %}seller{% endif %}..." required
+                <input type="text" id="chatTextInput" name="text" placeholder="Type your message to {% if is_seller %}buyer{% else %}seller{% endif %}..." required
                     class="flex-1 py-2.5 px-4 bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#FF5A1F] rounded-xl text-xs sm:text-sm text-gray-900 focus:ring-1 focus:ring-[#FF5A1F] transition-all">
 
                 <!-- Submit Button -->
-                <button type="submit" class="py-2.5 px-4 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                <button type="submit" id="chatSubmitBtn" class="py-2.5 px-4 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
                     <span>Send</span>
                     <i class="fa-solid fa-paper-plane text-[10px]"></i>
                 </button>
@@ -316,6 +221,9 @@
             <div id="attachmentIndicator" class="hidden mt-2 text-[10px] text-gray-500 flex items-center gap-1.5">
                 <i class="fa-solid fa-image text-[#FF5A1F]"></i>
                 <span id="attachmentFileName"></span>
+                <button type="button" onclick="clearAttachment()" class="text-gray-400 hover:text-red-500 ml-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
         </div>
 
@@ -324,11 +232,40 @@
 </div>
 
 <script>
-// Auto scroll chat stream to bottom on load
+let lastMessageId = parseInt(document.getElementById("chatStream")?.getAttribute("data-last-id") || "0", 10);
+const conversationId = {{ conversation.id }};
+const messagesApiUrl = "{% url 'conversation_messages_api' conversation.id %}";
+
 document.addEventListener("DOMContentLoaded", function() {
     const chatStream = document.getElementById("chatStream");
     if (chatStream) {
         chatStream.scrollTop = chatStream.scrollHeight;
+    }
+
+    // Dynamically adjust chat box height so Send button is always visible
+    const chatBox = document.getElementById("chatBox");
+    if (chatBox) {
+        function adjustChatHeight() {
+            const viewportH = window.innerHeight;
+            const boxTop = chatBox.getBoundingClientRect().top + window.scrollY;
+            const pageTop = document.documentElement.scrollTop || 0;
+            const visibleTop = chatBox.getBoundingClientRect().top;
+            // Calculate how much vertical space is available from the box top to page bottom (with 20px padding)
+            const available = viewportH - visibleTop - 20;
+            const clamped = Math.max(360, Math.min(available, 600));
+            chatBox.style.height = clamped + "px";
+        }
+        adjustChatHeight();
+        window.addEventListener("resize", adjustChatHeight);
+    }
+
+    // Initialize real-time polling for incoming messages every 2.5 seconds
+    setInterval(pollNewMessages, 2500);
+
+    // Setup AJAX message sending
+    const form = document.getElementById("chatForm");
+    if (form) {
+        form.addEventListener("submit", handleSendMessage);
     }
 });
 
@@ -340,6 +277,142 @@ function previewAttachment(input) {
         indicator.classList.remove("hidden");
     } else {
         indicator.classList.add("hidden");
+    }
+}
+
+function clearAttachment() {
+    const photoInput = document.getElementById("photoInput");
+    if (photoInput) photoInput.value = "";
+    const indicator = document.getElementById("attachmentIndicator");
+    if (indicator) indicator.classList.add("hidden");
+}
+
+function appendMessageBubble(msg) {
+    const emptyPlaceholder = document.getElementById("emptyChatPlaceholder");
+    if (emptyPlaceholder) emptyPlaceholder.remove();
+
+    if (document.querySelector(`[data-msg-id="${msg.id}"]`)) return;
+
+    const row = document.createElement("div");
+    row.className = `flex flex-col ${msg.is_me ? 'items-end' : 'items-start'}`;
+    row.setAttribute("data-msg-id", msg.id);
+
+    const inner = document.createElement("div");
+    inner.className = `flex items-end gap-2 max-w-[85%] sm:max-w-[75%] ${msg.is_me ? 'flex-row-reverse' : ''}`;
+
+    const avatar = document.createElement("div");
+    avatar.className = `w-7 h-7 rounded-lg text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${msg.is_me ? 'bg-gray-900 text-white' : 'bg-orange-100 text-[#FF5A1F]'}`;
+    avatar.textContent = msg.sender_initial;
+
+    const bubble = document.createElement("div");
+    bubble.className = `rounded-2xl p-3.5 text-xs shadow-xs ${msg.is_me ? 'bg-[#FF5A1F] text-white rounded-br-xs' : 'bg-gray-100 text-gray-800 rounded-bl-xs'}`;
+
+    if (msg.text && msg.text.includes("✅ Order Confirmed!")) {
+        const conf = document.createElement("div");
+        conf.className = "font-bold mb-1 flex items-center gap-1.5 text-amber-200";
+        conf.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Official Confirmation</span>';
+        bubble.appendChild(conf);
+    }
+
+    const p = document.createElement("p");
+    p.className = "whitespace-pre-wrap leading-relaxed";
+    p.textContent = msg.text;
+    bubble.appendChild(p);
+
+    if (msg.photo_url) {
+        const imgWrap = document.createElement("div");
+        imgWrap.className = "mt-2 rounded-xl overflow-hidden border border-white/20";
+        imgWrap.innerHTML = `<a href="${msg.photo_url}" target="_blank"><img src="${msg.photo_url}" alt="Attachment" class="max-h-48 object-cover rounded-xl hover:opacity-95 transition-opacity"></a>`;
+        bubble.appendChild(imgWrap);
+    }
+
+    const timeDiv = document.createElement("div");
+    timeDiv.className = `mt-1 text-[9px] ${msg.is_me ? 'text-orange-200 text-right' : 'text-gray-400'}`;
+    timeDiv.textContent = msg.created_at_time;
+    bubble.appendChild(timeDiv);
+
+    inner.appendChild(avatar);
+    inner.appendChild(bubble);
+    row.appendChild(inner);
+
+    const chatStream = document.getElementById("chatStream");
+    chatStream.appendChild(row);
+    chatStream.scrollTop = chatStream.scrollHeight;
+
+    if (msg.id > lastMessageId) {
+        lastMessageId = msg.id;
+    }
+}
+
+async function handleSendMessage(e) {
+    e.preventDefault();
+    const form = e.target;
+    const input = document.getElementById("chatTextInput");
+    const photoInput = document.getElementById("photoInput");
+    const submitBtn = document.getElementById("chatSubmitBtn");
+
+    const text = input.value.trim();
+    const hasPhoto = photoInput && photoInput.files && photoInput.files.length > 0;
+
+    if (!text && !hasPhoto) return;
+
+    const formData = new FormData(form);
+    const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add("opacity-60");
+
+    try {
+        const res = await fetch(messagesApiUrl, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.message) {
+                appendMessageBubble(data.message);
+                input.value = "";
+                clearAttachment();
+                // Immediately refresh unread badges across the site in real time
+                if (typeof window.refreshUnreadMessagesBadge === "function") {
+                    window.refreshUnreadMessagesBadge();
+                }
+            }
+        } else {
+            // Fallback to regular form submission if API rejected
+            form.submit();
+        }
+    } catch (err) {
+        form.submit();
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("opacity-60");
+        input.focus();
+    }
+}
+
+async function pollNewMessages() {
+    if (document.hidden) return;
+    try {
+        const res = await fetch(`${messagesApiUrl}?after_id=${lastMessageId}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.messages && data.messages.length > 0) {
+                data.messages.forEach(appendMessageBubble);
+            }
+            if (typeof window.setUnreadMessagesBadgeCount === "function" && typeof data.unread_count === "number") {
+                window.setUnreadMessagesBadgeCount(data.unread_count);
+            }
+        }
+    } catch (e) {
+        // Silently ignore network failures
     }
 }
 </script>

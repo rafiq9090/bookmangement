@@ -17,42 +17,80 @@
     </nav>
 
     <!-- Banner Container -->
-    <div class="bg-white rounded-3xl p-6 sm:p-10 border border-gray-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
+    <div class="mobile-store-banner bg-white rounded-3xl p-6 sm:p-10 border border-gray-100 shadow-sm relative flex flex-col lg:flex-row items-center justify-between gap-8 z-20">
         <!-- Text & Search -->
         <div class="w-full lg:max-w-2xl space-y-4 text-center lg:text-left">
             <h1 class="font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-gray-900 tracking-tight leading-tight">
                 Discover Your Next <span class="text-[#FF5A1F]">Masterpiece</span>
             </h1>
             <p class="text-gray-500 text-xs sm:text-sm leading-relaxed max-w-xl">
-                Explore thousands of fiction, non-fiction, history, and classic storybooks with direct door-to-door delivery.
+                Find used and rare books nearby. Meet the seller, inspect the book, and pay at pickup.
             </p>
 
-            <!-- Search Bar Form -->
-            <form method="GET" action="{% url 'store' %}" class="pt-2 flex flex-col sm:flex-row items-center gap-2 w-full max-w-xl">
-                {% if selected_category %}
-                    <input type="hidden" name="category" value="{{ selected_category }}">
-                {% endif %}
-                {% if sort %}
-                    <input type="hidden" name="sort" value="{{ sort }}">
-                {% endif %}
-                <div class="relative w-full">
+            <!-- Search Bar Form with Keyword & Location / Pickup Area -->
+            <form method="GET" action="{% url 'store' %}" class="pt-2 flex flex-col sm:flex-row items-center gap-2.5 w-full max-w-3xl">
+                {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                {% if current_condition %}<input type="hidden" name="condition" value="{{ current_condition }}">{% endif %}
+                {% if is_collectible %}<input type="hidden" name="is_collectible" value="{{ is_collectible }}">{% endif %}
+                {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+
+                <!-- Keyword Input (Title, Author, ISBN) -->
+                <div class="relative w-full sm:flex-1">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                     <input
                         type="text"
                         name="q"
                         value="{{ query }}"
                         placeholder="Search by title, author name, or ISBN..."
-                        class="w-full pl-11 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-full text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-[#FF5A1F] transition-all"
+                        class="w-full pl-11 pr-10 py-3 bg-gray-50/80 border border-gray-200 rounded-full text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-[#FF5A1F] transition-all"
                     >
                     {% if query %}
-                        <a href="{% url 'store' %}{% if selected_category %}?category={{ selected_category }}{% endif %}" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">
-                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                        <a href="{% url 'store' %}{% if selected_location %}?location={{ selected_location }}{% elif selected_district %}?district={{ selected_district }}{% endif %}" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1" title="Clear keyword">
+                            <i class="fa-solid fa-circle-xmark text-xs"></i>
                         </a>
                     {% endif %}
                 </div>
+
+                <!-- Location / Pickup Area Input with OpenStreetMap Autocomplete & GPS -->
+                <div class="relative w-full sm:w-64 md:w-80" id="storeLocationWrapper">
+                    <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input
+                        type="text"
+                        name="location"
+                        id="storeLocationInput"
+                        value="{{ selected_location|default:selected_district }}"
+                        placeholder="Location / Pickup Area"
+                        autocomplete="off"
+                        class="w-full pl-11 pr-16 py-3 bg-gray-50/80 border border-gray-200 rounded-full text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-[#FF5A1F] transition-all"
+                    >
+                    <input type="hidden" name="lat" id="storeLatInput" value="{{ user_lat }}">
+                    <input type="hidden" name="lon" id="storeLonInput" value="{{ user_lon }}">
+
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        {% if selected_location or selected_district %}
+                            <a href="{% url 'store' %}{% if query %}?q={{ query }}{% endif %}" class="text-gray-400 hover:text-gray-600 p-1" title="Clear location">
+                                <i class="fa-solid fa-circle-xmark text-xs"></i>
+                            </a>
+                        {% endif %}
+                        <!-- GPS Near Me Button -->
+                        <button
+                            type="button"
+                            id="storeNearMeBtn"
+                            title="Find books near me (GPS)"
+                            class="p-1.5 text-gray-400 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-full transition-colors"
+                        >
+                            <i class="fa-solid fa-crosshairs text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Autocomplete Suggestion Dropdown -->
+                    <div id="storeLocationDropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[100] overflow-hidden divide-y divide-gray-100 max-h-72 overflow-y-auto text-left"></div>
+                </div>
+
+                <!-- Search Button -->
                 <button
                     type="submit"
-                    class="w-full sm:w-auto px-6 py-3 bg-[#FF5A1F] hover:bg-orange-600 text-white font-semibold text-sm rounded-full shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2 flex-shrink-0"
+                    class="w-full sm:w-auto px-7 py-3 bg-[#FF5A1F] hover:bg-orange-600 text-white font-semibold text-sm rounded-full shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2 flex-shrink-0"
                 >
                     <span>Search</span>
                     <i class="fa-solid fa-arrow-right text-xs"></i>
@@ -107,6 +145,7 @@
                         <i class="fa-solid fa-sliders text-[#FF5A1F]"></i>
                         <span>Filter Books</span>
                     </h3>
+                    <button type="button" class="lg:hidden text-sm font-semibold text-[#FF5A1F] px-3" onclick="toggleStoreFilters()" aria-label="Close book filters">Done</button>
                     {% if selected_category or query or min_price or max_price %}
                         <a href="{% url 'store' %}" class="text-xs text-rose-500 hover:text-rose-600 font-semibold transition-colors">
                             Reset All
@@ -114,30 +153,36 @@
                     {% endif %}
                 </div>
 
-                <!-- 1. Categories Filter -->
+                <!-- 1. Book Condition Filter -->
                 <div class="space-y-3">
-                    <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Categories</h4>
-                    <div class="space-y-1 max-h-64 overflow-y-auto pr-1 text-sm">
-                        <a
-                            href="{% url 'store' %}?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}{% endif %}"
-                            class="flex items-center justify-between px-3 py-2 rounded-xl transition-all {% if not selected_category %}bg-orange-50 text-[#FF5A1F] font-bold{% else %}text-gray-600 hover:bg-gray-50{% endif %}"
-                        >
-                            <span>All Categories</span>
-                            <span class="text-xs {% if not selected_category %}text-[#FF5A1F]{% else %}text-gray-400{% endif %} font-mono">{{ total_count }}</span>
+                    <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-certificate text-[#FF5A1F]"></i>
+                        <span>Condition</span>
+                    </h4>
+                    <div class="space-y-1 text-xs">
+                        <a href="{% url 'store' %}?{% if query %}q={{ query }}&{% endif %}{% if selected_location %}location={{ selected_location }}&{% elif selected_district %}district={{ selected_district }}&{% endif %}{% if is_collectible %}is_collectible={{ is_collectible }}&{% endif %}" class="flex items-center justify-between px-3 py-1.5 rounded-xl transition-all {% if not current_condition %}bg-orange-50 text-[#FF5A1F] font-bold{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+                            <span>All Conditions</span>
                         </a>
-                        {% for cat in categories %}
-                            <a
-                                href="{% url 'store' %}?category={{ cat.slug }}{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}"
-                                class="flex items-center justify-between px-3 py-2 rounded-xl transition-all {% if selected_category == cat.slug %}bg-orange-50 text-[#FF5A1F] font-bold{% else %}text-gray-600 hover:bg-gray-50{% endif %}"
-                            >
-                                <span>{{ cat.name }}</span>
-                                <span class="text-xs {% if selected_category == cat.slug %}text-[#FF5A1F]{% else %}text-gray-400{% endif %} font-mono">{{ cat.book_count }}</span>
+                        {% for code, label in conditions %}
+                            <a href="{% url 'store' %}?condition={{ code }}{% if query %}&q={{ query }}{% endif %}{% if selected_location %}&location={{ selected_location }}{% elif selected_district %}&district={{ selected_district }}{% endif %}{% if is_collectible %}&is_collectible={{ is_collectible }}{% endif %}" class="flex items-center justify-between px-3 py-1.5 rounded-xl transition-all {% if current_condition == code %}bg-orange-50 text-[#FF5A1F] font-bold{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+                                <span>{{ label }}</span>
                             </a>
                         {% endfor %}
                     </div>
                 </div>
 
-                <!-- 2. Price Range Filter -->
+                <!-- 3. Collectible Editions Only Toggle -->
+                <div class="pt-4 border-t border-gray-100">
+                    <a href="{% url 'store' %}?is_collectible={% if is_collectible %}0{% else %}1{% endif %}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="flex items-center justify-between px-3 py-2 rounded-xl transition-all border {% if is_collectible %}bg-amber-50 border-amber-300 text-amber-900 font-bold{% else %}bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-gem text-amber-500"></i>
+                            <span>Rare / Collectible</span>
+                        </span>
+                        <input type="checkbox" {% if is_collectible %}checked{% endif %} class="rounded text-[#FF5A1F] pointer-events-none" />
+                    </a>
+                </div>
+
+                <!-- 4. Price Range Filter -->
                 <div class="space-y-3 pt-4 border-t border-gray-100">
                     <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Price Range (৳)</h4>
                     <form method="GET" action="{% url 'store' %}" class="space-y-3">
@@ -149,6 +194,14 @@
                         {% endif %}
                         {% if sort %}
                             <input type="hidden" name="sort" value="{{ sort }}">
+                        {% endif %}
+                        {% if current_condition %}
+                            <input type="hidden" name="condition" value="{{ current_condition }}">
+                        {% endif %}
+                        {% if selected_location %}
+                            <input type="hidden" name="location" value="{{ selected_location }}">
+                        {% elif selected_district %}
+                            <input type="hidden" name="district" value="{{ selected_district }}">
                         {% endif %}
                         <div class="flex items-center space-x-2">
                             <input
@@ -256,12 +309,30 @@
                         Showing <span class="font-bold text-gray-900">{{ page_obj.object_list|length }}</span> of <span class="font-bold text-gray-900">{{ total_count }}</span> books
                     </p>
                     <!-- Active Filter Chips -->
-                    {% if selected_category or query or min_price or max_price or min_rating %}
+                    {% if selected_category or query or selected_location or selected_district or selected_area or current_condition or is_collectible or min_price or max_price or min_rating %}
                         <div class="flex flex-wrap items-center gap-2 mt-2">
                             {% if query %}
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-[11px] font-medium">
                                     "{{ query }}"
-                                    <a href="{% url 'store' %}?{% if selected_category %}category={{ selected_category }}&{% endif %}{% if min_rating %}rating={{ min_rating }}&{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
+                                    <a href="{% url 'store' %}?{% if selected_location %}location={{ selected_location }}&{% elif selected_district %}district={{ selected_district }}&{% endif %}{% if current_condition %}condition={{ current_condition }}&{% endif %}{% if is_collectible %}is_collectible={{ is_collectible }}&{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
+                                </span>
+                            {% endif %}
+                            {% if selected_location or selected_district or selected_area %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 text-[#FF5A1F] text-[11px] font-medium border border-orange-200">
+                                    <i class="fa-solid fa-location-dot text-[10px]"></i> {{ selected_location|default:selected_district }}{% if selected_area and not selected_location %}, {{ selected_area }}{% endif %}
+                                    <a href="{% url 'store' %}?{% if query %}q={{ query }}&{% endif %}{% if current_condition %}condition={{ current_condition }}&{% endif %}{% if is_collectible %}is_collectible={{ is_collectible }}&{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
+                                </span>
+                            {% endif %}
+                            {% if current_condition %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-medium border border-blue-200">
+                                    Condition: {{ current_condition|title }}
+                                    <a href="{% url 'store' %}?{% if query %}q={{ query }}&{% endif %}{% if selected_location %}location={{ selected_location }}&{% elif selected_district %}district={{ selected_district }}&{% endif %}{% if is_collectible %}is_collectible={{ is_collectible }}&{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
+                                </span>
+                            {% endif %}
+                            {% if is_collectible %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-medium border border-amber-300">
+                                    <i class="fa-solid fa-gem text-[10px] text-amber-600"></i> Rare / Collectible
+                                    <a href="{% url 'store' %}?{% if query %}q={{ query }}&{% endif %}{% if selected_location %}location={{ selected_location }}&{% elif selected_district %}district={{ selected_district }}&{% endif %}{% if current_condition %}condition={{ current_condition }}&{% endif %}" class="hover:text-red-500"><i class="fa-solid fa-xmark text-[10px]"></i></a>
                                 </span>
                             {% endif %}
                             {% if selected_category %}
@@ -288,6 +359,21 @@
                     {% if query %}
                         <input type="hidden" name="q" value="{{ query }}">
                     {% endif %}
+                    {% if selected_location %}
+                        <input type="hidden" name="location" value="{{ selected_location }}">
+                    {% endif %}
+                    {% if selected_district %}
+                        <input type="hidden" name="district" value="{{ selected_district }}">
+                    {% endif %}
+                    {% if selected_area %}
+                        <input type="hidden" name="area" value="{{ selected_area }}">
+                    {% endif %}
+                    {% if current_condition %}
+                        <input type="hidden" name="condition" value="{{ current_condition }}">
+                    {% endif %}
+                    {% if is_collectible %}
+                        <input type="hidden" name="is_collectible" value="{{ is_collectible }}">
+                    {% endif %}
                     {% if min_price %}
                         <input type="hidden" name="min_price" value="{{ min_price }}">
                     {% endif %}
@@ -297,6 +383,8 @@
                     {% if min_rating %}
                         <input type="hidden" name="rating" value="{{ min_rating }}">
                     {% endif %}
+                    {% if user_lat %}<input type="hidden" name="lat" value="{{ user_lat }}">{% endif %}
+                    {% if user_lon %}<input type="hidden" name="lon" value="{{ user_lon }}">{% endif %}
                     <label for="sort-select" class="text-xs text-gray-500 font-medium whitespace-nowrap">Sort By:</label>
                     <select
                         id="sort-select"
@@ -304,7 +392,11 @@
                         onchange="this.form.submit()"
                         class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-[#FF5A1F]"
                     >
+                        {% if has_coords %}
+                            <option value="nearby" {% if sort == "nearby" %}selected{% endif %}>📍 Nearby (Closest to Me)</option>
+                        {% endif %}
                         <option value="featured" {% if sort == "featured" %}selected{% endif %}>Featured</option>
+                        <option value="recommended" {% if sort == "recommended" %}selected{% endif %}>Recommended for You</option>
                         <option value="rating" {% if sort == "rating" %}selected{% endif %}>Highest Rated</option>
                         <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Price: Low to High</option>
                         <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price: High to Low</option>
@@ -318,11 +410,35 @@
             {% if page_obj.object_list %}
                 <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                     {% for listing in page_obj.object_list %}
-                        <div class="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group">
+                        <div class="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center group relative">
+                            <!-- Location & Edition Header -->
+                            <div class="w-full flex items-center justify-between mb-2 text-[10px] text-gray-500 font-medium min-h-[16px]">
+                                {% if listing.distance_km is not None %}
+                                    <span class="flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]" title="{{ listing.distance_km }} km from your location">
+                                        <i class="fa-solid fa-location-crosshairs text-[9px] text-emerald-500"></i>
+                                        <span>~{{ listing.distance_km }} km away</span>
+                                    </span>
+                                {% elif listing.district or listing.area %}
+                                    <span class="flex items-center gap-1 truncate" title="{{ listing.district }}{% if listing.area %}, {{ listing.area }}{% endif %}">
+                                        <i class="fa-solid fa-location-dot text-gray-400 text-[9px]"></i>
+                                        <span class="truncate font-semibold">{{ listing.district }}{% if listing.area %}, {{ listing.area }}{% endif %}</span>
+                                    </span>
+                                {% else %}
+                                    <span></span>
+                                {% endif %}
+                                {% if listing.is_collectible %}
+                                    <span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0">
+                                        <i class="fa-solid fa-gem text-[8px]"></i>
+                                        <span>Rare</span>
+                                    </span>
+                                {% endif %}
+                            </div>
                             <!-- Book Visual Artwork Container -->
                             <a href="{% url 'book_detail' listing.book.slug %}" class="w-full h-44 sm:h-64 bg-gradient-to-b from-slate-100 to-slate-200 rounded-xl overflow-hidden mb-2.5 sm:mb-4 relative flex items-center justify-center p-2 sm:p-3 shadow-inner group-hover:scale-[1.02] transition-transform">
                                 {% if listing.book.cover_image %}
                                     <img src="{{ listing.book.cover_image.url }}" alt="{{ listing.book.title }}" class="w-24 h-36 sm:w-36 sm:h-52 object-cover rounded shadow-md border border-gray-100" />
+                                {% elif listing.images.first %}
+                                    <img src="{{ listing.images.first.image.url }}" alt="{{ listing.book.title }}" class="w-24 h-36 sm:w-36 sm:h-52 object-cover rounded shadow-md border border-gray-100" />
                                 {% else %}
                                     <div class="w-24 h-36 sm:w-36 sm:h-52 bg-white rounded shadow-md flex flex-col items-center justify-between p-2 sm:p-3 border border-gray-100 text-center relative overflow-hidden">
                                         <span class="text-[8px] sm:text-[9px] font-bold tracking-widest text-gray-400 uppercase truncate w-full">
@@ -470,5 +586,150 @@
             sidebar.classList.toggle('hidden');
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const sortSelect = document.getElementById('sort-select');
+        if (sortSelect) {
+            const menu = document.createElement('details');
+            menu.className = 'mobile-sort-menu';
+            const summary = document.createElement('summary');
+            summary.textContent = sortSelect.selectedOptions[0].textContent + ' ▾';
+            menu.appendChild(summary);
+            const options = document.createElement('div');
+            options.className = 'mobile-sort-options';
+            options.setAttribute('aria-label', 'Sort books');
+            for (const option of sortSelect.options) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = option.textContent;
+                button.setAttribute('aria-pressed', String(option.selected));
+                button.addEventListener('click', () => {
+                    sortSelect.value = option.value;
+                    menu.open = false;
+                    sortSelect.form.requestSubmit();
+                });
+                options.appendChild(button);
+            }
+            menu.appendChild(options);
+            sortSelect.after(menu);
+            sortSelect.classList.add('mobile-sort-enhanced');
+            document.addEventListener('click', event => {
+                if (!menu.contains(event.target)) menu.open = false;
+            });
+            menu.addEventListener('keydown', event => {
+                if (event.key === 'Escape') { menu.open = false; summary.focus(); }
+            });
+        }
+        const locationInput = document.getElementById('storeLocationInput');
+        const dropdown = document.getElementById('storeLocationDropdown');
+        const latInput = document.getElementById('storeLatInput');
+        const lonInput = document.getElementById('storeLonInput');
+        const nearMeBtn = document.getElementById('storeNearMeBtn');
+        const searchForm = locationInput ? locationInput.closest('form') : null;
+
+        let debounceTimer = null;
+
+        if (locationInput && dropdown) {
+            locationInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const q = this.value.trim();
+                if (latInput) latInput.value = '';
+                if (lonInput) lonInput.value = '';
+
+                if (q.length < 2) {
+                    dropdown.classList.add('hidden');
+                    dropdown.innerHTML = '';
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    let url = '/api/locations/suggest/?q=' + encodeURIComponent(q);
+                    if (latInput && latInput.value && lonInput && lonInput.value) {
+                        url += '&lat=' + encodeURIComponent(latInput.value) + '&lon=' + encodeURIComponent(lonInput.value);
+                    }
+                    fetch(url)
+                        .then(r => r.json())
+                        .then(data => {
+                            dropdown.innerHTML = '';
+                            if (!data.results || data.results.length === 0) {
+                                dropdown.classList.add('hidden');
+                                return;
+                            }
+                            data.results.forEach(item => {
+                                const row = document.createElement('button');
+                                row.type = 'button';
+                                row.className = 'w-full text-left px-4 py-3 text-xs hover:bg-orange-50/80 transition-colors flex items-center gap-3 group cursor-pointer';
+                                row.innerHTML = `
+                                    <i class="fa-solid fa-location-dot text-gray-400 group-hover:text-[#FF5A1F] text-xs transition-colors flex-shrink-0"></i>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-bold text-gray-900 truncate">${item.name}</p>
+                                        <p class="text-[10px] text-gray-400 truncate">${item.full_name || item.name}</p>
+                                    </div>
+                                `;
+                                row.onclick = () => {
+                                    locationInput.value = item.name;
+                                    if (latInput && item.lat) latInput.value = item.lat;
+                                    if (lonInput && item.lon) lonInput.value = item.lon;
+                                    dropdown.classList.add('hidden');
+                                    if (searchForm) searchForm.submit();
+                                };
+                                dropdown.appendChild(row);
+                            });
+                            dropdown.classList.remove('hidden');
+                        })
+                        .catch(() => dropdown.classList.add('hidden'));
+                }, 280);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!locationInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        if (nearMeBtn) {
+            nearMeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!navigator.geolocation) {
+                    alert('Geolocation is not supported by your browser.');
+                    return;
+                }
+                nearMeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs text-[#FF5A1F]"></i>';
+                navigator.geolocation.getCurrentPosition(
+                    function(pos) {
+                        const lat = pos.coords.latitude;
+                        const lon = pos.coords.longitude;
+                        fetch(`/api/locations/reverse/?lat=${lat}&lon=${lon}`)
+                            .then(r => r.json())
+                            .then(data => {
+                                nearMeBtn.innerHTML = '<i class="fa-solid fa-crosshairs text-xs"></i>';
+                                if (data.found && data.location) {
+                                    if (locationInput) locationInput.value = data.location.name;
+                                    if (latInput) latInput.value = lat;
+                                    if (lonInput) lonInput.value = lon;
+                                    if (searchForm) {
+                                        let sortInput = searchForm.querySelector('input[name="sort"]');
+                                        if (sortInput) sortInput.value = 'nearby';
+                                        searchForm.submit();
+                                    }
+                                }
+                            })
+                            .catch(() => {
+                                nearMeBtn.innerHTML = '<i class="fa-solid fa-crosshairs text-xs"></i>';
+                                if (latInput) latInput.value = lat;
+                                if (lonInput) lonInput.value = lon;
+                                if (searchForm) searchForm.submit();
+                            });
+                    },
+                    function() {
+                        nearMeBtn.innerHTML = '<i class="fa-solid fa-crosshairs text-xs"></i>';
+                        alert('Could not retrieve your location. Please check browser permissions.');
+                    },
+                    { timeout: 7000 }
+                );
+            });
+        }
+    });
 </script>
 {% endblock %}

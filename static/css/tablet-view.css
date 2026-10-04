@@ -1,0 +1,40 @@
+/* Tablet layout (768–1023px); shared desktop components remain available. */
+@media (min-width:768px) and (max-width:1023px) {
+  main { min-width:0; overflow-wrap:anywhere; }
+  main :is(.grid,.flex)>* { min-width:0; }
+  main>section, .mobile-home-layout>section { padding-left:24px; padding-right:24px; }
+  [data-purpose="site-header"] { padding:12px 24px; }
+  main h1 { font-size:32px; line-height:1.2; }
+  main h2 { font-size:24px; line-height:1.3; }
+  main input:not([type=checkbox]):not([type=radio]), main select, main textarea { font-size:16px; max-width:100%; }
+  main :is(button,a)[class*="bg-"] { min-height:44px; }
+  [data-purpose="hero-section"] { padding-top:28px; padding-bottom:28px; }
+  [data-purpose="hero-section"]>.grid { gap:24px; }
+  #heroSliderContainer { display:none; }
+  [data-purpose="popular-collections-section"]>.grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+  [data-purpose="popular-collections-section"]>.grid>div>a:first-child { height:210px; }
+  main form[class*="grid"] { gap:20px; }
+  main form .rounded-3xl { padding:24px; }
+  .mobile-inventory-stats>div { padding:16px; gap:10px; }
+  .mobile-inventory-stats>div>div:first-child { width:36px; height:36px; }
+  .mobile-inventory { overflow-x:auto; }
+  .mobile-inventory table { min-width:760px; }
+  .seller-inventory-tabs>a { flex-shrink:0; white-space:nowrap; }
+  .seller-inventory-search>div { min-width:0; }
+  .book-pickup-location { flex-wrap:wrap; gap:12px; }
+  .book-detail-tabs { gap:20px; }
+  .book-detail-tabs button { flex-shrink:0; white-space:nowrap; }
+  .mobile-book-detail { gap:24px; padding:24px; }
+  .mobile-book-detail>div:first-child { max-width:420px; margin-inline:auto; width:100%; }
+  .mobile-profile-page { padding:24px; }
+  .mobile-account-tabs { display:flex; gap:8px; overflow-x:auto; }
+  .mobile-account-tabs a { flex-shrink:0; padding:12px 16px; border-radius:12px; background:#FAF8F5; font-size:14px; }
+  .mobile-account-tabs a[aria-current=page] { background:#FFF0E8; color:#D9430D; }
+  .messenger { grid-template-columns:240px minmax(0,1fr); min-height:460px; }
+  .messenger-page { padding:16px 24px; }
+  [data-purpose="sale-ribbon-banner"] { padding:28px 24px; }
+  [data-purpose="sale-ribbon-banner"]>a { flex-direction:column; gap:20px; padding:0; text-align:center; }
+  [data-purpose="sale-ribbon-banner"]>a>div:first-child { flex-direction:column; gap:12px; width:100%; }
+  [data-purpose="sale-ribbon-banner"]>a>div:first-child>div:first-child { font-size:30px; }
+  [data-purpose="sale-ribbon-banner"]>a>div:first-child>div:last-child { font-size:24px; line-height:1.35; max-width:560px; }
+}

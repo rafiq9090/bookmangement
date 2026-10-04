@@ -1,0 +1,53 @@
+/* Shared visual tokens for every phone page, including the operations console.
+   Keep layout rules in mobile-app.css / mobile-admin.css. */
+@media (max-width: 767px) {
+  :root {
+    --mobile-brand: #FF5A1F;
+    --mobile-brand-pressed: #D9430D;
+    --mobile-background: #FFFDF9;
+    --mobile-surface: #FFFFFF;
+    --mobile-border: #F0E6DD;
+    --mobile-text: #17202E;
+    --mobile-muted: #687383;
+    --mobile-radius: 18px;
+  }
+  body { background: var(--mobile-background); color: var(--mobile-text); }
+  body.glow-bg { background-image: none; }
+  main :is(h1, h2, h3, h4) { color: var(--mobile-text); }
+  main :is(.text-gray-400, .text-gray-500, .text-slate-500) { color: var(--mobile-muted); }
+  main :is(.bg-white, .bg-white\/70, .bg-white\/80) {
+    background-color: var(--mobile-surface);
+    border-color: var(--mobile-border);
+  }
+  main :is(.rounded-2xl, .rounded-3xl).border {
+    border-color: var(--mobile-border);
+    box-shadow: 0 3px 14px #44250D05;
+  }
+  main :is(button, a):is(.bg-brand-orange, .bg-orange-500, .bg-orange-600, [class~="bg-[#FF5A1F]"]) {
+    background: var(--mobile-brand);
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+    box-shadow: 0 3px 10px #FF5A1F18;
+  }
+  main :is(button, a):is(.bg-brand-orange, .bg-orange-500, .bg-orange-600, [class~="bg-[#FF5A1F]"]):active {
+    background: var(--mobile-brand-pressed);
+  }
+  main :is(input, select, textarea):not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]) {
+    border-color: var(--mobile-border);
+    color: var(--mobile-text);
+    background-color: #FAF8F5;
+    border-radius: 12px;
+  }
+  main :is(input, select, textarea)::placeholder { color: var(--mobile-muted); }
+  main :is(input, select, textarea) { accent-color: var(--mobile-brand); }
+  main :is(input, select, textarea):focus-visible {
+    outline: 2px solid var(--mobile-brand);
+    outline-offset: 2px;
+  }
+  :is(a, button):focus-visible { outline: 2px solid var(--mobile-brand); outline-offset: 3px; }
+  main :is(input, select, textarea):disabled { background-color: #F2F0ED; color: var(--mobile-muted); }
+  main .errorlist { color: #B42318; font-size: 13px; margin-top: 6px; }
+  main [role=alert] { border-radius: 12px; }
+  /* Status colors remain semantic: green success, amber pending, red errors. */
+}

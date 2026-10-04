@@ -2,7 +2,7 @@ import uuid
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
-from apps.listings.web_views import get_or_create_seller_user
+from apps.listings.web_views import get_authenticated_user
 from apps.orders.models import OrderShipment
 from apps.orders.services.cart import get_cart_items_for_request
 from apps.shipping.models import TrackingEvent
@@ -14,7 +14,7 @@ def seller_shipments_view(request):
     Lists orders waiting dispatch, allows consignment generation,
     courier handover (Steadfast / Pathao), and shipping label printing.
     """
-    seller = get_or_create_seller_user(request)
+    seller = get_authenticated_user(request)
     _, _, cart_count = get_cart_items_for_request(request)
     status_filter = request.GET.get("status", "ALL").upper()
 
@@ -67,6 +67,9 @@ def parcel_tracking_view(request, tracking_number=None):
     Page 10: Order / Parcel Tracking (/tracking/ & /tracking/<tracking_number>/)
     Public customer parcel tracking page with live status checkpoints and courier details.
     """
+    from django.conf import settings
+    if settings.LOCAL_PICKUP_ENABLED:
+        return redirect("pickup_list")
     query = (tracking_number or request.GET.get("q", "")).strip()
     shipment = None
     tracking_events = []

@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@config "../../tailwind.config.cjs";
+@source "../../templates";
+@source "../js";
+/* Preserve the existing site's Tailwind 3 border and button appearance. */
+@layer base {
+  *, ::before, ::after { border-color: #e5e7eb; }
+  button, [role="button"] { cursor: pointer; }
+}

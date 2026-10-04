@@ -1,0 +1,10 @@
+<aside id="cookiePreferences" class="cookie-preferences" aria-labelledby="cookieTitle" {% if cookie_choice %}hidden{% endif %}>
+  <h2 id="cookieTitle">Cookie preferences</h2>
+  <p>Essential cookies support your account. Optional cookies personalize book recommendations.</p>
+  <form id="cookiePreferencesForm" method="post" action="{% url 'cookie_preferences' %}">
+    {% csrf_token %}
+    <button type="submit" name="personalization" value="no" class="cookie-essential">Essential only</button>
+    <button type="submit" name="personalization" value="yes" class="cookie-personalize">Allow personalization</button>
+  </form>
+  <p id="cookiePreferencesStatus" role="status"></p>
+</aside>

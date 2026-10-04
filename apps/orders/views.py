@@ -36,14 +36,7 @@ class CartView(APIView):
             return Response({"error": "Cannot add your own listing to cart."}, status=status.HTTP_400_BAD_REQUEST)
 
         cart, _ = Cart.objects.get_or_create(user=request.user)
-        existing_item = CartItem.objects.filter(listing=listing).first()
-        if existing_item:
-            if existing_item.cart_id != cart.id:
-                existing_item.cart = cart
-                existing_item.save(update_fields=["cart"])
-            item = existing_item
-        else:
-            item = CartItem.objects.create(cart=cart, listing=listing)
+        item, _ = CartItem.objects.get_or_create(cart=cart, listing=listing)
 
         return Response(CartItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
@@ -59,6 +52,9 @@ class CheckoutView(APIView):
 
     @extend_schema(request=CheckoutRequestSerializer, responses={201: OrderSerializer})
     def post(self, request: Request) -> Response:
+        from django.conf import settings
+        if settings.LOCAL_PICKUP_ENABLED:
+            return Response({"detail": "Use /api/v1/pickups/ to request a local pickup."}, status=409)
         serializer = CheckoutRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

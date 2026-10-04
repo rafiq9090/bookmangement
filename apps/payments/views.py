@@ -30,6 +30,9 @@ class InitiatePaymentView(APIView):
         },
     )
     def post(self, request: Request, order_id: str) -> Response:
+        from django.conf import settings
+        if settings.LOCAL_PICKUP_ENABLED:
+            return Response({"detail": "Online payments are disabled for local pickup."}, status=409)
         try:
             order = Order.objects.get(id=order_id, buyer=request.user)
         except Order.DoesNotExist:
@@ -65,6 +68,9 @@ class PaymentWebhookView(APIView):
         responses={200: PaymentSerializer},
     )
     def post(self, request: Request) -> Response:
+        from django.conf import settings
+        if settings.LOCAL_PICKUP_ENABLED:
+            return Response({"detail": "Payment callbacks disabled."}, status=409)
         data = request.data
         tran_id = data.get("tran_id")
         if not tran_id:
@@ -137,4 +143,8 @@ class RequestPayoutView(generics.CreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def perform_create(self, serializer: PayoutBatchSerializer) -> None:
+        from django.conf import settings
+        if settings.LOCAL_PICKUP_ENABLED:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError("Platform payouts are disabled for local pickup.")
         serializer.save(seller=self.request.user)

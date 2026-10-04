@@ -33,3 +33,32 @@ class OrderShipmentAdmin(admin.ModelAdmin):
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
     list_display = ("user", "created_at", "updated_at")
+
+
+from apps.orders.models import PurchaseAgreement, SellerReview, MarketplaceReport, MarketplaceNotification
+
+@admin.register(PurchaseAgreement)
+class PurchaseAgreementAdmin(admin.ModelAdmin):
+    list_display = ("id", "listing", "status", "buyer", "seller", "accepted_price")
+    list_filter = ("status",)
+    readonly_fields = tuple(field.name for field in PurchaseAgreement._meta.fields)
+    def has_add_permission(self, request):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+@admin.register(MarketplaceReport)
+class MarketplaceReportAdmin(admin.ModelAdmin):
+    list_display = ("id", "reporter", "listing", "status", "created_at", "resolve_link")
+    list_filter = ("status",)
+    readonly_fields = ("reporter", "listing", "agreement", "details", "created_at")
+
+    def resolve_link(self, obj):
+        if not obj.agreement_id:
+            return "Listing report"
+        from django.urls import reverse
+        from django.utils.html import format_html
+        return format_html('<a href="{}">Resolve pickup</a>', reverse('resolve_pickup', args=[obj.agreement_id]))
+
+admin.site.register(SellerReview)
+admin.site.register(MarketplaceNotification)

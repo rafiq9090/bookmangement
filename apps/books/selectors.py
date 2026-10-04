@@ -44,3 +44,14 @@ def search_books(query: str = "", category_slug: str = "") -> QuerySet[Book]:
         | Q(authors__name__icontains=clean_query)
         | Q(isbn_13__icontains=clean_query)
     ).distinct()
+
+
+from django.db.models import Count, Q
+from .models import Category
+
+
+def available_categories():
+    """Buyer categories count distinct books with an available physical copy."""
+    available = Q(books__listings__status="ACTIVE", books__listings__is_deleted=False,
+                  books__listings__condition_needs_review=False)
+    return Category.objects.annotate(book_count=Count("books", filter=available, distinct=True)).filter(book_count__gt=0).order_by("-book_count", "name")

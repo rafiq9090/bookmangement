@@ -1,9 +1,19 @@
 from rest_framework import serializers
+from config.security import clean_image
+from django.core.exceptions import ValidationError
 from apps.books.serializers import BookSerializer
 from apps.listings.models import BookListing, ListingImage
 
 
 class ListingImageSerializer(serializers.ModelSerializer):
+    def validate_image(self, value):
+        if value.size > 10 * 1024 * 1024:
+            raise serializers.ValidationError("Photo must be at most 10 MB.")
+        try:
+            return clean_image(value)
+        except ValidationError as exc:
+            raise serializers.ValidationError(exc.messages)
+
     class Meta:
         model = ListingImage
         fields = ("id", "image", "webp_image", "caption", "is_primary", "uploaded_at")
@@ -27,6 +37,7 @@ class BookListingReadSerializer(serializers.ModelSerializer):
             "seller_rating",
             "condition",
             "condition_notes",
+            "district", "area", "latitude", "longitude", "is_collectible", "condition_needs_review",
             "price",
             "original_mrp",
             "edition_year",
@@ -47,6 +58,7 @@ class BookListingWriteSerializer(serializers.ModelSerializer):
             "book",
             "condition",
             "condition_notes",
+            "district", "area", "latitude", "longitude", "is_collectible", "condition_needs_review",
             "price",
             "original_mrp",
             "edition_year",
@@ -54,6 +66,21 @@ class BookListingWriteSerializer(serializers.ModelSerializer):
             "has_dust_jacket",
             "is_signed_by_author",
         )
+
+    def get_fields(self):
+        fields = super().get_fields()
+        fields["condition_needs_review"].read_only = True
+        return fields
+
+    def validate(self, attrs):
+        from apps.listings.forms import ListingLocationForm
+        instance = self.instance
+        data = {field: attrs.get(field, getattr(instance, field, None)) for field in ("district", "area", "latitude", "longitude", "is_collectible")}
+        form = ListingLocationForm(data)
+        if not form.is_valid():
+            raise serializers.ValidationError(form.errors)
+        attrs.update(form.cleaned_data)
+        return attrs
 
     def validate_price(self, value):
         if value <= 0:

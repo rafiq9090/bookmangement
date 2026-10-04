@@ -1071,6 +1071,98 @@ paths:
               schema:
                 $ref: '#/components/schemas/Payment'
           description: ''
+  /api/v1/pickups/:
+    get:
+      operationId: pickup_agreements_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agreement'
+          description: ''
+    post:
+      operationId: pickup_agreement_request
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+          description: ''
+  /api/v1/pickups/{id}/:
+    get:
+      operationId: pickup_agreement_detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+          description: ''
+    post:
+      operationId: pickup_agreement_action
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgreementAction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgreementAction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgreementAction'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+          description: ''
   /api/v1/shipping/dispatch/{shipment_id}/:
     post:
       operationId: v1_shipping_dispatch_create
@@ -1134,6 +1226,26 @@ paths:
           description: ''
 components:
   schemas:
+    ActionEnum:
+      enum:
+      - accept
+      - decline
+      - cancel
+      - propose_pickup
+      - accept_pickup
+      - confirm
+      - report
+      - review
+      type: string
+      description: |-
+        * `accept` - accept
+        * `decline` - decline
+        * `cancel` - cancel
+        * `propose_pickup` - propose_pickup
+        * `accept_pickup` - accept_pickup
+        * `confirm` - confirm
+        * `report` - report
+        * `review` - review
     Address:
       type: object
       properties:
@@ -1176,6 +1288,161 @@ components:
       - recipient_name
       - state_division
       - street_address
+    Agreement:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        conversation:
+          type: integer
+          readOnly: true
+        listing:
+          type: integer
+          readOnly: true
+        buyer:
+          type: integer
+          readOnly: true
+        seller:
+          type: integer
+          readOnly: true
+        offered_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          readOnly: true
+        accepted_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AgreementStatusEnum'
+          readOnly: true
+        reservation_expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        pickup_place:
+          type: string
+          readOnly: true
+        pickup_instructions:
+          type: string
+          readOnly: true
+        pickup_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        pickup_proposed_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        pickup_latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+          nullable: true
+        pickup_longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+          nullable: true
+        pickup_accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        buyer_confirmed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        seller_confirmed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - accepted_price
+      - buyer
+      - buyer_confirmed_at
+      - conversation
+      - id
+      - listing
+      - offered_price
+      - pickup_accepted_at
+      - pickup_at
+      - pickup_instructions
+      - pickup_latitude
+      - pickup_longitude
+      - pickup_place
+      - pickup_proposed_by
+      - reservation_expires_at
+      - seller
+      - seller_confirmed_at
+      - status
+    AgreementAction:
+      type: object
+      properties:
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        pickup_place:
+          type: string
+          maxLength: 255
+        pickup_instructions:
+          type: string
+          maxLength: 2000
+        pickup_at:
+          type: string
+          format: date-time
+        pickup_latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        pickup_longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        details:
+          type: string
+          maxLength: 4000
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          maxLength: 2000
+      required:
+      - action
+    AgreementStatusEnum:
+      enum:
+      - REQUESTED
+      - RESERVED
+      - PICKUP_AGREED
+      - AWAITING_CONFIRMATION
+      - COMPLETED
+      - CANCELLED
+      - DECLINED
+      - EXPIRED
+      - DISPUTED
+      type: string
+      description: |-
+        * `REQUESTED` - Requested
+        * `RESERVED` - Reserved
+        * `PICKUP_AGREED` - Pickup agreed
+        * `AWAITING_CONFIRMATION` - Awaiting confirmation
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
+        * `DECLINED` - Declined
+        * `EXPIRED` - Expired
+        * `DISPUTED` - Disputed
     Author:
       type: object
       properties:
@@ -1217,6 +1484,7 @@ components:
           maxLength: 10
         isbn_13:
           type: string
+          nullable: true
           maxLength: 13
         authors:
           type: array
@@ -1255,7 +1523,6 @@ components:
       - available_listings_count
       - categories
       - id
-      - isbn_13
       - slug
       - title
     BookListingRead:
@@ -1281,6 +1548,26 @@ components:
         condition_notes:
           type: string
           description: 'Specific wear details: markings, tears, yellowed pages, bindings.'
+        district:
+          type: string
+          maxLength: 100
+        area:
+          type: string
+          maxLength: 100
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_collectible:
+          type: boolean
+        condition_needs_review:
+          type: boolean
         price:
           type: string
           format: decimal
@@ -1352,6 +1639,27 @@ components:
         condition_notes:
           type: string
           description: 'Specific wear details: markings, tears, yellowed pages, bindings.'
+        district:
+          type: string
+          maxLength: 100
+        area:
+          type: string
+          maxLength: 100
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_collectible:
+          type: boolean
+        condition_needs_review:
+          type: boolean
+          readOnly: true
         price:
           type: string
           format: decimal
@@ -1378,6 +1686,7 @@ components:
           type: boolean
       required:
       - book
+      - condition_needs_review
       - id
       - price
     Cart:
@@ -1477,14 +1786,14 @@ components:
       - VERY_GOOD
       - GOOD
       - ACCEPTABLE
-      - COLLECTIBLE
+      - POOR
       type: string
       description: |-
         * `LIKE_NEW` - Like New (Minimal signs of wear)
         * `VERY_GOOD` - Very Good (Clean pages, light spine creasing)
         * `GOOD` - Good (Average used wear, possible notes/highlights)
         * `ACCEPTABLE` - Acceptable (Readable copy, noticeable wear or damage)
-        * `COLLECTIBLE` - Collectible / Vintage (Rare edition, signed)
+        * `POOR` - Poor (Heavy wear; describe defects)
     Conversation:
       type: object
       properties:
@@ -1508,6 +1817,27 @@ components:
         seller_store:
           type: string
           readOnly: true
+        order_status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          description: |-
+            Current state of order confirmation between buyer and seller
+
+            * `INQUIRY` - Awaiting Seller Confirmation
+            * `CONFIRMED` - Order Confirmed by Seller
+            * `DECLINED` - Order Declined
+            * `COMPLETED` - Purchased
+        confirmed_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: Agreed/confirmed price at the time of seller approval
+        confirmed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
         messages:
           type: array
           items:
@@ -1524,6 +1854,7 @@ components:
       required:
       - book_title
       - buyer_email
+      - confirmed_at
       - created_at
       - id
       - listing
@@ -1765,6 +2096,7 @@ components:
       - IN_TRANSIT
       - DELIVERED
       - RETURNED
+      - CANCELLED
       type: string
       description: |-
         * `WAITING` - Waiting for Seller Dispatch
@@ -1772,20 +2104,19 @@ components:
         * `IN_TRANSIT` - In Transit
         * `DELIVERED` - Delivered
         * `RETURNED` - Returned / Disputed
+        * `CANCELLED` - Cancelled
     OrderStatusEnum:
       enum:
-      - PENDING
-      - PAID
-      - PROCESSING
+      - INQUIRY
+      - CONFIRMED
+      - DECLINED
       - COMPLETED
-      - CANCELLED
       type: string
       description: |-
-        * `PENDING` - Pending Payment
-        * `PAID` - Paid & Escrow Held
-        * `PROCESSING` - In Progress
-        * `COMPLETED` - All Shipments Delivered
-        * `CANCELLED` - Cancelled
+        * `INQUIRY` - Awaiting Seller Confirmation
+        * `CONFIRMED` - Order Confirmed by Seller
+        * `DECLINED` - Order Declined
+        * `COMPLETED` - Purchased
     PaginatedAddressList:
       type: object
       required:
@@ -2017,6 +2348,27 @@ components:
         condition_notes:
           type: string
           description: 'Specific wear details: markings, tears, yellowed pages, bindings.'
+        district:
+          type: string
+          maxLength: 100
+        area:
+          type: string
+          maxLength: 100
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_collectible:
+          type: boolean
+        condition_needs_review:
+          type: boolean
+          readOnly: true
         price:
           type: string
           format: decimal
@@ -2191,6 +2543,18 @@ components:
         * `BKASH` - bKash
         * `NAGAD` - Nagad
         * `BANK` - Bank Transfer
+    PurchaseRequest:
+      type: object
+      properties:
+        listing_id:
+          type: integer
+          minimum: 1
+        offered_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+      required:
+      - listing_id
     SellerBalanceResponse:
       type: object
       properties:

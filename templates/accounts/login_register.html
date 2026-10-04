@@ -14,7 +14,7 @@
 
         <!-- Left Side: Brand Showcase & Value Proposition (5 Cols) -->
         <div
-            class="lg:col-span-5 bg-gradient-to-br from-amber-50/80 via-orange-50/50 to-green-50/40 p-8 sm:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-gray-100 relative overflow-hidden">
+            class="mobile-auth-panel lg:col-span-5 bg-gradient-to-br from-amber-50/80 via-orange-50/50 to-green-50/40 p-8 sm:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-gray-100 relative overflow-hidden">
             <!-- Background Glow Circles -->
             <div class="absolute -top-16 -left-16 w-52 h-52 rounded-full bg-orange-400/10 blur-3xl pointer-events-none">
             </div>
@@ -81,7 +81,7 @@
         </div>
 
         <!-- Right Side: Forms (7 Cols) -->
-        <div class="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white">
+        <div class="mobile-auth-form lg:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white">
             <!-- Tab Switcher -->
             <div class="flex p-1 bg-gray-100 rounded-2xl max-w-sm mx-auto mb-8 w-full border border-gray-200">
                 <button type="button" id="tabLoginBtn" onclick="switchAuthTab('login')"
@@ -96,14 +96,18 @@
 
             <!-- Messages Alert -->
             {% if messages %}
-            <div class="space-y-2 mb-6">
+            <div class="space-y-2 mb-6" data-purpose="auto-alert">
                 {% for message in messages %}
                 <div
-                    class="p-3.5 rounded-2xl text-xs font-semibold flex items-center gap-2.5 
+                    class="p-3.5 rounded-2xl text-xs font-semibold flex items-center justify-between gap-2.5 transition-all duration-300
                     {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
-                    <i
-                        class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% else %}fa-circle-check text-green-500{% endif %}"></i>
-                    <span>{{ message }}</span>
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% else %}fa-circle-check text-green-500{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button" onclick="this.closest('[data-purpose=\'auto-alert\']').remove()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
                 </div>
                 {% endfor %}
             </div>
@@ -135,9 +139,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-xs font-bold text-gray-700">Password</label>
-                        <a href="javascript:void(0)" class="text-xs font-semibold text-[#FF5A1F] hover:underline"
-                            onclick="alert('Please contact support@edoxbookshop.com for password reset assistance.')">Forgot
-                            Password?</a>
+                        <a href="{% url 'password_reset' %}" class="text-xs font-semibold text-[#FF5A1F] hover:underline">Forgot Password?</a>
                     </div>
                     <div class="relative">
                         <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -237,14 +239,16 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1.5">Password</label>
-                        <input type="password" name="password" required minlength="6" placeholder="Min 6 characters"
+                        <input type="password" name="password" id="registerPassword" aria-describedby="registerPasswordError" required minlength="8" placeholder="Min 8 characters"
                             class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#43A047] focus:ring-2 focus:ring-[#43A047]/20 focus:bg-white transition-all">
+                        <p id="registerPasswordError" class="auth-field-error" aria-live="polite" hidden></p>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1.5">Confirm Password</label>
-                        <input type="password" name="confirm_password" required minlength="6"
+                        <input type="password" name="confirm_password" id="registerConfirmPassword" aria-describedby="registerConfirmPasswordError" required minlength="8"
                             placeholder="Re-type password"
                             class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#43A047] focus:ring-2 focus:ring-[#43A047]/20 focus:bg-white transition-all">
+                        <p id="registerConfirmPasswordError" class="auth-field-error" aria-live="polite" hidden></p>
                     </div>
                 </div>
 
@@ -303,6 +307,43 @@
 </main>
 
 <script>
+    const registrationForm = document.getElementById('registerForm');
+    const registrationPassword = document.getElementById('registerPassword');
+    const confirmationPassword = document.getElementById('registerConfirmPassword');
+    function passwordError(field) {
+        if (!field.value) return 'Please enter your password.';
+        if (field.value.length < 8) return 'Password must be at least 8 characters.';
+        if (field === confirmationPassword && field.value !== registrationPassword.value) return 'Passwords do not match.';
+        return '';
+    }
+    function showPasswordError(field) {
+        const message = passwordError(field);
+        const error = document.getElementById(field.getAttribute('aria-describedby'));
+        error.textContent = message;
+        error.hidden = !message;
+        field.setAttribute('aria-invalid', String(Boolean(message)));
+        return !message;
+    }
+    [registrationPassword, confirmationPassword].forEach(field => {
+        field.addEventListener('invalid', event => {
+            event.preventDefault();
+            showPasswordError(field);
+            if (registrationForm.querySelector('[aria-invalid="true"]') === field) field.focus();
+        });
+        field.addEventListener('blur', () => { if (field.value) showPasswordError(field); });
+        field.addEventListener('input', () => {
+            if (field.getAttribute('aria-invalid') === 'true') showPasswordError(field);
+            if (field === registrationPassword && confirmationPassword.value) showPasswordError(confirmationPassword);
+        });
+    });
+    registrationForm.addEventListener('submit', event => {
+        const validPassword = showPasswordError(registrationPassword);
+        const validConfirmation = showPasswordError(confirmationPassword);
+        if (!validPassword || !validConfirmation) {
+            event.preventDefault();
+            (!validPassword ? registrationPassword : confirmationPassword).focus();
+        }
+    });
     function switchAuthTab(mode) {
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');

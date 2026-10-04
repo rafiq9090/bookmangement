@@ -64,6 +64,9 @@ class CourierWebhookView(APIView):
         responses={200: inline_serializer(name="CourierWebhookResponse", fields={"status": drf_serializers.CharField()})},
     )
     def post(self, request: Request) -> Response:
+        from django.conf import settings
+        if settings.LOCAL_PICKUP_ENABLED:
+            return Response({"detail": "Courier callbacks disabled for local pickup."}, status=409)
         tracking_number = request.data.get("tracking_number") or request.data.get("consignment_id")
         event_status = request.data.get("status", "").upper()
 

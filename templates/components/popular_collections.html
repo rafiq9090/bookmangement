@@ -4,8 +4,8 @@
     <!-- Header and Filter Tabs -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
         <div>
-            <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Popular Collections</h2>
-            <p class="text-xs sm:text-sm text-gray-500 mt-1">Handpicked editions available for direct purchase</p>
+            <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight">Books for You</h2>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">Discover available books for your next read.</p>
         </div>
         <div class="flex items-center space-x-3 sm:space-x-5 text-sm font-medium text-gray-500 overflow-x-auto pb-1 no-scrollbar touch-scroll">
             <a href="{% url 'store' %}" class="text-[#FF5A1F] font-bold border-b-2 border-[#FF5A1F] pb-1 flex-shrink-0">All</a>
@@ -25,10 +25,12 @@
                    class="w-full h-44 sm:h-64 bg-gradient-to-b {{ item.style.bg_gradient }} rounded-xl overflow-hidden mb-2.5 sm:mb-4 relative flex items-center justify-center p-2 sm:p-3 shadow-inner group-hover:scale-[1.02] transition-transform">
                     {% if item.listing.book.cover_image %}
                         <img src="{{ item.listing.book.cover_image.url }}" alt="{{ item.listing.book.title }}" class="w-24 h-36 sm:w-36 sm:h-52 object-cover rounded shadow-md border border-gray-200" />
+                    {% elif item.listing.images.first %}
+                        <img src="{{ item.listing.images.first.image.url }}" alt="{{ item.listing.book.title }}" class="w-24 h-36 sm:w-36 sm:h-52 object-cover rounded shadow-md border border-gray-200" />
                     {% else %}
                         <div class="w-24 h-36 sm:w-36 sm:h-52 {{ item.style.book_bg }} {{ item.style.text_color }} {{ item.style.border }} rounded shadow-md flex flex-col items-center justify-between p-2 sm:p-3 border text-center">
                             <span class="text-[8px] sm:text-[9px] font-bold tracking-widest uppercase opacity-80 truncate w-full">
-                                {{ item.style.badge }}
+                                BOOK
                             </span>
                             <div class="my-auto flex flex-col items-center justify-center">
                                 <i class="fa-solid {{ item.style.icon }} text-2xl sm:text-3xl opacity-80 mb-1.5"></i>
@@ -37,7 +39,7 @@
                                 </span>
                             </div>
                             <span class="text-[7px] sm:text-[8px] font-medium opacity-80 truncate w-full">
-                                {{ item.style.sub }}
+                                View listing
                             </span>
                         </div>
                     {% endif %}
@@ -83,31 +85,31 @@
                     {% for auth in item.listing.book.authors.all %}
                         {{ auth.name }}{% if not forloop.last %}, {% endif %}
                     {% empty %}
-                        Featured Author
+                        Author not listed
                     {% endfor %}
                 </p>
                 <p class="text-[9px] sm:text-[10px] text-gray-400 mb-2 font-mono">
-                    ISBN-{{ item.listing.book.isbn_10|default:item.listing.book.isbn_13|default:"1002365478" }}
+                    {% if item.listing.book.isbn_10 or item.listing.book.isbn_13 %}ISBN: {{ item.listing.book.isbn_10|default:item.listing.book.isbn_13 }}{% else %}ISBN not listed{% endif %}
                 </p>
 
                 <!-- Price -->
                 <div class="flex items-center space-x-1.5 sm:space-x-2 text-xs font-bold mb-2.5 sm:mb-3">
-                    <span class="text-rose-400 line-through text-[10px] sm:text-[11px]">৳{{ item.original_price }}</span>
+                    
                     <span class="text-[#FF5A1F] font-extrabold text-xs sm:text-sm font-mono">৳{{ item.listing.price }}</span>
                 </div>
 
-                <!-- Purchase Button linking to Add to Cart with direct checkout -->
-                <a href="{% url 'add_to_cart' item.listing.id %}"
+                <!-- P2P Action Button linking to Book Detail -->
+                <a href="{% url 'book_detail' item.listing.book.slug %}"
                    class="w-full py-1.5 sm:py-2 px-2 sm:px-3 border border-gray-200 group-hover:border-[#FF5A1F] rounded-xl text-[11px] sm:text-xs font-semibold text-gray-700 group-hover:text-[#FF5A1F] group-hover:bg-orange-50/50 flex items-center justify-center space-x-1.5 transition-all">
-                    <span>Add to Cart</span>
-                    <i class="fa-solid fa-cart-shopping text-[10px] text-[#FF5A1F]"></i>
+                    <span>View Book</span>
+                    <i class="fa-solid fa-comments text-[10px] text-[#FF5A1F]"></i>
                 </a>
             </div>
         {% empty %}
             <div class="col-span-full text-center py-12">
                 <i class="fa-solid fa-book-open text-4xl text-gray-300 mb-3"></i>
-                <p class="text-gray-500 text-sm font-medium">No featured books available at the moment.</p>
-                <a href="{% url 'store' %}" class="inline-block mt-3 text-sm text-[#FF5A1F] font-semibold hover:underline">Explore Marketplace Store →</a>
+                <p class="text-gray-500 text-sm font-medium">No books available at the moment.</p>
+                <a href="{% url 'store' %}" class="inline-block mt-3 text-sm text-[#FF5A1F] font-semibold hover:underline">Browse Books →</a>
             </div>
         {% endfor %}
     </div>
@@ -117,7 +119,7 @@
         <a href="{% url 'store' %}"
            class="bg-[#FF5A1F] hover:bg-orange-600 text-white font-medium text-sm px-8 py-3.5 rounded-full flex items-center space-x-2.5 shadow-md shadow-orange-500/20 hover:shadow-lg transition-all transform hover:-translate-y-0.5">
             <i class="fa-solid fa-book-open text-xs"></i>
-            <span>Explore All Books in Store</span>
+            <span>Browse All Books</span>
             <i class="fa-solid fa-arrow-right text-xs"></i>
         </a>
     </div>

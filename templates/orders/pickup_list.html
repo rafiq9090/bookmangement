@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}My Pickups & Handovers - eB Online Bookshop{% endblock %}
+
+{% block content %}
+<section class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="font-heading font-extrabold text-2xl sm:text-3xl text-gray-900">
+                My Pickups
+            </h1>
+        </div>
+        <a href="{% url 'store' %}" class="pickup-browse-button inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md shadow-orange-500/20 transition-all">
+            <i class="fa-solid fa-magnifying-glass text-[11px]"></i>
+            <span>Browse More Books</span>
+        </a>
+    </div>
+
+    <!-- Feedback messages -->
+    {% if messages %}
+    <div class="space-y-2">
+        {% for message in messages %}
+        <div class="p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 {% if message.tags == 'error' %}bg-rose-50 text-rose-800 border border-rose-200{% else %}bg-emerald-50 text-emerald-800 border border-emerald-200{% endif %}">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-triangle-exclamation text-rose-600{% else %}fa-circle-check text-emerald-600{% endif %}"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Grid Container: Agreements and Notifications -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main: Purchase Agreements (2-cols on desktop) -->
+        <div class="lg:col-span-2 space-y-3">
+            <h2 class="text-xs font-extrabold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-handshake text-[#FF5A1F]"></i>
+                <span>Pickups</span>
+            </h2>
+
+            {% if agreements %}
+                <div class="space-y-3">
+                    {% for agreement in agreements %}
+                    <a href="{% url 'pickup_detail' agreement.pk %}" class="block bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:border-orange-200 hover:shadow-md transition-all group">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                    {% if request.user.id == agreement.seller_id %}Selling to {{ agreement.buyer.email }}{% else %}Buying from {{ agreement.seller.email }}{% endif %}
+                                </span>
+                                <h3 class="font-heading font-extrabold text-base text-gray-900 group-hover:text-[#FF5A1F] transition-colors line-clamp-1">
+                                    {{ agreement.listing.book.title }}
+                                </h3>
+                                <p class="text-xs text-gray-500 flex items-center gap-2">
+                                    <span>📍 {{ agreement.pickup_place|default:agreement.listing.district|default:"Location to be agreed" }}</span>
+                                    {% if agreement.pickup_at %}
+                                    <span>•</span>
+                                    <span class="font-mono text-[11px] text-gray-600">{{ agreement.pickup_at|date:"d M, h:i A" }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <!-- Price & Status Badge -->
+                            <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide
+                                    {% if agreement.status == 'COMPLETED' %}bg-emerald-100 text-emerald-800
+                                    {% elif agreement.status == 'RESERVED' or agreement.status == 'PICKUP_AGREED' %}bg-blue-100 text-blue-800
+                                    {% elif agreement.status == 'AWAITING_CONFIRMATION' %}bg-amber-100 text-amber-800
+                                    {% elif agreement.status == 'DISPUTED' %}bg-rose-100 text-rose-800
+                                    {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                    {{ agreement.get_status_display }}
+                                </span>
+                                <span class="text-sm font-mono font-extrabold text-[#FF5A1F]">
+                                    ৳{{ agreement.accepted_price|default:agreement.offered_price }}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-white rounded-3xl p-8 border border-gray-100 text-center space-y-3">
+                    <div class="w-12 h-12 rounded-full bg-orange-50 text-[#FF5A1F] flex items-center justify-center mx-auto text-xl">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <h3 class="font-heading font-bold text-gray-800 text-sm">No pickup agreements yet</h3>
+                    <a href="{% url 'store' %}" class="pickup-browse-button mt-2 px-4 py-2 bg-[#FF5A1F] hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-colors">
+                        Browse Marketplace
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar: Notifications -->
+        <div class="space-y-3">
+            <h2 class="text-xs font-extrabold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-bell text-[#FF5A1F]"></i>
+                <span>Updates</span>
+            </h2>
+
+            <div class="bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-sm space-y-3">
+                {% if notifications %}
+                    <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
+                        {% for n in notifications %}
+                        <a href="{% if n.conversation_id %}{% url 'conversation_detail' n.conversation_id %}{% else %}#{% endif %}" class="block p-3 rounded-xl {% if not n.is_read %}bg-orange-50/70 border border-orange-100{% else %}bg-gray-50 border border-gray-100{% endif %} hover:bg-orange-50 transition-colors">
+                            <p class="text-xs text-gray-800 font-medium leading-snug">{{ n.text }}</p>
+                            <span class="text-[10px] text-gray-400 mt-1 block font-mono">{{ n.created_at|timesince }} ago</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-gray-400 text-center py-4">No recent notifications.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% include "components/pagination.html" %}
+{% endblock %}

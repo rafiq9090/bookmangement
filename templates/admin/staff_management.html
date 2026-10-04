@@ -1,0 +1,39 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Admin Management | Book ReSeller{% endblock %}
+{% block content %}
+<section class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+  <h1 class="text-2xl font-heading font-bold">Admin Management</h1>
+  {% for message in messages %}<p role="status" class="rounded-xl bg-orange-50 p-3 text-sm">{{ message }}</p>{% endfor %}
+  <div class="grid sm:grid-cols-2 gap-3">
+    <div class="bg-white rounded-xl border p-4 text-sm"><strong>Marketplace Moderator</strong><p class="mt-2 text-slate-500">Listings, reports, and pickup disputes.</p></div>
+    <div class="bg-white rounded-xl border p-4 text-sm"><strong>Catalog Editor</strong><p class="mt-2 text-slate-500">Categories and authors.</p></div>
+    <div class="bg-white rounded-xl border p-4 text-sm"><strong>Account Manager</strong><p class="mt-2 text-slate-500">Buyer and seller accounts.</p></div>
+    <div class="bg-white rounded-xl border p-4 text-sm"><strong>Support Agent</strong><p class="mt-2 text-slate-500">Contact messages.</p></div>
+  </div>
+  <details class="bg-white border rounded-2xl p-5" {% if form.errors %}open{% endif %}>
+    <summary class="font-bold cursor-pointer">Create admin account</summary>
+    <form method="post" class="space-y-4 mt-4 max-w-xl">{% csrf_token %}<input type="hidden" name="action" value="create_staff">
+      {% for field in form %}<div><label class="block text-sm font-semibold mb-2" for="{{ field.id_for_label }}">{{ field.label }}</label><div class="staff-field">{{ field }}</div>{% if field.errors %}<div role="alert" class="text-sm text-red-600">{{ field.errors }}</div>{% endif %}</div>{% endfor %}
+      <button class="bg-brand-orange text-white rounded-xl px-5 py-3 text-sm font-bold">Create account</button>
+    </form>
+  </details>
+  <form method="get" class="flex gap-3"><input type="hidden" name="tab" value="staff"><input name="q" value="{{ query }}" aria-label="Search administrators" placeholder="Search name or email" class="flex-1 min-w-0 bg-white border rounded-xl p-3 text-sm"><button class="bg-brand-orange text-white rounded-xl px-5 text-sm font-bold">Search</button></form>
+  {% for entry in staff %}
+  <article class="bg-white rounded-2xl border p-5 space-y-3">
+    <div class="flex flex-wrap justify-between gap-2"><h2 class="font-bold break-all">{{ entry.user.email }}</h2><span class="text-sm text-slate-500">{% if entry.user.is_superuser %}Owner{% elif entry.user.is_active %}Active{% else %}Disabled{% endif %}</span></div>
+    <p class="text-sm text-slate-500">{% if entry.user.is_superuser %}Full administration access{% else %}{{ entry.roles|join:", "|default:"No role assigned" }}{% endif %}</p>
+    {% if not entry.user.is_superuser %}
+    <details><summary class="text-sm font-semibold cursor-pointer">Manage access</summary>
+      <form method="post" class="space-y-4 mt-4 max-w-xl">{% csrf_token %}<input type="hidden" name="action" value="update_staff"><input type="hidden" name="pk" value="{{ entry.user.pk }}">
+        <fieldset class="space-y-2"><legend class="text-sm font-bold mb-2">Roles</legend>{% for role in roles %}<label class="flex gap-2 items-center text-sm"><input type="checkbox" name="roles" value="{{ role }}" {% if role in entry.roles %}checked{% endif %}>{{ role }}</label>{% endfor %}</fieldset>
+        <label class="flex gap-2 items-center text-sm"><input type="checkbox" name="active" value="yes" {% if entry.user.is_active %}checked{% endif %}>Account enabled</label>
+        <textarea name="reason" required maxlength="2000" aria-label="Reason for access change" placeholder="Reason for access change" class="w-full border rounded-xl p-3 text-sm"></textarea>
+        <button class="bg-brand-orange text-white rounded-xl px-5 py-3 text-sm font-bold">Save access</button>
+      </form>
+    </details>{% endif %}
+  </article>
+  {% empty %}<p>No matching administrators.</p>{% endfor %}
+  {% if page_obj.has_other_pages %}<nav class="flex justify-between text-sm" aria-label="Pagination">{% if page_obj.has_previous %}<a href="?tab=staff&q={{ query|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?tab=staff&q={{ query|urlencode }}&page={{ page_obj.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}
+{% block extra_head %}<style>.staff-field input:not([type=checkbox]){width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:12px}.staff-field label{font-size:14px}.staff-field>div>div{margin-bottom:8px}</style>{% endblock %}

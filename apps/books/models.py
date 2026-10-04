@@ -57,7 +57,7 @@ class Book(models.Model):
     title = models.CharField(max_length=255, db_index=True)
     slug = models.SlugField(max_length=280, unique=True)
     isbn_10 = models.CharField(max_length=10, blank=True, db_index=True)
-    isbn_13 = models.CharField(max_length=13, unique=True, db_index=True)
+    isbn_13 = models.CharField(max_length=13, unique=True, db_index=True, null=True, blank=True)
     authors = models.ManyToManyField(Author, related_name="books")
     categories = models.ManyToManyField(Category, related_name="books")
     publisher = models.CharField(max_length=150, blank=True)
@@ -80,9 +80,11 @@ class Book(models.Model):
         return f"{self.title} ({self.isbn_13})"
 
     def save(self, *args, **kwargs) -> None:
+        self.isbn_13 = self.isbn_13 or None
         if not self.slug:
             base_slug = slugify(self.title) or "book"
-            self.slug = f"{base_slug}-{self.isbn_13}"
+            from uuid import uuid4
+            self.slug = f"{base_slug}-{self.isbn_13 or uuid4().hex[:10]}"
         super().save(*args, **kwargs)
 
 
@@ -108,3 +110,12 @@ class BookReview(models.Model):
 
     def __str__(self) -> str:
         return f"{self.book.title} - {self.rating} stars by {self.name}"
+
+
+class BookAlert(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="book_alerts")
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="availability_alerts")
+    last_listing = models.ForeignKey("listings.BookListing", null=True, blank=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "book"], name="one_book_alert_per_user")]

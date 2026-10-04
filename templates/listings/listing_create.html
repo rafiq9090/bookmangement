@@ -3,6 +3,7 @@
 {% block title %}Sell a Book - Create Listing | eB Online Bookshop{% endblock %}
 
 {% block content %}
+{% if messages %}<div class="max-w-5xl mx-auto px-6 pt-4" role="alert">{% for message in messages %}<p class="mb-2 rounded-xl bg-orange-50 border border-orange-200 px-4 py-3 text-sm text-gray-800">{{ message }}</p>{% endfor %}</div>{% endif %}
 <!-- BEGIN: Breadcrumb Navigation -->
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 box-border">
     <nav class="flex items-center space-x-2 text-xs text-gray-400" aria-label="Breadcrumb">
@@ -22,9 +23,7 @@
             <h1 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-gray-900 tracking-tight">
                 List a Book <span class="text-[#FF5A1F]">for Sale</span>
             </h1>
-            <p class="text-xs sm:text-sm text-gray-500 mt-1">
-                Enter the ISBN to autofill book details, choose the condition, set your price, and reach avid readers.
-            </p>
+            
         </div>
         <div class="flex items-center gap-3">
             <a href="{% url 'seller_listings' %}"
@@ -32,10 +31,10 @@
                 <i class="fa-solid fa-boxes-stacked text-xs"></i>
                 <span>My Listings</span>
             </a>
-            <a href="{% url 'seller_wallet' %}"
+            <a href="{% url 'pickup_list' %}"
                class="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-semibold rounded-full border border-orange-200 transition-colors flex items-center gap-1.5">
                 <i class="fa-solid fa-wallet text-xs"></i>
-                <span>My Wallet</span>
+                <span>My Pickups</span>
             </a>
         </div>
     </div>
@@ -93,7 +92,7 @@
                     </span>
                     <div>
                         <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Book Information</h3>
-                        <p class="text-xs text-gray-400">Title, Author, and Edition specifications</p>
+                        
                     </div>
                 </div>
 
@@ -207,6 +206,13 @@
                             <input type="checkbox" name="is_signed_by_author" class="rounded text-[#FF5A1F] focus:ring-[#FF5A1F]">
                             <span class="font-medium text-gray-700">Signed by Author</span>
                         </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="is_collectible" class="rounded text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                            <span class="font-medium text-amber-700 flex items-center gap-1">
+                                <i class="fa-solid fa-gem text-amber-500 text-[10px]"></i>
+                                <span>Rare / Collectible Edition</span>
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -219,7 +225,7 @@
                     </span>
                     <div>
                         <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Condition Grading</h3>
-                        <p class="text-xs text-gray-400">Accurate grading builds trust and eliminates buyer disputes</p>
+                        
                     </div>
                 </div>
 
@@ -258,13 +264,13 @@
                     </label>
 
                     <label class="relative border border-gray-200 rounded-2xl p-4 flex items-start space-x-3 cursor-pointer hover:border-[#FF5A1F] transition-all has-[:checked]:border-[#FF5A1F] has-[:checked]:bg-orange-50/30 sm:col-span-2">
-                        <input type="radio" name="condition" value="COLLECTIBLE" class="mt-1 text-[#FF5A1F] focus:ring-[#FF5A1F]">
+                        <input type="radio" name="condition" value="POOR" class="mt-1 text-[#FF5A1F] focus:ring-[#FF5A1F]">
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="font-bold text-xs text-gray-900">Collectible / Rare Vintage</span>
-                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-bold rounded">Premium</span>
+                                <span class="font-bold text-xs text-gray-900">Poor</span>
+                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-bold rounded">Heavy wear</span>
                             </div>
-                            <p class="text-[10px] text-gray-500 mt-0.5">First edition, out-of-print, signed copy, or antique historical interest.</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Heavy damage or wear. Describe missing pages, loose binding and other defects.</p>
                         </div>
                     </label>
                 </div>
@@ -281,16 +287,19 @@
                 </div>
             </div>
 
-            <!-- Card 4: Photos Upload (Max 5 Images) -->
+            <!-- Card 4: Pickup Location -->
+            {% include "listings/location_fields.html" %}
+
+            <!-- Card 5: Listing Photos (Max 5 Images) -->
             <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                     <div class="flex items-center space-x-3">
-                        <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+                        <span class="w-8 h-8 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center font-bold text-sm">
                             <i class="fa-solid fa-camera"></i>
                         </span>
                         <div>
                             <h3 class="font-heading font-extrabold text-base sm:text-lg text-gray-900">Listing Photos</h3>
-                            <p class="text-xs text-gray-400">Upload clear pictures of front cover, back cover, spine, and sample pages</p>
+                            
                         </div>
                     </div>
                     <span id="photos-counter" class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-700">
@@ -324,7 +333,7 @@
             <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6 sticky top-6">
                 <div class="pb-3 border-b border-gray-100">
                     <h3 class="font-heading font-extrabold text-lg text-gray-900">Pricing & Payout</h3>
-                    <p class="text-xs text-gray-400">Set competitive pricing for faster sales</p>
+                    
                 </div>
 
                 <!-- Your Listing Price -->
@@ -336,67 +345,58 @@
                             type="number"
                             id="price-input"
                             name="price"
-                            step="0.01"
-                            min="0.50"
+                            step="1"
+                            min="1"
                             required
-                            placeholder="4.99"
-                            class="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base font-bold text-gray-900 font-mono focus:outline-none focus:border-[#FF5A1F]"
+                            placeholder="250"
+                            class="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base font-bold text-gray-900 font-mono focus:outline-none focus:border-[#FF5A1F] transition-all"
                         >
                     </div>
                 </div>
 
                 <!-- Original MRP -->
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-gray-700">Original Cover Price / MRP (৳)</label>
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-gray-700">Original Cover Price / MRP (৳)</label>
+                        <span id="discountBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"></span>
+                    </div>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400 font-mono">৳</span>
                         <input
                             type="number"
                             id="mrp-input"
                             name="original_mrp"
-                            step="0.01"
-                            min="0.50"
-                            placeholder="9.99"
-                            class="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 font-mono focus:outline-none focus:border-[#FF5A1F]"
+                            step="1"
+                            min="1"
+                            placeholder="400"
+                            class="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 font-mono focus:outline-none focus:border-[#FF5A1F] transition-all"
                         >
                     </div>
-                    <p class="text-[10px] text-gray-400">Used to display discount badges on the storefront.</p>
+                    
                 </div>
 
-                <!-- Fee & Estimated Payout Breakdown -->
-                <div class="pt-4 border-t border-gray-100 space-y-2 text-xs">
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span>Platform Commission (10%)</span>
-                        <span id="fee-calc" class="font-mono text-gray-800">৳0.50</span>
+                <!-- Direct Payout Preview -->
+                <div class="p-3.5 bg-orange-50/60 rounded-2xl border border-orange-100 space-y-2 text-xs">
+                    <div class="flex items-center justify-between font-bold text-gray-800">
+                        <span>You Receive:</span>
+                        <span id="payoutDisplay" class="font-mono text-base text-[#FF5A1F] font-extrabold">৳0</span>
                     </div>
-                    <div class="flex items-center justify-between text-gray-600">
-                        <span>Payment Gateway Fee</span>
-                        <span class="font-mono text-[#43A047]">FREE</span>
-                    </div>
-                    <div class="pt-2 border-t border-gray-100 flex items-center justify-between">
-                        <span class="font-bold text-gray-900">Your Net Payout</span>
-                        <span id="net-calc" class="font-heading font-extrabold text-xl text-green-600 font-mono">৳4.49</span>
-                    </div>
+                    
                 </div>
 
                 <!-- Publish Button -->
                 <button
                     type="submit"
-                    class="w-full py-4 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-bold text-sm rounded-full shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5"
+                    class="w-full py-4 px-6 bg-[#FF5A1F] hover:bg-orange-600 text-white font-extrabold text-sm rounded-full shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 cursor-pointer"
                 >
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span>Publish Listing</span>
                 </button>
 
-                <!-- Escrow Protection info -->
-                <div class="pt-2 text-center text-gray-400 text-[11px] space-y-1">
-                    <p class="flex items-center justify-center gap-1.5 text-gray-500 font-medium">
-                        <i class="fa-solid fa-shield-check text-[#43A047]"></i>
-                        <span>Guaranteed Seller Payout</span>
-                    </p>
-                    <p class="text-[10px]">Funds automatically released to your wallet once the package is delivered.</p>
-                </div>
+                
             </div>
+
+
 
         </div>
 
@@ -408,22 +408,6 @@
 {% include "components/sale_ribbon.html" %}
 
 <script>
-    // Live Price Fee Calculator
-    const priceInput = document.getElementById('price-input');
-    const feeCalc = document.getElementById('fee-calc');
-    const netCalc = document.getElementById('net-calc');
-
-    function updatePayout() {
-        const val = parseFloat(priceInput.value) || 0;
-        const fee = (val * 0.10).toFixed(2);
-        const net = (val * 0.90).toFixed(2);
-        feeCalc.textContent = '৳' + fee;
-        netCalc.textContent = '৳' + net;
-    }
-    if (priceInput) {
-        priceInput.addEventListener('input', updatePayout);
-    }
-
     // ISBN Autofill via AJAX
     const lookupBtn = document.getElementById('lookup-btn');
     const isbnInput = document.getElementById('isbn-input');
@@ -779,12 +763,23 @@
     }
 
     if (photosInput) {
+        // Clear value on click so choosing the same file triggers change, but form submit restores all selectedFiles
+        photosInput.addEventListener('click', function() {
+            this.value = '';
+        });
+
         photosInput.addEventListener('change', function() {
             if (this.files && this.files.length > 0) {
                 handleIncomingFiles(this.files);
-                this.value = ''; // allow selecting same file again if re-added
             }
         });
+
+        const sellBookForm = photosInput.closest('form');
+        if (sellBookForm) {
+            sellBookForm.addEventListener('submit', function() {
+                syncFilesToInput();
+            });
+        }
     }
 
     // Drag & Drop on Dropzone
@@ -811,5 +806,34 @@
             }
         });
     }
+
+    // Dynamic Pricing & Payout Calculator
+    const priceInputEl = document.getElementById('price-input');
+    const mrpInputEl = document.getElementById('mrp-input');
+    const payoutDisplayEl = document.getElementById('payoutDisplay');
+    const discountBadgeEl = document.getElementById('discountBadge');
+
+    function updatePricingBreakdown() {
+        const price = parseFloat(priceInputEl ? priceInputEl.value : 0) || 0;
+        const mrp = parseFloat(mrpInputEl ? mrpInputEl.value : 0) || 0;
+
+        if (payoutDisplayEl) {
+            payoutDisplayEl.textContent = '৳' + Math.round(price);
+        }
+
+        if (discountBadgeEl) {
+            if (mrp > price && price > 0) {
+                const discountPct = Math.round(((mrp - price) / mrp) * 100);
+                discountBadgeEl.textContent = discountPct + '% Off';
+                discountBadgeEl.classList.remove('hidden');
+            } else {
+                discountBadgeEl.classList.add('hidden');
+            }
+        }
+    }
+
+    if (priceInputEl) priceInputEl.addEventListener('input', updatePricingBreakdown);
+    if (mrpInputEl) mrpInputEl.addEventListener('input', updatePricingBreakdown);
+    updatePricingBreakdown();
 </script>
 {% endblock %}

@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from config.security import clean_image
 from .models import Address, CustomUser, SellerProfile
 
 
@@ -10,11 +13,24 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ("id", "email", "first_name", "last_name", "phone_number", "password", "is_seller")
 
+    def validate(self, attrs):
+        try:
+            validate_password(attrs["password"], CustomUser(**{k: v for k, v in attrs.items() if k != "password"}))
+        except ValidationError as exc:
+            raise serializers.ValidationError({"password": exc.messages})
+        return attrs
+
     def create(self, validated_data: dict) -> CustomUser:
         return CustomUser.objects.create_user(**validated_data)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    def validate_avatar(self, value):
+        try:
+            return clean_image(value)
+        except ValidationError as exc:
+            raise serializers.ValidationError(exc.messages)
+
     class Meta:
         model = CustomUser
         fields = ("id", "email", "first_name", "last_name", "phone_number", "is_seller", "avatar", "created_at")

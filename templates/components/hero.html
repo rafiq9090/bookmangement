@@ -4,24 +4,34 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <!-- Left Hero Text Content -->
         <div class="lg:col-span-6 space-y-6 z-10">
+            <div class="mobile-home-welcome">
+                <p class="mobile-eyebrow">YOUR LOCAL BOOK MARKETPLACE</p>
+                <h1>Find your next<br><span>great read.</span></h1>
+                <p>Pre-loved books. Nearby sellers. Easy pickup.</p>
+                <form method="get" action="{% url 'store' %}" class="mobile-home-search">
+                    <label for="mobileHomeSearch" class="sr-only">Search books, authors or ISBN</label>
+                    <input id="mobileHomeSearch" name="q" type="search" placeholder="Search books, authors or ISBN">
+                    <button type="submit" aria-label="Search books"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg></button>
+                </form>
+            </div>
             <h1
                 class="font-heading font-extrabold text-4xl sm:text-5xl lg:text-[54px] text-gray-900 tracking-tight leading-[1.18]">
-                Unleash Your <span class="text-[#FF5A1F]">Creativity</span><br>With The Power Of A Book.
+                Unleash Your <span class="text-[#FF5A1F]">Creativity</span><br>with the Power of a Book.
             </h1>
             <p class="text-gray-500 text-sm sm:text-base max-w-lg leading-relaxed">
-                This should be used to tell a story and let your users know a little more about your product or
-                service.
+                Discover used and rare books nearby. Chat with the seller, agree on a public pickup,
+                and inspect the book before paying.
             </p>
             <div class="flex flex-wrap items-center gap-4 pt-2">
                 <a href="{% url 'store' %}"
                     class="bg-[#43A047] hover:bg-[#388E3C] text-white font-medium text-sm px-6 py-3 rounded-md shadow-md shadow-green-600/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2">
-                    <span>Purchase Now</span>
+                    <span>Browse Books</span>
                     <i class="fa-solid fa-arrow-right text-xs"></i>
                 </a>
                 <a href="{% url 'store' %}"
                     class="border border-gray-300 hover:border-gray-400 text-gray-700 bg-white/70 font-medium text-sm px-6 py-3 rounded-md transition-all inline-flex items-center gap-2">
                     <i class="fa-solid fa-book-open text-xs text-[#FF5A1F]"></i>
-                    <span>Explore Bookshop</span>
+                    <span>Explore Marketplace</span>
                 </a>
             </div>
         </div>

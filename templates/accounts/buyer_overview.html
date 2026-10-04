@@ -1,0 +1,25 @@
+<h2 class="font-heading font-black text-xl text-gray-900">Buyer Overview</h2>
+<p class="text-sm text-gray-500 mt-2">Your book purchases, conversations, and upcoming handovers.</p>
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 my-6">
+    <a href="{% url 'pickup_list' %}" class="rounded-2xl bg-orange-50 p-4"><span class="block text-xs text-gray-600">Completed purchases</span><strong class="block text-2xl text-gray-900 mt-2">{{ buyer_overview.purchases }}</strong></a>
+    <a href="{% url 'pickup_list' %}" class="rounded-2xl bg-green-50 p-4"><span class="block text-xs text-gray-600">Upcoming pickups</span><strong class="block text-2xl text-gray-900 mt-2">{{ buyer_overview.upcoming }}</strong></a>
+    <a href="{% url 'pickup_list' %}" class="rounded-2xl bg-amber-50 p-4"><span class="block text-xs text-gray-600">Pending offers</span><strong class="block text-2xl text-gray-900 mt-2">{{ buyer_overview.pending }}</strong></a>
+    <a href="{% url 'inbox' %}" class="rounded-2xl bg-gray-50 p-4"><span class="block text-xs text-gray-600">Unread messages</span><strong class="block text-2xl text-gray-900 mt-2">{{ buyer_overview.unread }}</strong></a>
+</div>
+<div class="buyer-overview-actions flex flex-wrap gap-3 mb-8">
+    <a href="{% url 'store' %}" class="px-4 py-2 rounded-xl bg-brand-orange text-white text-xs font-bold">Browse books</a>
+    <a href="{% url 'inbox' %}" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold">Messages</a>
+    <a href="{% url 'pickup_list' %}" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold">My pickups</a>
+</div>
+<h3 class="font-heading font-bold text-sm text-gray-900 mb-3">Upcoming pickups</h3>
+<div class="space-y-3">
+{% for pickup in upcoming_pickups %}
+    <a href="{% url 'pickup_detail' pickup.pk %}" class="block rounded-2xl border border-gray-100 p-4 hover:bg-orange-50">
+        <span class="block font-bold text-sm text-gray-900">{{ pickup.listing.book.title }}</span>
+        <span class="block text-xs text-gray-500 mt-1">{{ pickup.get_status_display }} · {% if pickup.pickup_at %}{{ pickup.pickup_at|date:'M j, Y · g:i A' }}{% else %}Arrange a pickup time{% endif %}</span>
+        {% if pickup.pickup_place %}<span class="block text-xs text-gray-500 mt-1">{{ pickup.pickup_place }}</span>{% endif %}
+    </a>
+{% empty %}
+    <p class="rounded-2xl bg-gray-50 p-5 text-sm text-gray-500">No upcoming pickups. Browse books and contact a seller to get started.</p>
+{% endfor %}
+</div>

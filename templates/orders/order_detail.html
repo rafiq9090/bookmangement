@@ -18,11 +18,16 @@
 <!-- BEGIN: Order Confirmation / Detail Header -->
 <section class="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-6 box-border">
     {% if messages %}
-    <div class="mb-6 space-y-2">
+    <div class="mb-6 space-y-2" data-purpose="auto-alert">
         {% for message in messages %}
-        <div class="p-4 rounded-2xl text-xs font-semibold flex items-center gap-3 border shadow-xs {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
-            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% elif message.tags == 'success' %}fa-circle-check text-emerald-500{% else %}fa-circle-info text-amber-500{% endif %} text-base"></i>
-            <span>{{ message }}</span>
+        <div class="p-4 rounded-2xl text-xs font-semibold flex items-center justify-between gap-3 border shadow-xs transition-all duration-300 {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% elif message.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% elif message.tags == 'success' %}fa-circle-check text-emerald-500{% else %}fa-circle-info text-amber-500{% endif %} text-base"></i>
+                <span>{{ message }}</span>
+            </div>
+            <button type="button" onclick="this.closest('[data-purpose=\'auto-alert\']').remove()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
         </div>
         {% endfor %}
     </div>

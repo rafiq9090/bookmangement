@@ -1,0 +1,47 @@
+/* Desktop presentation. Shared component styles remain in custom.css/Tailwind. */
+[data-purpose="site-header"] {
+  width: 100%;
+  max-width: none;
+  padding-left: max(24px, calc((100% - 1296px) / 2));
+  padding-right: max(24px, calc((100% - 1296px) / 2));
+  position: sticky;
+  top: 0;
+  background: #FFFDF9;
+  transition: border-radius .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+[data-purpose="site-header"].is-scrolled {
+  padding-left: 24px;
+  padding-right: 24px;
+  top: 10px;
+  width: calc(100% - 32px);
+  max-width: 1328px;
+  border-radius: 20px;
+  background: rgba(255, 253, 249, .94);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: 0 8px 28px rgba(68,37,13,.09), inset 0 0 0 1px #F0E6DD;
+}
+html { scroll-padding-top: 100px; }
+@media (prefers-reduced-motion: reduce) {
+  [data-purpose="site-header"] { transition: none; }
+}
+.mobile-app-nav,
+.mobile-home-welcome { display: none; }
+.mobile-sort-menu { display: none; }
+.book-pickup-location { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.book-pickup-location > div:first-child { min-width: 0; flex: 1; gap: 8px; }
+.book-pickup-location .book-pickup-maps { margin-top: 0; padding-top: 0; border-top: 0; flex-shrink: 0; }
+.book-pickup-maps a { white-space: nowrap; }
+.book-pickup-maps > div:first-child:has(.hidden:only-child) { display: none; }
+
+@media (min-width: 1024px) {
+  [data-purpose="sale-ribbon-banner"] > a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 24px;
+  }
+  [data-purpose="sale-ribbon-banner"] .sale-ribbon-copy { display: contents; }
+  [data-purpose="sale-ribbon-banner"] .sale-ribbon-copy > div:first-child { justify-self: start; }
+  [data-purpose="sale-ribbon-banner"] .sale-ribbon-copy > div:last-child { text-align: center; }
+  [data-purpose="sale-ribbon-banner"] > a > div:last-child { justify-self: end; }
+}

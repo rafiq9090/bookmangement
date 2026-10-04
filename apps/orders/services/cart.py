@@ -46,13 +46,7 @@ def migrate_session_cart_to_user(request, user):
                 if listing.seller_id == user.id:
                     continue
 
-                existing_item = CartItem.objects.filter(listing=listing).first()
-                if existing_item:
-                    if existing_item.cart_id != cart.id:
-                        existing_item.cart = cart
-                        existing_item.save(update_fields=["cart"])
-                else:
-                    CartItem.objects.create(cart=cart, listing=listing)
+                CartItem.objects.get_or_create(cart=cart, listing=listing)
         request.session["cart_items"] = []
         if hasattr(request.session, "modified"):
             request.session.modified = True

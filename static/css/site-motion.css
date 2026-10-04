@@ -1,0 +1,25 @@
+/* Shared motion for mobile, tablet and desktop. */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-enter { animation: content-enter .45s cubic-bezier(.2,.7,.3,1) both; }
+  @keyframes content-enter {
+    from { opacity: .6; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  main button, main a[class*="bg-"] {
+    transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  main button:active, main a[class*="bg-"]:active { transform: scale(.98); }
+  .mobile-app-nav a { transition: background-color .2s ease, color .2s ease; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  main a.group, [data-purpose="popular-collections-section"] > .grid > div {
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  main a.group:hover, [data-purpose="popular-collections-section"] > .grid > div:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px #44250D0A;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-enter { animation: none; }
+}

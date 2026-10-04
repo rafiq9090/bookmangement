@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.contrib.auth import views as auth_views
+from django.urls import include, path, re_path
+from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 # Web Frontend Views (Modular App Architecture)
 from apps.accounts.web_views import (
@@ -19,6 +21,8 @@ from apps.books.web_views import (
     authors_list_view,
     book_detail_view,
     home_view,
+    location_autocomplete_api,
+    location_reverse_api,
     store_view,
 )
 from apps.listings.web_views import (
@@ -29,6 +33,7 @@ from apps.listings.web_views import (
     seller_dashboard_view,
     seller_listings_view,
     toggle_listing_view,
+    mark_listing_sold_view,
 )
 from apps.orders.web_views import (
     add_to_cart_view,
@@ -40,6 +45,9 @@ from apps.orders.web_views import (
 )
 from apps.messaging.web_views import (
     conversation_detail_view,
+    conversation_messages_api,
+    inbox_threads_api,
+    inbox_unread_count_api,
     inbox_view,
     proceed_to_checkout_from_chat,
     start_inquiry_view,
@@ -47,11 +55,48 @@ from apps.messaging.web_views import (
 from apps.payments.web_views import seller_wallet_view
 from apps.shipping.web_views import parcel_tracking_view, seller_shipments_view
 
+from apps.orders.pickup_views import (pickup_list, pickup_detail, request_purchase, report_listing, AgreementListAPI, AgreementDetailAPI, resolve_pickup)
+
+from config.health import health
+from apps.accounts.cookie_views import cookie_preferences
+from apps.accounts.contact_views import contact
+from apps.books.recommendation_views import recommendation_preferences
+from apps.accounts.push_views import service_worker, push_config, push_subscription
+from config.error_views import page_not_found
+
+handler404 = "config.error_views.page_not_found"
+
 urlpatterns = [
+    path("404/", page_not_found, name="page_not_found"),
+    path("contact/", contact, name="contact"),
+    path("privacy/", TemplateView.as_view(template_name="pages/privacy.html"), name="privacy"),
+    path("about/", TemplateView.as_view(template_name="pages/about.html"), name="about"),
+    path("cookies/preferences/", cookie_preferences, name="cookie_preferences"),
+    path("recommendations/preferences/", recommendation_preferences, name="recommendation_preferences"),
+    path("push-worker.js", service_worker, name="push_worker"),
+    path("notifications/push/config/", push_config, name="push_config"),
+    path("notifications/push/subscription/", push_subscription, name="push_subscription"),
+    path("health/", health, name="health"),
+    path("moderation/pickups/<int:pk>/", resolve_pickup, name="resolve_pickup"),
+    path("password-reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
+    path("password-reset/done/", auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
+    path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
+    path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
+    path("pickups/", pickup_list, name="pickup_list"),
+    path("pickups/<int:pk>/", pickup_detail, name="pickup_detail"),
+    path("listings/<int:listing_id>/request/", request_purchase, name="request_purchase"),
+    path("listings/<int:listing_id>/report/", report_listing, name="report_listing"),
+    path("api/v1/pickups/", AgreementListAPI.as_view(), name="pickup-api-list"),
+    path("api/v1/pickups/<int:pk>/", AgreementDetailAPI.as_view(), name="pickup-api-detail"),
+    path("api/locations/suggest/", location_autocomplete_api, name="location_autocomplete_api"),
+    path("api/locations/reverse/", location_reverse_api, name="location_reverse_api"),
     path("", home_view, name="home"),
     path("store/", store_view, name="store"),
     path("inbox/", inbox_view, name="inbox"),
+    path("inbox/api/unread/", inbox_unread_count_api, name="inbox_unread_count_api"),
+    path("inbox/api/threads/", inbox_threads_api, name="inbox_threads_api"),
     path("inbox/<int:conversation_id>/", conversation_detail_view, name="conversation_detail"),
+    path("inbox/<int:conversation_id>/api/messages/", conversation_messages_api, name="conversation_messages_api"),
     path("inbox/<int:conversation_id>/checkout/", proceed_to_checkout_from_chat, name="proceed_to_checkout_from_chat"),
     path("listings/<int:listing_id>/inquire/", start_inquiry_view, name="start_inquiry"),
     path("authors/", authors_list_view, name="authors_list"),
@@ -71,6 +116,7 @@ urlpatterns = [
     path("seller/listings/", seller_dashboard_view, {"tab": "listings"}, name="seller_listings"),
     path("seller/listings/<int:id>/edit/", edit_listing_view, name="edit_listing"),
     path("seller/listings/<int:id>/toggle/", toggle_listing_view, name="toggle_listing"),
+    path("seller/listings/<int:id>/sold/", mark_listing_sold_view, name="mark_listing_sold"),
     path("seller/wallet/", seller_dashboard_view, {"tab": "wallet"}, name="seller_wallet"),
     path("seller/shipments/", seller_dashboard_view, {"tab": "shipments"}, name="seller_shipments"),
     path("tracking/", parcel_tracking_view, name="parcel_tracking"),
@@ -107,3 +153,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Preview the branded error for unmatched local URLs without disabling debugging.
+    urlpatterns += [re_path(r"^.*$", page_not_found)]

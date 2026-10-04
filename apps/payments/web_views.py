@@ -4,7 +4,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 
-from apps.listings.web_views import get_or_create_seller_user
+from apps.listings.web_views import get_authenticated_user
 from apps.orders.services.cart import get_cart_items_for_request
 from apps.payments.models import EscrowHold, PayoutBatch, SellerLedger
 
@@ -15,7 +15,7 @@ def seller_wallet_view(request):
     Displays available balance, escrow pending hold, payout withdrawal form,
     and double-entry financial ledger records.
     """
-    seller = get_or_create_seller_user(request)
+    seller = get_authenticated_user(request)
     _, _, cart_count = get_cart_items_for_request(request)
 
     # Handle Payout Withdrawal POST
