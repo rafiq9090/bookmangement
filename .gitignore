@@ -38,6 +38,12 @@ venv.bak/
 .env
 .env.*
 !.env.example
+!.env.production.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
 
 # ===============================
 # Databases & SQLite
@@ -53,6 +59,14 @@ db.sqlite3
 # ===============================
 media/
 staticfiles/
+private_uploads/
+backups/
+backup/
+*.dump.partial
+*-postgres.dump
+*-uploads.tar.gz
+*-uploads.tar.gz.partial
+*-checksums.txt
 
 # ===============================
 # Schema & Diagram Exports
@@ -75,8 +89,16 @@ staticfiles/
 # Testing, Coverage & Celery
 # ===============================
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
 .coverage
+.coverage.*
+coverage.xml
 htmlcov/
+test-results/
+playwright-report/
 celerybeat-schedule
 celerybeat-schedule.*
 celerybeat.pid
@@ -110,7 +132,6 @@ desktop.ini
 *.doc
 
 node_modules/
-private_uploads/
-!.env.production.example
+.npm/
 
 .audit-tools/
