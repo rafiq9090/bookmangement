@@ -135,3 +135,19 @@ node_modules/
 .npm/
 
 .audit-tools/
+
+# Generated documents and personal CV files
+/output/
+/Md_Rafiqul_Islam_CV*.pdf
+
+# Local Python, Node, and tooling caches
+.hypothesis/
+.cache/
+*.tsbuildinfo
+.eslintcache
+
+# Local container overrides and database dumps
+/docker-compose.override.yml
+/compose.override.yml
+*.sql.gz
+*.sql.partial

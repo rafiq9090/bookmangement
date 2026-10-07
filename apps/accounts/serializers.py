@@ -9,6 +9,13 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     is_seller = serializers.BooleanField(default=False, required=False)
 
+    def validate_phone_number(self, value):
+        from .phone_validation import normalize_bd_mobile
+        try:
+            return normalize_bd_mobile(value)
+        except ValidationError as error:
+            raise serializers.ValidationError(error.messages)
+
     class Meta:
         model = CustomUser
         fields = ("id", "email", "first_name", "last_name", "phone_number", "password", "is_seller")

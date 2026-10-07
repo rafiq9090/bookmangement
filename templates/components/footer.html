@@ -2,8 +2,10 @@
     <div class="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-8 border-b border-gray-800">
             <div class="space-y-3">
-                <a href="{% url 'home' %}" class="font-heading font-black text-2xl text-white">Book <span class="text-[#FF5A1F]">ReSeller</span></a>
-                <p class="text-sm text-gray-400 leading-relaxed max-w-sm">Discover used and rare books, connect with nearby readers, and give your books a new home. Buy and sell locally with easy pickup.</p>
+                <a href="{% url 'home' %}" class="font-heading font-black text-2xl text-white">Book <span
+                        class="text-[#FF5A1F]">ReSeller</span></a>
+                <p class="text-sm text-gray-400 leading-relaxed max-w-sm">Discover used and rare books, connect with
+                    nearby readers, and give your books a new home. Buy and sell locally with easy pickup.</p>
             </div>
             <nav aria-label="Footer browse links" class="space-y-3">
                 <h2 class="text-sm font-bold text-white">Explore</h2>
@@ -30,15 +32,16 @@
             <div class="space-y-3">
                 <h2 class="text-sm font-bold text-white">Information</h2>
                 <ul class="space-y-2 text-sm text-gray-400">
-                    <li><a href="{% url 'contact' %}" class="hover:text-white">Contact</a></li>
-                    <li><a href="{% url 'privacy' %}" class="hover:text-white">Privacy</a></li>
-                    <li><a href="{% url 'about' %}" class="hover:text-white">About</a></li>
+                    <li><a href="{% url 'contact' %}" class="hover:text-white">Contact Us</a></li>
+                    <li><a href="{% url 'privacy' %}" class="hover:text-white">Privacy Policy</a></li>
+                    <li><a href="{% url 'about' %}" class="hover:text-white">About Us</a></li>
                 </ul>
             </div>
         </div>
         <div class="pt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500">
             <p>© {% now "Y" %} Book ReSeller. All rights reserved.</p>
-            <button type="button" id="openCookiePreferences" aria-controls="cookiePreferences" class="hover:text-white">Cookie preferences</button>
+            <button type="button" id="openCookiePreferences" aria-controls="cookiePreferences"
+                class="hover:text-white">Cookie preferences</button>
         </div>
     </div>
 </footer>

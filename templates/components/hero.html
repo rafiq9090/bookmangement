@@ -5,22 +5,22 @@
         <!-- Left Hero Text Content -->
         <div class="lg:col-span-6 space-y-6 z-10">
             <div class="mobile-home-welcome">
-                <p class="mobile-eyebrow">YOUR LOCAL BOOK MARKETPLACE</p>
-                <h1>Find your next<br><span>great read.</span></h1>
-                <p>Pre-loved books. Nearby sellers. Easy pickup.</p>
+                <p class="mobile-eyebrow">GOOD BOOKS. NEW BEGINNINGS.</p>
+                <h1>More stories.<br><span>Less to spend.</span></h1>
+                <p>Discover used and rare books from nearby readers. Find a book you love and arrange a local pickup.</p>
                 <form method="get" action="{% url 'store' %}" class="mobile-home-search">
                     <label for="mobileHomeSearch" class="sr-only">Search books, authors or ISBN</label>
-                    <input id="mobileHomeSearch" name="q" type="search" placeholder="Search books, authors or ISBN">
+                    <input id="mobileHomeSearch" name="q" type="search" placeholder="Search a title or author">
                     <button type="submit" aria-label="Search books"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg></button>
                 </form>
             </div>
             <h1
                 class="font-heading font-extrabold text-4xl sm:text-5xl lg:text-[54px] text-gray-900 tracking-tight leading-[1.18]">
-                Unleash Your <span class="text-[#FF5A1F]">Creativity</span><br>with the Power of a Book.
+                More stories.<br><span class="text-[#FF5A1F]">Less to spend.</span>
             </h1>
             <p class="text-gray-500 text-sm sm:text-base max-w-lg leading-relaxed">
-                Discover used and rare books nearby. Chat with the seller, agree on a public pickup,
-                and inspect the book before paying.
+                Discover used and rare books from nearby readers. Find a book you love,
+                chat with the seller, and arrange a local pickup.
             </p>
             <div class="flex flex-wrap items-center gap-4 pt-2">
                 <a href="{% url 'store' %}"

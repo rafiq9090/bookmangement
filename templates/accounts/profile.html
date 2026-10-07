@@ -44,9 +44,9 @@
                 </div>
                 <!-- Camera Button directly triggers file chooser -->
                 <button type="button" onclick="document.getElementById('directAvatarInput').click()"
-                    class="absolute -bottom-1 -right-1 w-7 h-7 bg-white text-gray-700 rounded-lg shadow border border-gray-200 flex items-center justify-center hover:text-[#FF5A1F] hover:border-[#FF5A1F] transition-all cursor-pointer"
-                    title="Upload Profile Picture">
-                    <i class="fa-solid fa-camera text-[10px]"></i>
+                    class="profile-camera-button absolute -bottom-1 -right-1 w-7 h-7 text-gray-700 flex items-center justify-center hover:text-[#FF5A1F] transition-colors cursor-pointer"
+                    title="Upload Profile Picture" aria-label="Upload profile picture">
+                    <i class="fa-solid fa-camera text-xs" aria-hidden="true"></i>
                 </button>
 
                 <!-- Hidden Direct Upload Form (Saves to database immediately on file select) -->
@@ -108,15 +108,14 @@
             </a>
             {% endif %}
             <a href="{% url 'logout' %}"
-                class="px-3.5 py-2.5 rounded-2xl border border-gray-200 text-gray-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 text-xs font-bold transition-all"
-                title="Sign Out">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                class="inline-flex items-center justify-center w-11 h-11 shrink-0 rounded-2xl border border-gray-200 text-gray-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 text-xs font-bold transition-all"
+                title="Sign Out" aria-label="Sign out">
+                <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
             </a>
         </div>
     </div>
 
     <!-- Main Content Layout -->
-    {% include "components/push_preferences.html" %}
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
         <!-- Navigation Subtabs Sidebar (Desktop only, hidden on mobile view) -->
@@ -161,6 +160,12 @@
                 <i class="fa-solid fa-chevron-right text-[10px] opacity-60"></i>
             </button>
 
+            <button type="button" onclick="switchTab('notifications')" id="tabNavNotifications"
+                class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all {% if active_tab == 'notifications' %}bg-orange-50 text-[#FF5A1F]{% else %}text-gray-600 hover:bg-gray-50{% endif %}">
+                <span class="flex items-center gap-3"><i class="fa-regular fa-bell text-sm w-4" aria-hidden="true"></i><span>Push Notifications</span></span>
+                <i class="fa-solid fa-chevron-right text-[10px] opacity-60" aria-hidden="true"></i>
+            </button>
+
             <div class="pt-3 mt-3 border-t border-gray-100">
                 {% if profile_user.is_seller %}
                 <a href="{% url 'seller_dashboard' %}"
@@ -196,10 +201,14 @@
                     <a href="?tab=addresses" data-account-section="addresses" {% if active_tab == 'addresses' %}aria-current="page"{% endif %}>Addresses</a>
                     <a href="?tab=orders" data-account-section="orders" {% if active_tab == 'orders' %}aria-current="page"{% endif %}>Order history</a>
                     <a href="?tab=security" data-account-section="security" {% if active_tab == 'security' %}aria-current="page"{% endif %}>Security</a>
+                    <a href="?tab=notifications" data-account-section="notifications" {% if active_tab == 'notifications' %}aria-current="page"{% endif %}>Notifications</a>
                 </nav>
             </div>
             <div id="tabContentOverview" class="{% if active_tab != 'overview' %}hidden{% endif %}">
                 {% include "accounts/buyer_overview.html" %}
+            </div>
+            <div id="tabContentNotifications" class="{% if active_tab != 'notifications' %}hidden{% endif %}">
+                {% include "components/push_preferences.html" %}
             </div>
             <div id="tabContentInfo" class="{% if active_tab != 'info' %}hidden{% endif %}">
                 <div
@@ -550,7 +559,7 @@
 
 <script>
     function switchTab(tabId) {
-        const tabs = ['overview', 'info', 'addresses', 'orders', 'security'];
+        const tabs = ['overview', 'info', 'addresses', 'orders', 'security', 'notifications'];
         if (!tabs.includes(tabId)) return;
         document.querySelectorAll('[data-account-section]').forEach(link => {
             if (link.dataset.accountSection === tabId) link.setAttribute('aria-current', 'page');

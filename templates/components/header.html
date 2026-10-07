@@ -62,6 +62,45 @@
 
     </nav>
 
+    <details class="mobile-information-menu">
+        <summary aria-label="Website information" title="Information">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+        </summary>
+        <nav aria-label="Information">
+            <p>Information</p>
+            <a href="{% url 'about' %}">About Us</a>
+            <a href="{% url 'contact' %}">Contact Us</a>
+            <a href="{% url 'privacy' %}">Privacy Policy</a>
+        </nav>
+    </details>
+    <style>
+        .mobile-information-menu { display: none; }
+        @media (max-width: 767px) {
+            .mobile-information-menu { display: block; position: relative; margin-left: auto; color: #374151; }
+            .mobile-information-menu summary { list-style: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; cursor: pointer; border-radius: 12px; }
+            .mobile-information-menu summary::-webkit-details-marker { display: none; }
+            .mobile-information-menu summary:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 2px; }
+            .mobile-information-menu[open] summary { background: #fff0e8; color: #ff5a1f; }
+            .mobile-information-menu nav { position: absolute; right: 0; top: calc(100% + 8px); width: 190px; padding: 8px; border: 1px solid #f0e6dd; border-radius: 16px; background: #fff; box-shadow: 0 12px 32px #11182714; z-index: 60; }
+            .mobile-information-menu nav p { padding: 8px 12px; margin: 0; font-size: 11px; font-weight: 700; color: #737b88; }
+            .mobile-information-menu nav a { display: block; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #374151; text-decoration: none; }
+            .mobile-information-menu nav a:hover { background: #fff0e8; color: #ff5a1f; }
+        }
+    </style>
+    <script>
+        document.addEventListener('click', function(event) {
+            const menu = document.querySelector('.mobile-information-menu');
+            if (menu && !menu.contains(event.target)) menu.open = false;
+        });
+        document.addEventListener('keydown', function(event) {
+            const menu = document.querySelector('.mobile-information-menu');
+            if (event.key === 'Escape' && menu && menu.open) {
+                menu.open = false;
+                menu.querySelector('summary').focus();
+            }
+        });
+    </script>
+
     <!-- Right Action Items -->
     <div class="mobile-header-actions flex items-center space-x-2 sm:space-x-3.5">
         <!-- Messages / P2P Inbox Icon -->
