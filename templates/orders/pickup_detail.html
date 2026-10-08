@@ -1,19 +1,55 @@
 {% extends "base.html" %}
 
-{% block title %}Manage Pickup · {{ agreement.listing.book.title }} - eB Bookshop{% endblock %}
+{% block title %}Pickup · {{ agreement.listing.book.title }} - Book ReSeller{% endblock %}
+
+{% block extra_head %}
+<style>
+    .pickup-detail .pickup-notice { display: flex; align-items: flex-start; gap: 12px; }
+    .pickup-detail .pickup-notice > i { width: 18px; flex: 0 0 18px; text-align: center; line-height: 1.5; }
+    .pickup-detail .pickup-notice > div { min-width: 0; }
+    .pickup-detail .pickup-request-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+    .pickup-detail .pickup-request-heading h3 { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .pickup-detail .pickup-request-heading h3 i { flex-shrink: 0; }
+    .pickup-detail .pickup-price { white-space: nowrap; flex-shrink: 0; }
+    .pickup-detail .pickup-participants { overflow-wrap: anywhere; }
+    .pickup-detail .pickup-footer-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+    .pickup-detail .pickup-footer-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 8px 10px; }
+    .pickup-detail .pickup-report { padding: 16px; background: #fff7f5; border: 1px solid #fed7c7; border-radius: 16px; }
+    .pickup-detail .pickup-report-heading { display: flex; align-items: center; gap: 8px; font-size: 14px; text-transform: none; letter-spacing: normal; }
+    .pickup-detail .pickup-report-heading i { flex-shrink: 0; color: #ff5a1f; }
+    .pickup-detail .pickup-report textarea { min-height: 112px; font-size: 13px; line-height: 1.5; resize: vertical; }
+    .pickup-detail .pickup-report textarea:focus { outline: none; box-shadow: none; border-color: #ff5a1f; }
+    .pickup-detail .pickup-report-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+    #cancelPickupDialog { width: min(400px, calc(100% - 32px)); margin: auto; padding: 24px; border: 1px solid #f0e6dd; border-radius: 20px; background: white; color: #111827; box-shadow: 0 20px 60px #11182730; }
+    #cancelPickupDialog::backdrop { background: #11182780; }
+    #cancelPickupDialog h2 { font-size: 20px; font-weight: 800; margin: 0 0 8px; }
+    #cancelPickupDialog p { font-size: 14px; line-height: 1.5; color: #6b7280; margin: 0 0 20px; }
+    #cancelPickupDialog .dialog-actions { display: flex; gap: 8px; }
+    #cancelPickupDialog button { flex: 1; min-height: 44px; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    #keepPickupButton { background: #f3f4f6; color: #374151; }
+    #confirmCancelPickupButton { background: #ff5a1f; color: #fff; }
+    #cancelPickupDialog button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 3px; }
+    @media (max-width: 639px) {
+        .pickup-detail { padding-left: 8px; padding-right: 8px; }
+        .pickup-detail .pickup-summary { padding: 12px; border-radius: 20px; }
+        .pickup-detail .pickup-report { padding: 12px; }
+        .pickup-detail .pickup-actions { flex-wrap: wrap; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+<section class="pickup-detail w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
     <!-- Breadcrumbs & Navigation -->
     <div class="flex items-center justify-between gap-4">
         <a href="{% url 'pickup_list' %}" class="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors">
             <i class="fa-solid fa-arrow-left text-[11px]"></i>
-            <span>Back to My Pickups</span>
+            <span>My Pickups</span>
         </a>
         {% if agreement.conversation_id %}
         <a href="{% url 'conversation_detail' agreement.conversation_id %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-[#FF5A1F] hover:bg-orange-100 text-xs font-bold rounded-xl transition-colors">
             <i class="fa-solid fa-comments"></i>
-            <span>Open Private Chat</span>
+            <span>Message</span>
         </a>
         {% endif %}
     </div>
@@ -31,15 +67,15 @@
     {% endif %}
 
     <!-- Main Card: Header & Book Summary -->
-    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+    <div class="pickup-summary bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
             <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Local P2P Handover</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Pickup details</span>
                 <h1 class="font-heading font-extrabold text-2xl sm:text-3xl text-gray-900 mt-0.5">
                     {{ agreement.listing.book.title }}
                 </h1>
-                <p class="text-xs text-gray-500 mt-1">
-                    Book listing by <span class="font-bold text-gray-700">{{ agreement.seller.email }}</span> · Buyer: <span class="font-bold text-gray-700">{{ agreement.buyer.email }}</span>
+                <p class="pickup-participants text-xs text-gray-500 mt-1">
+                    {% if request.user.id == agreement.seller_id %}Buyer: <span class="font-bold text-gray-700">{{ agreement.buyer.email }}</span>{% else %}Seller: <span class="font-bold text-gray-700">{{ agreement.seller.email }}</span>{% endif %}
                 </p>
             </div>
             <!-- Status Badge -->
@@ -52,19 +88,19 @@
                     {% else %}bg-gray-100 text-gray-800{% endif %}">
                     {{ agreement.get_status_display }}
                 </span>
-                <span class="text-lg font-mono font-extrabold text-[#FF5A1F]">
+                <span class="pickup-price text-lg font-mono font-extrabold text-[#FF5A1F]">
                     ৳{{ agreement.accepted_price|default:agreement.offered_price }}
                 </span>
             </div>
         </div>
 
         <!-- Safe Handover Notice Banner -->
-        <div class="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-start gap-3 text-xs text-amber-900">
+        <div class="pickup-notice p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-start gap-3 text-xs text-amber-900">
             <i class="fa-solid fa-handshake text-amber-600 text-base mt-0.5"></i>
             <div>
-                <p class="font-bold">In-Person Inspection & Handover Protocol</p>
+                <p class="font-bold">Safe pickup</p>
                 <p class="text-amber-800 text-[11px] mt-0.5">
-                    Payment occurs directly between buyer and seller at handover. Always meet in a well-lit, public location (metro station, shopping mall, university gate). Thoroughly inspect book binding, pages, and edition before handing over cash or MFS.
+                    Meet in a public place. Check the book before paying the seller at pickup.
                 </p>
             </div>
         </div>
@@ -72,29 +108,29 @@
         <!-- Seller Action on Pending Request -->
         {% if agreement.status == 'REQUESTED' %}
         <div class="p-5 bg-orange-50/60 border border-orange-200 rounded-2xl space-y-3">
-            <div class="flex items-center justify-between">
+            <div class="pickup-request-heading flex items-center justify-between">
                 <h3 class="text-xs font-bold text-orange-950 uppercase tracking-wider flex items-center gap-1.5">
                     <i class="fa-solid fa-bell text-[#FF5A1F]"></i>
-                    <span>Purchase Request Received</span>
+                    <span>{% if request.user.id == agreement.seller_id %}New request{% else %}Request sent{% endif %}</span>
                 </h3>
-                <span class="text-sm font-mono font-bold text-[#FF5A1F]">৳{{ agreement.offered_price }}</span>
+                <span class="pickup-price text-sm font-mono font-bold text-[#FF5A1F]">৳{{ agreement.offered_price }}</span>
             </div>
             <p class="text-xs text-gray-600">
                 {% if request.user.id == agreement.seller_id %}
-                The buyer has requested to purchase this copy for <strong>৳{{ agreement.offered_price }}</strong>. Accepting will lock a 48-hour reservation so you can arrange pickup time and place.
+                Accept to reserve the book for 48 hours and arrange pickup with the buyer.
                 {% else %}
-                Your request for <strong>৳{{ agreement.offered_price }}</strong> has been sent to the seller. You will be able to arrange the meeting point once accepted!
+                Waiting for the seller to accept. You can then agree on a pickup time and place.
                 {% endif %}
             </p>
             {% if request.user.id == agreement.seller_id %}
-            <form method="post" class="flex items-center gap-3 pt-2">
+            <form method="post" class="pickup-actions flex items-center gap-3 pt-2">
                 {% csrf_token %}
                 <button type="submit" name="action" value="accept" class="px-5 py-2.5 bg-[#43A047] hover:bg-green-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5">
                     <i class="fa-solid fa-check"></i>
-                    <span>Accept Offer & Reserve Copy</span>
+                    <span>Accept & reserve</span>
                 </button>
                 <button type="submit" name="action" value="decline" class="px-4 py-2.5 bg-gray-100 hover:bg-rose-50 text-gray-700 hover:text-rose-700 text-xs font-bold rounded-xl transition-colors">
-                    Decline Offer
+                    Decline
                 </button>
             </form>
             {% endif %}
@@ -389,13 +425,14 @@
         {% endif %}
 
         <!-- Danger Zone & Cancellation / Problem Reporting -->
-        <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <div class="pickup-footer-actions pt-4 border-t border-gray-100 text-xs">
             {% if agreement.status == 'REQUESTED' or agreement.status == 'RESERVED' or agreement.status == 'PICKUP_AGREED' %}
-            <form method="post" onsubmit="return confirm('Are you sure you want to cancel this purchase agreement?');">
+            <form method="post" id="cancelPickupForm">
                 {% csrf_token %}
-                <button type="submit" name="action" value="cancel" class="text-xs text-gray-400 hover:text-rose-600 font-semibold transition-colors flex items-center gap-1">
+                <input type="hidden" name="action" value="cancel">
+                <button type="submit" class="text-xs text-gray-400 hover:text-rose-600 font-semibold transition-colors flex items-center gap-1">
                     <i class="fa-solid fa-xmark"></i>
-                    <span>Cancel Agreement</span>
+                    <span>Cancel pickup</span>
                 </button>
             </form>
             {% else %}
@@ -403,34 +440,36 @@
             {% endif %}
 
             <!-- Report Problem Details Modal Toggle -->
-            <button type="button" onclick="document.getElementById('report-problem-card').classList.toggle('hidden')" class="text-xs text-gray-400 hover:text-amber-700 font-semibold transition-colors flex items-center gap-1">
+            <button type="button" aria-controls="report-problem-card" aria-expanded="false" onclick="const panel = document.getElementById('report-problem-card'); panel.classList.toggle('hidden'); this.setAttribute('aria-expanded', String(!panel.classList.contains('hidden')));" class="text-xs text-gray-500 hover:text-orange-700 font-semibold transition-colors">
                 <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>Report Issue or No-Show</span>
+                <span>Report a problem</span>
             </button>
         </div>
 
         <!-- Hidden Report Problem Card -->
-        <div id="report-problem-card" class="hidden p-4 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-3">
-            <h4 class="text-xs font-bold text-rose-950 uppercase tracking-wider flex items-center gap-1.5">
+        <div id="report-problem-card" class="pickup-report hidden space-y-3">
+            <h4 class="pickup-report-heading font-bold text-gray-900">
                 <i class="fa-solid fa-circle-exclamation text-rose-600"></i>
-                <span>Report Issue to Platform Moderators</span>
+                <span>Report a problem</span>
             </h4>
             <form method="post" class="space-y-3">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="report">
+                <label for="pickupReportDetails" class="block text-xs text-gray-600">Tell us what happened. Our team will review your report.</label>
                 <textarea
+                    id="pickupReportDetails"
                     name="details"
                     maxlength="4000"
                     rows="3"
                     required
-                    placeholder="Describe what went wrong (e.g. participant did not show up, condition significantly misrepresented, harassment)..."
+                    placeholder="For example: missed pickup or incorrect book condition."
                     class="w-full px-3.5 py-2.5 bg-white border border-rose-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-rose-500"
                 ></textarea>
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-colors">
-                        Submit Report
+                <div class="pickup-report-buttons">
+                    <button type="submit" class="px-4 py-2 bg-[#FF5A1F] hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-colors">
+                        Send report
                     </button>
-                    <button type="button" onclick="document.getElementById('report-problem-card').classList.add('hidden')" class="px-3 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl">
+                    <button type="button" onclick="document.getElementById('report-problem-card').classList.add('hidden'); document.querySelector('[aria-controls=report-problem-card]').setAttribute('aria-expanded', 'false');" class="px-3 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl">
                         Cancel
                     </button>
                 </div>
@@ -438,4 +477,30 @@
         </div>
     </div>
 </section>
+{% if agreement.status == 'REQUESTED' or agreement.status == 'RESERVED' or agreement.status == 'PICKUP_AGREED' %}
+<dialog id="cancelPickupDialog" aria-labelledby="cancelPickupTitle" aria-describedby="cancelPickupDescription">
+    <h2 id="cancelPickupTitle">Cancel this pickup?</h2>
+    <p id="cancelPickupDescription">This will cancel your pickup agreement. You can send a new request if you change your mind.</p>
+    <div class="dialog-actions">
+        <button type="button" id="keepPickupButton" autofocus>Keep pickup</button>
+        <button type="button" id="confirmCancelPickupButton">Cancel pickup</button>
+    </div>
+</dialog>
+<script>
+    (function () {
+        const form = document.getElementById('cancelPickupForm');
+        const dialog = document.getElementById('cancelPickupDialog');
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            dialog.showModal();
+        });
+        document.getElementById('keepPickupButton').addEventListener('click', function () { dialog.close(); });
+        document.getElementById('confirmCancelPickupButton').addEventListener('click', function () {
+            this.disabled = true;
+            this.textContent = 'Cancelling…';
+            HTMLFormElement.prototype.submit.call(form);
+        });
+    })();
+</script>
+{% endif %}
 {% endblock %}

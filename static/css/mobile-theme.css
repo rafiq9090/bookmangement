@@ -42,8 +42,9 @@
   main :is(input, select, textarea)::placeholder { color: var(--mobile-muted); }
   main :is(input, select, textarea) { accent-color: var(--mobile-brand); }
   main :is(input, select, textarea):focus-visible {
-    outline: 2px solid var(--mobile-brand);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: none;
+    border-color: var(--mobile-brand);
   }
   :is(a, button):focus-visible { outline: 2px solid var(--mobile-brand); outline-offset: 3px; }
   main :is(input, select, textarea):disabled { background-color: #F2F0ED; color: var(--mobile-muted); }

@@ -11,6 +11,7 @@ from apps.books.services.osm_location import (
     find_bd_location_matches,
     haversine_km,
     reverse_osm_location,
+    nearby_location_label,
     search_osm_locations,
 )
 from apps.listings.models import BookListing
@@ -322,6 +323,7 @@ def store_view(request):
             "has_coords": has_coords,
             "current_condition": condition,
             "selected_location": location,
+            "location_label": nearby_location_label(*coords) if coords and not location and not district else "",
             "selected_district": district,
             "selected_area": area,
             "is_collectible": is_collectible,

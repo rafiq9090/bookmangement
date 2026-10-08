@@ -84,7 +84,7 @@
   /* Pages use a compact content hierarchy, with books before promotional art. */
   .mobile-home-layout{display:flex;flex-direction:column}
   .mobile-home-layout>section{padding:20px 16px;order:5}
-  .mobile-home-layout [data-purpose="hero-section"]{order:0;padding-top:20px;padding-bottom:12px}
+  .mobile-home-layout [data-purpose="hero-section"]{order:0;padding:28px 16px;background-color:#FF5A1F;background-image:linear-gradient(90deg,#FF5A1F 10%,rgba(255,90,31,.88) 52%,rgba(255,90,31,.5)),url('../images/home-banner-graphic.svg?v=blue-cover-5');background-position:center,right center;background-size:cover,auto 100%;background-repeat:no-repeat;border-bottom:0}
   .mobile-home-layout [data-purpose="book-types-section"]{order:1}
   .mobile-home-layout [data-purpose="popular-collections-section"]{order:2}
   .mobile-home-layout [data-purpose="promo-banner-section"]{order:3}
@@ -93,12 +93,15 @@
   [data-purpose="hero-section"]>.grid>div:first-child>h1,
   [data-purpose="hero-section"]>.grid>div:first-child>p,
   [data-purpose="hero-section"]>.grid>div:first-child>div:not(.mobile-home-welcome){display:none}
-  .mobile-home-welcome{display:block}
-  .mobile-home-welcome .mobile-eyebrow{font-size:10px;letter-spacing:.12em;font-weight:700;color:#a65b35;margin-bottom:10px}
-  .mobile-home-welcome h1{font-size:32px;line-height:1.12;letter-spacing:-1px;font-weight:800;margin-bottom:12px}
-  .mobile-home-welcome h1 span{color:#FF5A1F}
-  .mobile-home-welcome>p:last-of-type{font-size:13px;color:#717784;line-height:1.5}
-  .mobile-home-search{display:flex;align-items:center;gap:8px;padding:6px;margin-top:18px;border:1px solid #eee2d7;border-radius:16px;background:white;box-shadow:0 4px 18px #44250d06}
+  .mobile-home-welcome{display:block;padding:0;background:transparent;border:0;border-radius:0}
+  .mobile-home-layout [data-purpose="hero-section"]{border-radius:0;overflow:hidden;padding-bottom:44px}
+  .mobile-home-layout [data-purpose="book-types-section"]{position:relative;margin-top:-24px;border-radius:24px 24px 0 0;background:#fff;z-index:1;padding-top:20px}
+  .mobile-home-welcome .mobile-eyebrow{display:inline-block;font-size:9px;letter-spacing:.09em;font-weight:700;color:#fff3e8;margin-bottom:12px}
+  .mobile-home-welcome h1{font-size:30px;line-height:1.14;letter-spacing:-.8px;font-weight:800;margin-bottom:12px}
+  .mobile-home-welcome h1{color:#fff}
+  .mobile-home-welcome h1 span{color:#fff}
+  .mobile-home-welcome>p:last-of-type{font-size:12px;color:#fff;line-height:1.6;max-width:340px}
+  .mobile-home-search{display:flex;align-items:center;gap:6px;padding:5px;margin-top:18px;border:1px solid #eee2d7;border-radius:14px;background:white;box-shadow:0 4px 18px #44250d06}
   .mobile-home-search input{width:100%;min-width:0;border:0;background:transparent;padding:10px;font-size:14px!important;outline:none}
   .mobile-home-search:focus-within{border-color:#FF5A1F}
   .mobile-home-search button{flex-shrink:0;width:44px;height:44px;border-radius:12px;background:#FF5A1F;color:white;display:grid;place-items:center}

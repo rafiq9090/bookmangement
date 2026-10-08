@@ -123,3 +123,39 @@ body.marketplace-shell {
 body.marketplace-shell > main { flex: 1 0 auto; }
 body.marketplace-shell > [data-purpose="main-footer"] { flex-shrink: 0; margin-top: auto; }
 .pickup-browse-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; line-height: 1.3; }
+
+body main .profile-camera-button {
+    min-height: 28px;
+    width: 28px;
+    height: 28px;
+    padding: 5px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .08);
+}
+
+/* Compact, consistent reading labels across screen sizes. */
+body .reading-feature-tags { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: 8px; }
+body .reading-feature-tags > span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 10px; border: 1px solid #fed7c7; background: #fff4ed; color: #b9380e; white-space: nowrap; font-size: 11px; }
+body .reading-feature-tags > span i { color: #ff5a1f; flex-shrink: 0; }
+@media (max-width: 767px) {
+    body .reading-feature-tags { justify-content: center; gap: 6px; }
+    body .reading-feature-tags > span { padding: 6px 8px; font-size: 10px; }
+}
+
+@media (max-width: 767px) {
+    .reading-feature-copy { text-align: center; }
+    .reading-feature-copy > p { margin-left: auto; margin-right: auto; }
+}
+
+/* The message search wrapper provides the field background and border. */
+body .conversation-search { align-items: center; gap: 10px; min-height: 44px; padding: 10px 12px; background: #FAF8F5; }
+body .conversation-search input { background: transparent !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; min-height: 24px; }
+body .conversation-search > i { flex-shrink: 0; }
+
+@media (max-width: 767px) {
+    body .conversation-search { height: 42px; min-height: 42px; padding: 10px 10px; margin: 12px 14px 8px; border-radius: 10px; gap: 8px; }
+    body .conversation-search input { min-height: 20px; font-size: 12px !important; line-height: 20px; }
+    body .conversation-search > i { font-size: 12px; }
+}

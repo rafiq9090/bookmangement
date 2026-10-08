@@ -63,10 +63,12 @@ from apps.accounts.contact_views import contact
 from apps.books.recommendation_views import recommendation_preferences
 from apps.accounts.push_views import service_worker, push_config, push_subscription
 from config.error_views import page_not_found
+from apps.books.search_suggestions import search_suggestions
 
 handler404 = "config.error_views.page_not_found"
 
 urlpatterns = [
+    path("api/books/suggest/", search_suggestions, name="book_search_suggestions"),
     path("404/", page_not_found, name="page_not_found"),
     path("contact/", contact, name="contact"),
     path("privacy/", TemplateView.as_view(template_name="pages/privacy.html"), name="privacy"),

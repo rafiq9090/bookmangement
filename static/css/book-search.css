@@ -1,0 +1,7 @@
+.book-search-suggestions{position:absolute;top:calc(100% + 8px);left:0;width:max(100%,320px);max-width:calc(100vw - 48px);max-height:320px;overflow-y:auto;z-index:110;background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 12px 32px #17202e18;padding:6px}
+.book-search-suggestions[hidden]{display:none}
+.book-search-suggestions button{display:block;width:100%;text-align:left;padding:12px;border-radius:10px;min-height:48px;cursor:pointer}
+.book-search-suggestions button:hover,.book-search-suggestions button[aria-selected=true],.book-search-suggestions button:focus-visible{background:#fff0e8;outline:none}
+.book-search-suggestions strong{display:block;font-size:13px;color:#17202e;overflow-wrap:anywhere}
+.book-search-suggestions span{display:block;font-size:11px;color:#64748b;margin-top:4px;overflow-wrap:anywhere}
+@media(max-width:767px){.book-search-suggestions{width:100%;max-width:100%;max-height:280px}}

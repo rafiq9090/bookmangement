@@ -8,6 +8,13 @@ from django.conf import settings
 
 OSM_USER_AGENT = "eB-BookMarketplace/1.0 (local-p2p-book-marketplace; https://www.openstreetmap.org/)"
 
+
+def nearby_location_label(lat, lon):
+    """Approximate display label from local areas; never claim an exact address."""
+    closest = min(BANGLADESH_LOCATIONS, key=lambda item: haversine_km(lat, lon, item['lat'], item['lon']))
+    distance = haversine_km(lat, lon, closest['lat'], closest['lon'])
+    return 'Near ' + closest['name'] if distance <= 1.5 else 'Current location'
+
 # Strict Bangladesh Geographic Bounding Box (min_lon, max_lat, max_lon, min_lat for Nominatim)
 BANGLADESH_BBOX = "88.01,26.63,92.68,20.57"
 

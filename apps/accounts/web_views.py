@@ -54,6 +54,8 @@ def login_register_view(request):
 
             validation_errors = []
             try:
+                from .phone_validation import normalize_bd_mobile
+                phone_number = normalize_bd_mobile(phone_number)
                 validate_email(email)
                 validate_password(password, CustomUser(email=email, first_name=first_name, last_name=last_name))
             except ValidationError as exc:
@@ -122,7 +124,6 @@ def logout_view(request):
     from apps.accounts.models import PushSubscription
     PushSubscription.objects.filter(user=request.user, endpoint=request.session.get("push_endpoint", "")).delete()
     logout(request)
-    messages.info(request, "You have been successfully logged out.")
     return redirect("home")
 
 
@@ -132,13 +133,12 @@ def user_profile_view(request):
     Displays user info, addresses, recent orders, and security options.
     """
     if not request.user.is_authenticated:
-        messages.info(request, "Please sign in to view your profile.")
         return redirect("/login/?next=/profile/")
 
     user = request.user
 
     active_tab = request.GET.get("tab", "overview")
-    if active_tab not in {"overview", "info", "addresses", "orders", "security"}:
+    if active_tab not in {"overview", "info", "addresses", "orders", "security", "notifications"}:
         active_tab = "overview"
     _, _, cart_count = get_cart_items_for_request(request)
 

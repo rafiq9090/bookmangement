@@ -1,0 +1,18 @@
+/* One focus border for text fields; buttons keep their keyboard focus outline. */
+body input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]):focus,
+body select:focus,
+body textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: #FF5A1F !important;
+}
+
+/* These search fields use their containing box as the focus border. */
+body .mobile-home-search input:focus,
+body .conversation-search input:focus {
+    border: 0 !important;
+}
+.mobile-home-search:focus-within,
+.conversation-search:focus-within {
+    border-color: #FF5A1F;
+}
